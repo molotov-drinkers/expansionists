@@ -1,0 +1,18 @@
+[gd_scene load_steps=2 format=3 uid="uid://dum28ksb8lenw"]
+
+[ext_resource type="PackedScene" uid="uid://bjycwupj85nvr" path="res://scenes/globe_scene.tscn" id="1_eqjqt"]
+
+[node name="main_scene" type="Node3D"]
+
+[node name="OmniLight3D" type="OmniLight3D" parent="."]
+transform = Transform3D(-0.964146, 0, 0.265371, 0, 1, 0, -0.265371, 0, -0.964146, 12.9001, -2.3875, 0)
+light_energy = 6.669
+light_indirect_energy = 4.962
+light_volumetric_fog_energy = 1.25
+omni_range = 22.523
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(0.275755, 0, 0.961228, 0, 1, 0, -0.961228, 0, 0.275755, 2.4131, 0.188116, 0.443376)
+
+[node name="globe_scene" parent="." instance=ExtResource("1_eqjqt")]
+transform = Transform3D(0.642788, 0, 0.766044, 0, 1, 0, -0.766044, 0, 0.642788, 0, 0, 0)

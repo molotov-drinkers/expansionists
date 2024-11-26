@@ -1,0 +1,14 @@
+[configuration]
+entry_symbol = "gdext_rust_init"
+compatibility_minimum = 4.3
+reloadable = true
+
+[libraries]
+linux.debug.x86_64 =     "res://../rust/target/debug/libexpansionists.so"
+linux.release.x86_64 =   "res://../rust/target/release/libexpansionists.so"
+windows.debug.x86_64 =   "res://../rust/target/debug/expansionists.dll"
+windows.release.x86_64 = "res://../rust/target/release/expansionists.dll"
+macos.debug =            "res://../rust/target/debug/libexpansionists.dylib"
+macos.release =          "res://../rust/target/release/libexpansionists.dylib"
+macos.debug.arm64 =      "res://../rust/target/debug/libexpansionists.dylib"
+macos.release.arm64 =    "res://../rust/target/release/libexpansionists.dylib"
