@@ -1,6 +1,8 @@
 
 use godot::prelude::*;
 
+pub mod globe;
+
 struct Expansinists;
 
 #[gdextension]
