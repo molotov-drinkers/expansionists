@@ -1,2 +1,2 @@
 pub mod territory;
-pub mod territories;
+pub mod globe;
