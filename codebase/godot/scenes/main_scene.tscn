@@ -12,7 +12,7 @@ light_volumetric_fog_energy = 1.25
 omni_range = 22.523
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(0.275755, 0, 0.961228, 0, 1, 0, -0.961228, 0, 0.275755, 2.63968, 0.188116, 0.443376)
+transform = Transform3D(0.267218, -0.246898, 0.93147, 0.0680832, 0.969042, 0.237325, -0.961228, 0, 0.275755, 2.94582, 0.859929, 0.645536)
 
 [node name="globe_scene" parent="." instance=ExtResource("1_eqjqt")]
-transform = Transform3D(0.979574, 0.201078, 0.00174533, -0.201078, 0.979575, 1.74846e-07, -0.00170965, -0.000351118, 0.999998, 0, 0, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)

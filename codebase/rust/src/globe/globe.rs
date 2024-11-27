@@ -1,18 +1,18 @@
-use godot::classes::StandardMaterial3D;
+use godot::classes::{IStaticBody3D, StandardMaterial3D, StaticBody3D};
 use godot::{classes::MeshInstance3D, prelude::*};
 
 use super::territory::types::{Territory, Territories, Continent, SubContinent};
 
 #[derive(GodotClass)]
-#[class(base=Node3D)]
+#[class(base=StaticBody3D)]
 pub struct GlobeScene {
-  base: Base<Node3D>,
+  base: Base<StaticBody3D>,
   territories: Territories,
 }
 
 #[godot_api]
-impl INode3D for GlobeScene {
-  fn init(base: Base<Node3D>) -> GlobeScene {
+impl IStaticBody3D for GlobeScene {
+  fn init(base: Base<StaticBody3D>) -> GlobeScene {
 
     GlobeScene {
       base: base,
