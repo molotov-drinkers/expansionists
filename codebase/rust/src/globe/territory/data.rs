@@ -830,9 +830,8 @@ impl Territory {
   ]}
 
   pub fn list_special() -> Vec<Territory> { vec![
-    // TODO: Type at "islands"
     Territory {
-      base_name: "diomede_inslands".to_string(),
+      base_name: "diomede_islands".to_string(),
       location: Location {
         continent: Continent::Special,
         sub_continent: None,
