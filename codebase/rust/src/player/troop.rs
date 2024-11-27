@@ -1,4 +1,6 @@
-use godot::{classes::{IRigidBody3D, RigidBody3D}, prelude::*};
+use std::any::Any;
+
+use godot::{classes::{IRigidBody3D, RigidBody3D, StaticBody3D}, prelude::*};
 
 #[derive(GodotClass)]
 #[class(base=RigidBody3D)]
@@ -17,6 +19,7 @@ pub struct Troop {
 #[godot_api]
 impl IRigidBody3D for Troop {
   fn init(base: Base<RigidBody3D>) -> Troop {
+
     Troop {
       base: base,
       territory: "".to_string(),
@@ -33,5 +36,37 @@ impl IRigidBody3D for Troop {
   fn ready(&mut self) {
     godot_print!("Troop ready");
     // TODO: how to attach a troop to a territory?
+
+
+    // According to Godot doc:
+    // https://docs.godotengine.org/en/stable/classes/class_rigidbody3d.html#class-rigidbody3d-method-get-colliding-bodies
+    // contact_monitor has to be enabled to get colliding bodies
+    self.base_mut().set_contact_monitor(true);
+
+    self.base_mut().set_max_contacts_reported(1);
+  }
+
+  fn physics_process(&mut self, _delta: f64) {
+    // godot_print!("Troop process");
+
+    // let gg = self.base_mut();
+
+    let colliding_bodies = self.base_mut().get_colliding_bodies();
+
+    colliding_bodies.iter_shared().for_each(|colliding_body| {
+      let colliding_body = colliding_body.cast::<Node3D>();
+
+      let parent = colliding_body.get_parent().unwrap();
+      // let parent = parent.cast::<StaticBody3D>();
+      let parent_name = parent.get_name();
+      // godot_print!("parent: {:?}", parent_name);
+    });
+
+
+    // colliding_bodies.iter_shared().for_each(|body| {
+    //   let body = body.cast::<Node3D>();
+    //   let body_name = body.get_name();
+    //   godot_print!("Colliding with: {:?}", body_name);
+    // });
   }
 }

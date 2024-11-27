@@ -3,18 +3,18 @@
 [sub_resource type="BoxMesh" id="BoxMesh_g5trk"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_f4ec8"]
-albedo_color = Color(0.164623, 0.000125284, 0.547126, 1)
+albedo_color = Color(1, 0, 0.54902, 1)
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_8ktli"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_o6v62"]
 
 [node name="troop_scene" type="Troop"]
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+transform = Transform3D(0.02, 0, 0, 0, 0.02, 0, 0, 0, 0.02, 0, 0.01, 0)
 mesh = SubResource("BoxMesh_g5trk")
 skeleton = NodePath("")
 surface_material_override/0 = SubResource("StandardMaterial3D_f4ec8")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
-shape = SubResource("BoxShape3D_8ktli")
+[node name="CollisionShape3D2" type="CollisionShape3D" parent="."]
+transform = Transform3D(0.02, 0, 0, 0, 0.02, 0, 0, 0, 0.02, 0, 0.01, 0)
+shape = SubResource("BoxShape3D_o6v62")

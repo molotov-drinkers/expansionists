@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://dum28ksb8lenw"]
+[gd_scene load_steps=3 format=3 uid="uid://dum28ksb8lenw"]
 
 [ext_resource type="PackedScene" uid="uid://bjycwupj85nvr" path="res://scenes/globe_scene.tscn" id="1_eqjqt"]
+[ext_resource type="PackedScene" uid="uid://42q6iqdh5dd5" path="res://scenes/troop_scene.tscn" id="2_3i625"]
 
 [node name="main_scene" type="Node3D"]
 
@@ -12,7 +13,12 @@ light_volumetric_fog_energy = 1.25
 omni_range = 22.523
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(0.267218, -0.246898, 0.93147, 0.0680832, 0.969042, 0.237325, -0.961228, 0, 0.275755, 2.94582, 0.859929, 0.645536)
+transform = Transform3D(0.0431136, 0, 0.99907, 0, 1, 0, -0.99907, 0, 0.0431136, 2.54662, 0, 0.128464)
 
 [node name="globe_scene" parent="." instance=ExtResource("1_eqjqt")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+transform = Transform3D(0.996917, 0, 0.0784591, 0, 1, 0, -0.0784591, 0, 0.996917, 0, 0, 0)
+
+[node name="troops" type="Node3D" parent="."]
+
+[node name="troop_scene11" parent="troops" instance=ExtResource("2_3i625")]
+transform = Transform3D(0.994279, 0, 0.10682, 0, 1, 0, -0.10682, 0, 0.994279, 1.26625, 0.0510916, -0.026634)

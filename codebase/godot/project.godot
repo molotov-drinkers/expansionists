@@ -13,3 +13,7 @@ config_version=5
 config/name="Expansionists"
 run/main_scene="res://scenes/main_scene.tscn"
 config/features=PackedStringArray("4.3")
+
+[physics]
+
+3d/physics_engine="GodotPhysics3D"

@@ -1,18 +1,21 @@
-use godot::classes::{IStaticBody3D, StandardMaterial3D, StaticBody3D};
+use godot::classes::{INode3D, StandardMaterial3D, Node3D};
 use godot::{classes::MeshInstance3D, prelude::*};
 
 use super::territory::types::{Territory, Territories, Continent, SubContinent};
 
+use crate::player;
+use player::troop::Troop;
+
 #[derive(GodotClass)]
-#[class(base=StaticBody3D)]
+#[class(base=Node3D)]
 pub struct GlobeScene {
-  base: Base<StaticBody3D>,
+  base: Base<Node3D>,
   territories: Territories,
 }
 
 #[godot_api]
-impl IStaticBody3D for GlobeScene {
-  fn init(base: Base<StaticBody3D>) -> GlobeScene {
+impl INode3D for GlobeScene {
+  fn init(base: Base<Node3D>) -> GlobeScene {
 
     GlobeScene {
       base: base,
@@ -21,11 +24,11 @@ impl IStaticBody3D for GlobeScene {
   }
 
   fn ready(&mut self) {
-    let globe = self.base()
-      .find_child("globe")
-      .expect("'globe' to exist");
+    let territories_node = self.base()
+      .find_child("territories")
+      .expect("'territories' to exist");
 
-    let territories = globe.get_children();
+    let territories = territories_node.get_children();
     for node_territory in territories.iter_shared() {
       let mut territory = node_territory.cast::<MeshInstance3D>();
       let territory_name = territory.get_name();
@@ -44,7 +47,24 @@ impl IStaticBody3D for GlobeScene {
       let mut material = StandardMaterial3D::new_gd();
       material.set_albedo(color);
       territory.set_material_override(&material);
+
+
+      let scene: Gd<PackedScene> = load("res://scenes/troop_scene.tscn");
+      let mut new_troop = scene.instantiate_as::<Troop>();
+      new_troop.set_name(&"troop".to_godot());
+      self.base_mut().add_child(&new_troop);
+
+      new_troop.set_position(Vector3::new(1.2, 0., 0.));
+
+      let troop_node = new_troop.find_child("MeshInstance3D").expect("MeshInstance3D to exist");
+      let mut troop_mesh = troop_node.cast::<MeshInstance3D>();
+      troop_mesh.set_surface_override_material(0, &material);
+
     }
+  }
+
+  fn physics_process(&mut self, _delta: f64) {
+
   }
 }
 
