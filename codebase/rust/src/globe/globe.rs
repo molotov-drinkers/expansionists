@@ -1,13 +1,13 @@
 use godot::classes::StandardMaterial3D;
 use godot::{classes::MeshInstance3D, prelude::*};
 
-use super::territory::types;
-use types::Territory;
+use super::territory::types::{Territory, Territories, Continent, SubContinent};
 
 #[derive(GodotClass)]
 #[class(base=Node3D)]
 pub struct GlobeScene {
   base: Base<Node3D>,
+  territories: Territories,
 }
 
 #[godot_api]
@@ -16,6 +16,7 @@ impl INode3D for GlobeScene {
 
     GlobeScene {
       base: base,
+      territories: Territory::get_map(),
     }
   }
 
@@ -24,16 +25,12 @@ impl INode3D for GlobeScene {
       .find_child("globe")
       .expect("'globe' to exist");
 
-    let territories_base = Territory::get_map();
-
     let territories = globe.get_children();
     for node_territory in territories.iter_shared() {
       let mut territory = node_territory.cast::<MeshInstance3D>();
       let territory_name = territory.get_name();
 
-      let territory_data = territories_base
-        .get(&territory_name.to_string());
-
+      let territory_data = self.territories.get(&territory_name.to_string());
       if territory_data.is_none() {
         godot_print!("No data for territory: {:?}", territory_name);
         continue;
@@ -52,26 +49,26 @@ impl INode3D for GlobeScene {
 }
 
 impl GlobeScene {
-  fn continent_to_color(continent: &types::Continent) -> Color {
+  fn continent_to_color(continent: &Continent) -> Color {
     match continent {
-      types::Continent::Africa => Color::DARK_ORANGE,
-      types::Continent::Asia => Color::GREEN_YELLOW,
-      types::Continent::Europe => Color::SKY_BLUE,
-      types::Continent::NorthAmerica => Color::DARK_RED,
-      types::Continent::Oceania => Color::BURLYWOOD,
-      types::Continent::SouthAmerica => Color::TOMATO,
-      types::Continent::Antarctica => Color::DARK_CYAN,
-      types::Continent::Special => Color::GOLD,
+      Continent::Africa => Color::DARK_ORANGE,
+      Continent::Asia => Color::GREEN_YELLOW,
+      Continent::Europe => Color::SKY_BLUE,
+      Continent::NorthAmerica => Color::DARK_RED,
+      Continent::Oceania => Color::BURLYWOOD,
+      Continent::SouthAmerica => Color::TOMATO,
+      Continent::Antarctica => Color::DARK_CYAN,
+      Continent::Special => Color::GOLD,
     }
   }
 
-  fn get_territory_color(sub_continent: &Option<types::SubContinent>, continent: &types::Continent) -> Color {
+  fn get_territory_color(sub_continent: &Option<SubContinent>, continent: &Continent) -> Color {
     match sub_continent {
-      Some(types::SubContinent::MiddleEast) => Color::from_rgba(0., 0.3, 0., 1.),
-      Some(types::SubContinent::InteriorAsia) => Color::from_rgba(0., 0.4, 0., 1.),
-      Some(types::SubContinent::IndianSubcontinent) => Color::from_rgba(0., 0.5, 0., 1.),
-      Some(types::SubContinent::PacificAndSoutheastAsia) => Color::from_rgba(0., 0.6, 0., 1.),
-      Some(types::SubContinent::EuropeRelatedAsia) => Color::from_rgba(0., 0.7, 0., 1.),
+      Some(SubContinent::MiddleEast) => Color::from_rgba(0., 0.3, 0., 1.),
+      Some(SubContinent::InteriorAsia) => Color::from_rgba(0., 0.4, 0., 1.),
+      Some(SubContinent::IndianSubcontinent) => Color::from_rgba(0., 0.5, 0., 1.),
+      Some(SubContinent::PacificAndSoutheastAsia) => Color::from_rgba(0., 0.6, 0., 1.),
+      Some(SubContinent::EuropeRelatedAsia) => Color::from_rgba(0., 0.7, 0., 1.),
       None => Self::continent_to_color(&continent)
     }
   }
