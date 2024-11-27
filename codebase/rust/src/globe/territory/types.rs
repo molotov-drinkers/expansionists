@@ -27,6 +27,14 @@ pub struct Location {
 pub struct Territory {
   pub base_name: String,
   pub location: Location,
+
+  // pub neighbors: Vec<TerritoryId>,
+
+  // pub organic_max_troops: i32,
+  // pub troops_growth_velocity: i32,
+
+  // pub current_owner: String,
+  // pub current_troops: i32,
 }
 
 pub type TerritoryId = String;
