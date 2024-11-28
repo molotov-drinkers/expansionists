@@ -27,6 +27,7 @@ pub struct Location {
 }
 
 pub struct Territory {
+  // base_name is also used as the territory id
   pub base_name: String,
   pub location: Location,
 
