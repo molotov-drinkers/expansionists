@@ -1,5 +1,5 @@
 
-use std::f64::consts::PI;
+use std::{any::Any, f64::consts::PI};
 use godot::{classes::{Area3D, BoxMesh, BoxShape3D, CollisionShape3D, MeshInstance3D, StandardMaterial3D}, obj::NewAlloc, prelude::*};
 
 use super::territory::types::{Territories, Territory, TerritoryId};
@@ -60,7 +60,7 @@ impl INode3D for VirtualPlanet {
       godot_print!("READY FOR PHYSICS NOW");
 
       for node in self.base().get_children().iter_shared() {
-        let point_area = node.cast::<Area3D>();
+        let mut point_area = node.cast::<Area3D>();
   
         let overlaping_bodies = point_area.get_overlapping_bodies();
         
@@ -73,9 +73,40 @@ impl INode3D for VirtualPlanet {
             let parent = colliding_body.get_parent().unwrap();
             let parent_name = parent.get_name();
 
-            if parent_name != "ocean".into() {
+            if parent_name != "ocean".into() && parent_name != "rest_of_world".into() {
               godot_print!("parent: {:?}", parent_name);
-              // let territory_data = self.territories.get(&parent_name.to_string());
+              let territory_data = self.territories.get(&parent_name.to_string());
+
+              let color = Territory::get_territory_color(
+                &territory_data.unwrap().location.sub_continent,
+                &territory_data.unwrap().location.continent
+              );
+
+
+              for child in point_area.get_children().iter_shared() {
+                let child = child.try_cast::<MeshInstance3D>();
+                if child.is_err() {
+                  continue;
+                }
+                
+                let mut material = StandardMaterial3D::new_gd();
+                material.set_albedo(color);
+                child.unwrap().set_material_override(&material);
+              }
+            } else {
+              
+              // point_area.set_visible(false);
+
+              // for child in point_area.get_children().iter_shared() {
+              //   let child = child.try_cast::<MeshInstance3D>();
+              //   if child.is_err() {
+              //     continue;
+              //   }
+                
+              //   let mut material = StandardMaterial3D::new_gd();
+              //   material.set_albedo(Color::BLUE);
+              //   child.unwrap().set_material_override(&material);
+              // }
             }
           }
         }
@@ -86,7 +117,7 @@ impl INode3D for VirtualPlanet {
 }
 
 impl VirtualPlanet {
-  #[inline] pub fn get_planet_radius() -> f64 { 1. }
+  #[inline] pub fn get_planet_radius() -> f64 { 1.08 }
   #[inline] pub fn get_num_of_latitudes() -> i8 { 90 }
   #[inline] pub fn get_num_of_longitudes() -> i16 { 180 }
 
@@ -121,19 +152,19 @@ impl VirtualPlanet {
     let mut material = StandardMaterial3D::new_gd();
     material.set_albedo(Color::BLUE_VIOLET);
 
-    let mesh_and_collider_size = Vector3::new(0.1, 0.1, 0.1);
+    let mesh_and_collider_size = Vector3::new(0.05, 0.05, 0.05);
 
     let mut mesh = BoxMesh::new_gd();
     mesh.set_size(mesh_and_collider_size.clone());
     mesh.set_material(&material);
 
-    let coordinates_name = format!("coordinate({:},{:})",
-      planet_surface_point.lat_long.0.to_string(),
-      planet_surface_point.lat_long.1.to_string(),
-    );
+    // let coordinates_name = format!("coordinate({:},{:})",
+    //   planet_surface_point.lat_long.0.to_string(),
+    //   planet_surface_point.lat_long.1.to_string(),
+    // );
 
     let mut virtual_point = MeshInstance3D::new_alloc();
-    virtual_point.set_name(&coordinates_name);
+    virtual_point.set_name("point_mesh");
     virtual_point.set_mesh(&mesh);
     virtual_point.set_position(planet_surface_point.cartesian);
     // virtual_point.create_trimesh_collision();

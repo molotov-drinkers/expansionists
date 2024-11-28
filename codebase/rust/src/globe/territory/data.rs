@@ -844,13 +844,13 @@ impl Territory {
         sub_continent: None,
       },
     },
-    Territory {
-      base_name: "rest_of_world".to_string(),
-      location: Location {
-        continent: Continent::Special,
-        sub_continent: None,
-      },
-    },
+    // Territory {
+    //   base_name: "rest_of_world".to_string(),
+    //   location: Location {
+    //     continent: Continent::Special,
+    //     sub_continent: None,
+    //   },
+    // },
   ]}
 
   pub fn list_antarctica() -> Vec<Territory> { vec![
