@@ -1,4 +1,4 @@
-use godot::classes::{INode3D, StandardMaterial3D, Node3D};
+use godot::classes::{CollisionShape3D, INode3D, Node3D, StandardMaterial3D};
 use godot::{classes::MeshInstance3D, prelude::*};
 
 use super::territory::types::{Territory, Territories, Continent, SubContinent};
@@ -49,16 +49,29 @@ impl INode3D for GlobeScene {
       territory.set_material_override(&material);
 
 
-      let scene: Gd<PackedScene> = load("res://scenes/troop_scene.tscn");
-      let mut new_troop = scene.instantiate_as::<Troop>();
-      new_troop.set_name(&"troop".to_godot());
-      self.base_mut().add_child(&new_troop);
+      let collision_shape_territory = territory
+        .find_child("StaticBody3D")
+        .expect("StaticBody3D to exist")
+        .find_child("CollisionShape3D")
+        .expect("CollisionShape3D to exist");
 
-      new_troop.set_position(Vector3::new(1.2, 0., 0.));
+      let collision_shape_territory = collision_shape_territory.cast::<CollisionShape3D>();
 
-      let troop_node = new_troop.find_child("MeshInstance3D").expect("MeshInstance3D to exist");
-      let mut troop_mesh = troop_node.cast::<MeshInstance3D>();
-      troop_mesh.set_surface_override_material(0, &material);
+      let territory_position = collision_shape_territory.get_global_transform();
+      // godot_print!("Territory: {:?}, position: {:?}", territory_name, territory_position);
+
+
+      // Troop Spawner Engine:
+      // let scene: Gd<PackedScene> = load("res://scenes/troop_scene.tscn");
+      // let mut new_troop = scene.instantiate_as::<Troop>();
+      // new_troop.set_name(&"troop".to_godot());
+      // self.base_mut().add_child(&new_troop);
+
+      // new_troop.set_position(Vector3::new(1.2, 0., 0.));
+
+      // let troop_node = new_troop.find_child("MeshInstance3D").expect("MeshInstance3D to exist");
+      // let mut troop_mesh = troop_node.cast::<MeshInstance3D>();
+      // troop_mesh.set_surface_override_material(0, &material);
 
     }
   }
