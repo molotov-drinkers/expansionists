@@ -1,31 +1,21 @@
 
 use std::{collections::HashMap, f64::consts::PI};
-use godot::{classes::{Area3D, BoxMesh, BoxShape3D, CollisionShape3D, IArea3D, MeshInstance3D, StandardMaterial3D}, obj::NewAlloc, prelude::*};
+use godot::{classes::{BoxMesh, BoxShape3D, CollisionShape3D, MeshInstance3D, StandardMaterial3D}, obj::NewAlloc, prelude::*};
 
-use super::territory::types::{Territories, Territory, TerritoryId};
-
-type Latitude = i16;
-type Longitude = i16;
-type Coordinates = (Latitude, Longitude);
-#[derive(Debug, Clone)]
-pub struct PlanetSurfacePoint {
-  cartesian: Vector3,
-  lat_long: Coordinates,
-  territory_id: Option<TerritoryId>,
-}
-
+use crate::globe::territory::types::{Territories, Territory, TerritoryId};
+use super::{
+  coordinates_system::{CoordinateMap, CoordinateMetadata},
+  surface_point::{SurfacePoint, SurfacePointMetadata}
+};
 
 #[derive(GodotClass)]
 #[class(base=Node3D)]
 pub struct VirtualPlanet {
   base: Base<Node3D>,
-  planet_surface_points: Vec<PlanetSurfacePoint>,
   is_ready_for_physics: bool,
-
-
-  virtual_coodinates_map: HashMap<Coordinates, Option<TerritoryId>>,
-  // TEMP?
   territories: Territories,
+  surface_point_metadata: Vec<SurfacePointMetadata>,
+  coordinate_map: CoordinateMap,
 }
 
 #[godot_api]
@@ -34,42 +24,36 @@ impl INode3D for VirtualPlanet {
 
     VirtualPlanet {
       base: base,
-      planet_surface_points: vec![],
       is_ready_for_physics: false,
       territories: Territory::get_map(),
-      virtual_coodinates_map: HashMap::new(),
+      surface_point_metadata: vec![],
+      coordinate_map: HashMap::new(),
     }
   }
 
   fn ready (&mut self) {
-    godot_print!("VirtualPlanet ready - init");
-    Self::create_planet_surface_points(self);
+    Self::create_surface_point_metadata(self);
 
-    for planet_surface_point in self.planet_surface_points.clone() {
+    for planet_surface_point in self.surface_point_metadata.clone() {
       let point_area = VirtualPlanet::create_mesh_point(
         planet_surface_point
       );
-
-      // godot_print!("{:?}",point_area.get_tree_string_pretty());
 
       self.base_mut().add_child(&point_area);
     }
 
     self.is_ready_for_physics = true;
-
   }
 
   fn physics_process(&mut self, _delta: f64) {
     if self.is_ready_for_physics == true {
 
       for node in self.base().get_children().iter_shared() {
-        let mut surface_point = node.cast::<SurfacePoint>();
+        let surface_point = node.cast::<SurfacePoint>();
 
-        surface_point.set_visible(false);
-
+        // surface_point.set_visible(false);
 
         let overlaping_bodies = surface_point.get_overlapping_bodies();
-        
         // HACK ATTEMPT: to avoid multiple calls to physics_process =(
         if overlaping_bodies.len() > 0 {
           self.is_ready_for_physics = false;
@@ -83,44 +67,34 @@ impl INode3D for VirtualPlanet {
 
               let mut clone = surface_point.clone();
               let mut surface_point_ref = clone.bind_mut();
-              let planet_surface_point = surface_point_ref.get_planet_surface_point_mut();
+              let planet_surface_point = surface_point_ref.get_surface_point_metadata_mut();
 
               // TODO: create a matrix of coordinates // territories and owners
               // TODO: Do we really need territpri_id at both virtual_coordinates and planet_surface_point?
-              self.virtual_coodinates_map.insert(planet_surface_point.lat_long, Some(territory_data.base_name.clone()));
+              self.coordinate_map.insert(planet_surface_point.lat_long, CoordinateMetadata {
+                territory_id: Some(territory_data.base_name.clone()),
+                cartesian: planet_surface_point.cartesian,
+              });
+
               planet_surface_point.territory_id = Some(territory_data.base_name.clone());
 
 
-              // let color = Territory::get_territory_color(
-              //   &territory_data.location.sub_continent,
-              //   &territory_data.location.continent
-              // );
+              let color = Territory::get_territory_color(
+                &territory_data.location.sub_continent,
+                &territory_data.location.continent
+              );
 
 
-              // for child in surface_point.get_children().iter_shared() {
-              //   let child = child.try_cast::<MeshInstance3D>();
-              //   if child.is_err() {
-              //     continue;
-              //   }
+              for child in surface_point.get_children().iter_shared() {
+                let child = child.try_cast::<MeshInstance3D>();
+                if child.is_err() {
+                  continue;
+                }
                 
-              //   let mut material = StandardMaterial3D::new_gd();
-              //   material.set_albedo(color);
-              //   child.unwrap().set_material_override(&material);
-              // }
-            } else {
-              
-              // surface_point.set_visible(false);
-
-              // for child in point_area.get_children().iter_shared() {
-              //   let child = child.try_cast::<MeshInstance3D>();
-              //   if child.is_err() {
-              //     continue;
-              //   }
-                
-              //   let mut material = StandardMaterial3D::new_gd();
-              //   material.set_albedo(Color::BLUE);
-              //   child.unwrap().set_material_override(&material);
-              // }
+                let mut material = StandardMaterial3D::new_gd();
+                material.set_albedo(color);
+                child.unwrap().set_material_override(&material);
+              }
             }
           }
         }
@@ -135,7 +109,7 @@ impl VirtualPlanet {
   #[inline] pub fn get_num_of_latitudes() -> i16 { 90 + 45 }
   #[inline] pub fn get_num_of_longitudes() -> i16 { 180 + 90 }
 
-  pub fn create_planet_surface_points(&mut self) {
+  pub fn create_surface_point_metadata(&mut self) {
     let planet_radius = Self::get_planet_radius();
     let num_latitudes = Self::get_num_of_latitudes();
     let num_longitudes = Self::get_num_of_longitudes();
@@ -153,9 +127,12 @@ impl VirtualPlanet {
         let lat_long = (lat, long);
         let initial_territory_id: Option<TerritoryId> = None;
 
-        self.virtual_coodinates_map.insert(lat_long, initial_territory_id.clone());
+        self.coordinate_map.insert(lat_long, CoordinateMetadata {
+          territory_id: initial_territory_id.clone(),
+          cartesian,
+        });
 
-        self.planet_surface_points.push(PlanetSurfacePoint {
+        self.surface_point_metadata.push(SurfacePointMetadata {
           cartesian,
           lat_long,
           territory_id: initial_territory_id,
@@ -164,7 +141,7 @@ impl VirtualPlanet {
     }
   }
 
-  pub fn create_mesh_point(planet_surface_point: PlanetSurfacePoint) -> Gd<SurfacePoint> {
+  pub fn create_mesh_point(planet_surface_point: SurfacePointMetadata) -> Gd<SurfacePoint> {
     let mut material = StandardMaterial3D::new_gd();
     material.set_albedo(Color::BLUE_VIOLET);
 
@@ -189,7 +166,7 @@ impl VirtualPlanet {
 
     surface_point.add_child(&collision_shape);
     surface_point.add_child(&virtual_point);
-    surface_point.bind_mut().set_planet_surface_point(planet_surface_point);
+    surface_point.bind_mut().set_surface_point_metadata(planet_surface_point);
 
     // set colliders ----------------
 
@@ -197,38 +174,3 @@ impl VirtualPlanet {
   }
 }
 
-
-
-#[derive(GodotClass)]
-#[class(base=Area3D)]
-pub struct SurfacePoint {
-  base: Base<Area3D>,
-  planet_surface_point: PlanetSurfacePoint,
-}
-
-#[godot_api]
-impl IArea3D for SurfacePoint {
-  fn init(base: Base<Area3D>) -> SurfacePoint {
-    SurfacePoint {
-      base: base,
-      planet_surface_point: PlanetSurfacePoint {
-        cartesian: Vector3::new(0.0, 0.0, 0.0),
-        lat_long: (0, 0),
-        territory_id: None,
-      }
-    }
-  }
-}
-
-impl SurfacePoint {
-  pub fn set_planet_surface_point(&mut self, planet_surface_point: PlanetSurfacePoint) {
-    self.planet_surface_point = planet_surface_point;
-  }
-
-  pub fn get_planet_surface_point(&self) -> &PlanetSurfacePoint {
-    &self.planet_surface_point
-  }
-  pub fn get_planet_surface_point_mut(&mut self) -> &mut PlanetSurfacePoint {
-    &mut self.planet_surface_point
-  }
-}
