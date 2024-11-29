@@ -47,6 +47,7 @@ impl INode3D for VirtualPlanet {
     if self.is_ready_for_physics == true {
       Self::match_surface_points_and_territories(self);
     }
+    godot_print!("Coordinate_map: {:?}", self.coordinate_map);
   }
 }
 
