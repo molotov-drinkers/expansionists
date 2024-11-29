@@ -32,16 +32,8 @@ impl INode3D for VirtualPlanet {
   }
 
   fn ready (&mut self) {
-    Self::create_surface_point_metadata(self);
-
-    for planet_surface_point in self.surface_point_metadata.clone() {
-      let point_area = VirtualPlanet::create_mesh_point(
-        planet_surface_point
-      );
-
-      self.base_mut().add_child(&point_area);
-    }
-
+    Self::populate_surface_points_and_coordinate_map(self);
+    Self::create_virtual_sphere(self);
     self.is_ready_for_physics = true;
   }
 
@@ -109,7 +101,7 @@ impl VirtualPlanet {
   #[inline] pub fn get_num_of_latitudes() -> i16 { 90 + 45 }
   #[inline] pub fn get_num_of_longitudes() -> i16 { 180 + 90 }
 
-  pub fn create_surface_point_metadata(&mut self) {
+  pub fn populate_surface_points_and_coordinate_map(&mut self) {
     let planet_radius = Self::get_planet_radius();
     let num_latitudes = Self::get_num_of_latitudes();
     let num_longitudes = Self::get_num_of_longitudes();
@@ -125,52 +117,78 @@ impl VirtualPlanet {
 
         let cartesian = Vector3::new(x, y, z);
         let lat_long = (lat, long);
-        let initial_territory_id: Option<TerritoryId> = None;
+        let blank_territory_id: Option<TerritoryId> = None;
 
         self.coordinate_map.insert(lat_long, CoordinateMetadata {
-          territory_id: initial_territory_id.clone(),
+          territory_id: blank_territory_id.clone(),
           cartesian,
         });
 
         self.surface_point_metadata.push(SurfacePointMetadata {
           cartesian,
           lat_long,
-          territory_id: initial_territory_id,
+          territory_id: blank_territory_id,
         });
       }
     }
   }
 
-  pub fn create_mesh_point(planet_surface_point: SurfacePointMetadata) -> Gd<SurfacePoint> {
+  pub fn create_virtual_sphere(&mut self) {
+    for planet_surface_point in self.surface_point_metadata.clone() {
+      let surface_point = VirtualPlanet::create_surface_point_area(
+        planet_surface_point
+      );
+      self.base_mut().add_child(&surface_point);
+    }
+  }
+
+  pub fn create_surface_point_area(planet_surface_point: SurfacePointMetadata) -> Gd<SurfacePoint> {
+    let surface_mesh_and_collider_size = Vector3::new(0.05, 0.05, 0.05);
+    let mesh_instance = Self::create_surface_mesh(
+      surface_mesh_and_collider_size,
+      planet_surface_point.cartesian
+    );
+
+    let collision_shape = Self::create_surface_collider(
+      surface_mesh_and_collider_size,
+      planet_surface_point.cartesian
+    );
+
+    let mut surface_point = SurfacePoint::new_alloc();
+    surface_point.add_child(&collision_shape);
+    surface_point.add_child(&mesh_instance);
+    surface_point.bind_mut().set_surface_point_metadata(planet_surface_point);
+    surface_point
+  }
+
+  pub fn create_material() -> Gd<StandardMaterial3D> {
+    let ocean_color = Color::from_rgba(0.093, 0.139, 0.614, 1.);
     let mut material = StandardMaterial3D::new_gd();
-    material.set_albedo(Color::BLUE_VIOLET);
+    material.set_albedo(ocean_color);
+    material
+  }
 
-    let mesh_and_collider_size = Vector3::new(0.05, 0.05, 0.05);
-
+  pub fn create_surface_mesh(mesh_size: Vector3, cartesian: Vector3) -> Gd<MeshInstance3D> {
+    let material = Self::create_material();
     let mut mesh = BoxMesh::new_gd();
-    mesh.set_size(mesh_and_collider_size.clone());
+    mesh.set_size(mesh_size.clone());
     mesh.set_material(&material);
 
-    let mut virtual_point = MeshInstance3D::new_alloc();
-    virtual_point.set_name("point_mesh");
-    virtual_point.set_mesh(&mesh);
-    virtual_point.set_position(planet_surface_point.cartesian);
+    let mut mesh_instance = MeshInstance3D::new_alloc();
+    mesh_instance.set_mesh(&mesh);
+    mesh_instance.set_position(cartesian);
 
-    // set colliders ----------------
-    let mut surface_point = SurfacePoint::new_alloc();
+    mesh_instance
+  }
+
+  pub fn create_surface_collider(collider_size: Vector3, cartesian: Vector3) -> Gd<CollisionShape3D> {
     let mut collision_shape = CollisionShape3D::new_alloc();
     let mut shape = BoxShape3D::new_gd();
-    shape.set_size(mesh_and_collider_size);
+    shape.set_size(collider_size);
     collision_shape.set_shape(&shape);
-    collision_shape.set_position(planet_surface_point.cartesian);
+    collision_shape.set_position(cartesian);
 
-    surface_point.add_child(&collision_shape);
-    surface_point.add_child(&virtual_point);
-    surface_point.bind_mut().set_surface_point_metadata(planet_surface_point);
-
-    // set colliders ----------------
-
-    surface_point
+    collision_shape
   }
 }
 
