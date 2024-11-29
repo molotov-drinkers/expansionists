@@ -20,6 +20,7 @@ transform = Transform3D(-0.102793, 0, -0.994703, 0, 1, 0, 0.994703, 0, -0.102793
 
 [node name="virtual_planet" type="VirtualPlanet" parent="."]
 transform = Transform3D(-0.102793, 0, -0.994703, 0, 1, 0, 0.994703, 0, -0.102793, 0, 0, 0)
+visible = false
 
 [node name="troops" type="Node3D" parent="."]
 

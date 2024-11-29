@@ -8,13 +8,16 @@ use super::{
   surface_point::{SurfacePoint, SurfacePointMetadata}
 };
 
+/// VirtualPlanert is used to create a virtual sphere that will be used for physics and collision calculations
+/// It's not visible in the game
+/// Also used to calculate navigation paths along the surface of the planet
 #[derive(GodotClass)]
 #[class(base=Node3D)]
 pub struct VirtualPlanet {
   base: Base<Node3D>,
   is_ready_for_physics: bool,
   territories: Territories,
-  surface_point_metadata: Vec<SurfacePointMetadata>,
+  surface_points_metadata: Vec<SurfacePointMetadata>,
   coordinate_map: CoordinateMap,
 }
 
@@ -26,72 +29,23 @@ impl INode3D for VirtualPlanet {
       base: base,
       is_ready_for_physics: false,
       territories: Territory::get_map(),
-      surface_point_metadata: vec![],
+      surface_points_metadata: vec![],
       coordinate_map: HashMap::new(),
     }
   }
 
   fn ready (&mut self) {
+    // By default, the VirtualPlanet is not visible. It's only used for physics and collision calculations
+    self.base_mut().set_visible(false);
+
     Self::populate_surface_points_and_coordinate_map(self);
     Self::create_virtual_sphere(self);
-    self.is_ready_for_physics = true;
+    self.is_ready_for_physics = true;    
   }
 
   fn physics_process(&mut self, _delta: f64) {
     if self.is_ready_for_physics == true {
-
-      for node in self.base().get_children().iter_shared() {
-        let surface_point = node.cast::<SurfacePoint>();
-
-        // surface_point.set_visible(false);
-
-        let overlaping_bodies = surface_point.get_overlapping_bodies();
-        // HACK ATTEMPT: to avoid multiple calls to physics_process =(
-        if overlaping_bodies.len() > 0 {
-          self.is_ready_for_physics = false;
-
-          for colliding_body in overlaping_bodies.iter_shared() {
-            let parent_name = colliding_body.get_parent().unwrap().get_name();
-
-            let possible_territory_colission = self.territories.get(&parent_name.to_string());
-            if possible_territory_colission.is_some() {
-              let territory_data = possible_territory_colission.unwrap();
-
-              let mut clone = surface_point.clone();
-              let mut surface_point_ref = clone.bind_mut();
-              let planet_surface_point = surface_point_ref.get_surface_point_metadata_mut();
-
-              // TODO: create a matrix of coordinates // territories and owners
-              // TODO: Do we really need territpri_id at both virtual_coordinates and planet_surface_point?
-              self.coordinate_map.insert(planet_surface_point.lat_long, CoordinateMetadata {
-                territory_id: Some(territory_data.base_name.clone()),
-                cartesian: planet_surface_point.cartesian,
-              });
-
-              planet_surface_point.territory_id = Some(territory_data.base_name.clone());
-
-
-              let color = Territory::get_territory_color(
-                &territory_data.location.sub_continent,
-                &territory_data.location.continent
-              );
-
-
-              for child in surface_point.get_children().iter_shared() {
-                let child = child.try_cast::<MeshInstance3D>();
-                if child.is_err() {
-                  continue;
-                }
-                
-                let mut material = StandardMaterial3D::new_gd();
-                material.set_albedo(color);
-                child.unwrap().set_material_override(&material);
-              }
-            }
-          }
-        }
-      }
-
+      Self::match_surface_points_and_territories(self);
     }
   }
 }
@@ -115,8 +69,8 @@ impl VirtualPlanet {
         let y = (planet_radius * theta.sin() * phi.sin()) as f32;
         let z = (planet_radius * theta.cos()) as f32;
 
-        let cartesian = Vector3::new(x, y, z);
         let lat_long = (lat, long);
+        let cartesian = Vector3::new(x, y, z);
         let blank_territory_id: Option<TerritoryId> = None;
 
         self.coordinate_map.insert(lat_long, CoordinateMetadata {
@@ -124,7 +78,7 @@ impl VirtualPlanet {
           cartesian,
         });
 
-        self.surface_point_metadata.push(SurfacePointMetadata {
+        self.surface_points_metadata.push(SurfacePointMetadata {
           cartesian,
           lat_long,
           territory_id: blank_territory_id,
@@ -134,34 +88,34 @@ impl VirtualPlanet {
   }
 
   pub fn create_virtual_sphere(&mut self) {
-    for planet_surface_point in self.surface_point_metadata.clone() {
+    for surface_point_metadata in self.surface_points_metadata.clone() {
       let surface_point = VirtualPlanet::create_surface_point_area(
-        planet_surface_point
+        surface_point_metadata
       );
       self.base_mut().add_child(&surface_point);
     }
   }
 
-  pub fn create_surface_point_area(planet_surface_point: SurfacePointMetadata) -> Gd<SurfacePoint> {
+  pub fn create_surface_point_area(surface_point_metadata: SurfacePointMetadata) -> Gd<SurfacePoint> {
     let surface_mesh_and_collider_size = Vector3::new(0.05, 0.05, 0.05);
     let mesh_instance = Self::create_surface_mesh(
       surface_mesh_and_collider_size,
-      planet_surface_point.cartesian
+      surface_point_metadata.cartesian
     );
 
     let collision_shape = Self::create_surface_collider(
       surface_mesh_and_collider_size,
-      planet_surface_point.cartesian
+      surface_point_metadata.cartesian
     );
 
     let mut surface_point = SurfacePoint::new_alloc();
     surface_point.add_child(&collision_shape);
     surface_point.add_child(&mesh_instance);
-    surface_point.bind_mut().set_surface_point_metadata(planet_surface_point);
+    surface_point.bind_mut().set_surface_point_metadata(surface_point_metadata);
     surface_point
   }
 
-  pub fn create_material() -> Gd<StandardMaterial3D> {
+  pub fn create_surface_material() -> Gd<StandardMaterial3D> {
     let ocean_color = Color::from_rgba(0.093, 0.139, 0.614, 1.);
     let mut material = StandardMaterial3D::new_gd();
     material.set_albedo(ocean_color);
@@ -169,15 +123,14 @@ impl VirtualPlanet {
   }
 
   pub fn create_surface_mesh(mesh_size: Vector3, cartesian: Vector3) -> Gd<MeshInstance3D> {
-    let material = Self::create_material();
+    let material = Self::create_surface_material();
     let mut mesh = BoxMesh::new_gd();
-    mesh.set_size(mesh_size.clone());
+    mesh.set_size(mesh_size);
     mesh.set_material(&material);
 
     let mut mesh_instance = MeshInstance3D::new_alloc();
     mesh_instance.set_mesh(&mesh);
     mesh_instance.set_position(cartesian);
-
     mesh_instance
   }
 
@@ -190,5 +143,68 @@ impl VirtualPlanet {
 
     collision_shape
   }
-}
 
+  // Matches surface points with territories and
+  // sets the territory_id into SurfacePointMetadata and CoordinateMetadata
+  pub fn match_surface_points_and_territories(&mut self) {
+    for surface_point_node in self.base().get_children().iter_shared() {
+      let mut surface_point = surface_point_node.cast::<SurfacePoint>();
+      let bodies_overlapping_with_surface_point = &surface_point.get_overlapping_bodies();
+      
+      // HACK: to avoid multiple calls to physics_process =(
+      if bodies_overlapping_with_surface_point.len() > 0 {
+        self.is_ready_for_physics = false;
+
+        for body_overlapping_with_surface_point in bodies_overlapping_with_surface_point.iter_shared() {
+
+          // 'body_overlapping_with_surface_point' is a StaticBody3D and its parent is expected to be a territory
+          let possible_territory_id = body_overlapping_with_surface_point
+            .get_parent()
+            .unwrap()
+            .get_name()
+            .to_string();
+
+          let possible_territory_colission = self.territories.get(&possible_territory_id);
+          if possible_territory_colission.is_some() {
+            let overlapped_territory = possible_territory_colission.unwrap();
+            // Self::_paint_surface_point(&surface_point, overlapped_territory);
+
+            let mut surface_point_bind = surface_point.bind_mut();
+            let surface_point_metadata = surface_point_bind.get_surface_point_metadata_mut();
+
+            self.coordinate_map.insert(
+              surface_point_metadata.lat_long,
+              CoordinateMetadata {
+                territory_id: Some(overlapped_territory.base_name.clone()),
+                cartesian: surface_point_metadata.cartesian,
+              }
+            );
+
+            surface_point_metadata.territory_id = Some(overlapped_territory.base_name.clone());
+
+          }
+        }
+      }
+    }
+  }
+
+  // Paints the surface point with the territory color
+  // usefull for debugging
+  pub fn _paint_surface_point(surface_point: &Gd<SurfacePoint>, territory: &Territory) {
+    let color = Territory::get_territory_color(
+      &territory.location.sub_continent,
+      &territory.location.continent
+    );
+
+    for child in surface_point.get_children().iter_shared() {
+      let child = child.try_cast::<MeshInstance3D>();
+
+      // If it's not a MeshInstance3D, skip it
+      if child.is_err() { continue; }
+      
+      let mut material = StandardMaterial3D::new_gd();
+      material.set_albedo(color);
+      child.unwrap().set_material_override(&material);
+    }
+  }
+}
