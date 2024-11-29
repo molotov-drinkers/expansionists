@@ -2,6 +2,8 @@ use std::collections::HashMap;
 
 use godot::builtin::Color;
 
+use crate::globe::coordinates_system::surface_point::Coordinates;
+
 pub enum Continent {
   Africa,
   Asia,
@@ -38,6 +40,8 @@ pub struct Territory {
 
   // pub current_owner: String,
   // pub current_troops: i32,
+
+  pub coordinates: Vec<Coordinates>,
 }
 
 pub type TerritoryId = String;

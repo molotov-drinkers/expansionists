@@ -16,9 +16,9 @@ use super::{
 pub struct VirtualPlanet {
   base: Base<Node3D>,
   is_ready_for_physics: bool,
-  territories: Territories,
-  surface_points_metadata: Vec<SurfacePointMetadata>,
-  coordinate_map: CoordinateMap,
+  pub territories: Territories,
+  pub surface_points_metadata: Vec<SurfacePointMetadata>,
+  pub coordinate_map: CoordinateMap,
 }
 
 #[godot_api]
@@ -47,7 +47,7 @@ impl INode3D for VirtualPlanet {
     if self.is_ready_for_physics == true {
       Self::match_surface_points_and_territories(self);
     }
-    godot_print!("Coordinate_map: {:?}", self.coordinate_map);
+    // godot_print!("Caatinga Coordinates: {:?}", self.territories.get("caatinga").unwrap().coordinates);
   }
 }
 
@@ -146,7 +146,7 @@ impl VirtualPlanet {
   }
 
   // Matches surface points with territories and
-  // sets the territory_id into SurfacePointMetadata and CoordinateMetadata
+  // sets the territory_id into SurfacePointMetadata, CoordinateMetadata, and Territory.coordinates
   pub fn match_surface_points_and_territories(&mut self) {
     for surface_point_node in self.base().get_children().iter_shared() {
       let mut surface_point = surface_point_node.cast::<SurfacePoint>();
@@ -165,13 +165,17 @@ impl VirtualPlanet {
             .get_name()
             .to_string();
 
-          let possible_territory_colission = self.territories.get(&possible_territory_id);
+          let possible_territory_colission = self.territories.get_mut(&possible_territory_id);
           if possible_territory_colission.is_some() {
             let overlapped_territory = possible_territory_colission.unwrap();
             // Self::_paint_surface_point(&surface_point, overlapped_territory);
 
             let mut surface_point_bind = surface_point.bind_mut();
             let surface_point_metadata = surface_point_bind.get_surface_point_metadata_mut();
+
+            // TODO: this won't be available in other scopes, how to fix that?
+            // Maybe I can use get_node_as(virtual_planet) from other places
+            overlapped_territory.coordinates.push(surface_point_metadata.lat_long);
 
             self.coordinate_map.insert(
               surface_point_metadata.lat_long,

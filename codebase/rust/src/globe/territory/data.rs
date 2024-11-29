@@ -26,6 +26,7 @@ impl Territory {
     vec![
       Territory {
         base_name: "horn".to_string(),
+        coordinates: Vec::new(),
         location: Location {
           continent: Continent::Africa,
           sub_continent: None,
@@ -33,6 +34,7 @@ impl Territory {
       },
       Territory {
         base_name: "sahel".to_string(),
+        coordinates: Vec::new(),
         location: Location {
           continent: Continent::Africa,
           sub_continent: None,
@@ -40,6 +42,7 @@ impl Territory {
       },
       Territory {
         base_name: "africa_rainforest".to_string(),
+        coordinates: Vec::new(),
         location: Location {
           continent: Continent::Africa,
           sub_continent: None,
@@ -47,6 +50,7 @@ impl Territory {
       },
       Territory {
         base_name: "namid_desert".to_string(),
+        coordinates: Vec::new(),
         location: Location {
           continent: Continent::Africa,
           sub_continent: None,
@@ -54,6 +58,7 @@ impl Territory {
       },
       Territory {
         base_name: "kalahari".to_string(),
+        coordinates: Vec::new(),
         location: Location {
           continent: Continent::Africa,
           sub_continent: None,
@@ -61,6 +66,7 @@ impl Territory {
       },
       Territory {
         base_name: "sahara".to_string(),
+        coordinates: Vec::new(),
         location: Location {
           continent: Continent::Africa,
           sub_continent: None,
@@ -68,6 +74,7 @@ impl Territory {
       },
       Territory {
         base_name: "east_savanna".to_string(),
+        coordinates: Vec::new(),
         location: Location {
           continent: Continent::Africa,
           sub_continent: None,
@@ -75,6 +82,7 @@ impl Territory {
       },
       Territory {
         base_name: "african_south_central_plateau".to_string(),
+        coordinates: Vec::new(),
         location: Location {
           continent: Continent::Africa,
           sub_continent: None,
@@ -82,6 +90,7 @@ impl Territory {
       },
       Territory {
         base_name: "nile_river_region".to_string(),
+        coordinates: Vec::new(),
         location: Location {
           continent: Continent::Africa,
           sub_continent: None,
@@ -89,6 +98,7 @@ impl Territory {
       },
       Territory {
         base_name: "the_greatest_african_island".to_string(),
+        coordinates: Vec::new(),
         location: Location {
           continent: Continent::Africa,
           sub_continent: None,
@@ -96,6 +106,7 @@ impl Territory {
       },
       Territory {
         base_name: "niger_river".to_string(),
+        coordinates: Vec::new(),
         location: Location {
           continent: Continent::Africa,
           sub_continent: None,
@@ -103,6 +114,7 @@ impl Territory {
       },
       Territory {
         base_name: "volta_lake".to_string(),
+        coordinates: Vec::new(),
         location: Location {
           continent: Continent::Africa,
           sub_continent: None,
@@ -110,6 +122,7 @@ impl Territory {
       },
       Territory {
         base_name: "africa_west_region".to_string(),
+        coordinates: Vec::new(),
         location: Location {
           continent: Continent::Africa,
           sub_continent: None,
@@ -122,6 +135,7 @@ impl Territory {
     vec![
       Territory {
         base_name: "amazon".to_string(),
+        coordinates: Vec::new(),
         location: Location {
           continent: Continent::SouthAmerica,
           sub_continent: None,
@@ -129,6 +143,7 @@ impl Territory {
       },
       Territory {
         base_name: "andes".to_string(),
+        coordinates: Vec::new(),
         location: Location {
           continent: Continent::SouthAmerica,
           sub_continent: None,
@@ -136,6 +151,7 @@ impl Territory {
       },
       Territory {
         base_name: "atlantic_forest".to_string(),
+        coordinates: Vec::new(),
         location: Location {
           continent: Continent::SouthAmerica,
           sub_continent: None,
@@ -143,6 +159,7 @@ impl Territory {
       },
       Territory {
         base_name: "caatinga".to_string(),
+        coordinates: Vec::new(),
         location: Location {
           continent: Continent::SouthAmerica,
           sub_continent: None,
@@ -150,6 +167,7 @@ impl Territory {
       },
       Territory {
         base_name: "incas".to_string(),
+        coordinates: Vec::new(),
         location: Location {
           continent: Continent::SouthAmerica,
           sub_continent: None,
@@ -157,6 +175,7 @@ impl Territory {
       },
       Territory {
         base_name: "latinos".to_string(),
+        coordinates: Vec::new(),
         location: Location {
           continent: Continent::SouthAmerica,
           sub_continent: None,
@@ -164,6 +183,7 @@ impl Territory {
       },
       Territory {
         base_name: "pampas".to_string(),
+        coordinates: Vec::new(),
         location: Location {
           continent: Continent::SouthAmerica,
           sub_continent: None,
@@ -171,6 +191,7 @@ impl Territory {
       },
       Territory {
         base_name: "patagonia".to_string(),
+        coordinates: Vec::new(),
         location: Location {
           continent: Continent::SouthAmerica,
           sub_continent: None,
@@ -178,6 +199,7 @@ impl Territory {
       },
       Territory {
         base_name: "tropical_highlands".to_string(),
+        coordinates: Vec::new(),
         location: Location {
           continent: Continent::SouthAmerica,
           sub_continent: None,
@@ -189,6 +211,7 @@ impl Territory {
   pub fn list_north_america() -> Vec<Territory> { vec![
     Territory {
       base_name: "californias".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::NorthAmerica,
         sub_continent: None,
@@ -196,6 +219,7 @@ impl Territory {
     },
     Territory {
       base_name: "caribbean_islands".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::NorthAmerica,
         sub_continent: None,
@@ -203,6 +227,7 @@ impl Territory {
     },
     Territory {
       base_name: "north_america_desert".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::NorthAmerica,
         sub_continent: None,
@@ -210,6 +235,7 @@ impl Territory {
     },
     Territory {
       base_name: "great_lakes".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::NorthAmerica,
         sub_continent: None,
@@ -217,6 +243,7 @@ impl Territory {
     },
     Territory {
       base_name: "artic_territories".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::NorthAmerica,
         sub_continent: None,
@@ -224,6 +251,7 @@ impl Territory {
     },
     Territory {
       base_name: "baffin_bay".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::NorthAmerica,
         sub_continent: None,
@@ -231,6 +259,7 @@ impl Territory {
     },
     Territory {
       base_name: "labrador_sea_neighbors".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::NorthAmerica,
         sub_continent: None,
@@ -238,6 +267,7 @@ impl Territory {
     },
     Territory {
       base_name: "new_great_britain".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::NorthAmerica,
         sub_continent: None,
@@ -245,6 +275,7 @@ impl Territory {
     },
     Territory {
       base_name: "mississippi_way".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::NorthAmerica,
         sub_continent: None,
@@ -252,6 +283,7 @@ impl Territory {
     },
     Territory {
       base_name: "romance_speaking_territory".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::NorthAmerica,
         sub_continent: None,
@@ -259,6 +291,7 @@ impl Territory {
     },
     Territory {
       base_name: "southern_north".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::NorthAmerica,
         sub_continent: None,
@@ -266,6 +299,7 @@ impl Territory {
     },
     Territory {
       base_name: "parallel_49th".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::NorthAmerica,
         sub_continent: None,
@@ -273,6 +307,7 @@ impl Territory {
     },
     Territory {
       base_name: "great_bear_lake".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::NorthAmerica,
         sub_continent: None,
@@ -280,6 +315,7 @@ impl Territory {
     },
     Territory {
       base_name: "slave_lake".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::NorthAmerica,
         sub_continent: None,
@@ -287,6 +323,7 @@ impl Territory {
     },
     Territory {
       base_name: "mount_columbia".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::NorthAmerica,
         sub_continent: None,
@@ -294,6 +331,7 @@ impl Territory {
     },
     Territory {
       base_name: "thousand_lakes_region".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::NorthAmerica,
         sub_continent: None,
@@ -301,6 +339,7 @@ impl Territory {
     },
     Territory {
       base_name: "hudson_bay_viewers".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::NorthAmerica,
         sub_continent: None,
@@ -308,6 +347,7 @@ impl Territory {
     },
     Territory {
       base_name: "north_pacific_civilization".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::NorthAmerica,
         sub_continent: None,
@@ -315,6 +355,7 @@ impl Territory {
     },
     Territory {
       base_name: "aztecas".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::NorthAmerica,
         sub_continent: None,
@@ -322,6 +363,7 @@ impl Territory {
     },
     Territory {
       base_name: "mayas".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::NorthAmerica,
         sub_continent: None,
@@ -329,6 +371,7 @@ impl Territory {
     },
     Territory {
       base_name: "cocibolca_lake".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::NorthAmerica,
         sub_continent: None,
@@ -340,6 +383,7 @@ impl Territory {
     // Asia - Middle East
     Territory {
       base_name: "arabian_peninsula".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Asia,
         sub_continent: Some(SubContinent::MiddleEast),
@@ -347,6 +391,7 @@ impl Territory {
     },
     Territory {
       base_name: "suez_canal".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Asia,
         sub_continent: Some(SubContinent::MiddleEast),
@@ -354,6 +399,7 @@ impl Territory {
     },
     Territory {
       base_name: "east_dead_sea".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Asia,
         sub_continent: Some(SubContinent::MiddleEast),
@@ -361,6 +407,7 @@ impl Territory {
     },
     Territory {
       base_name: "lut_desert".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Asia,
         sub_continent: Some(SubContinent::MiddleEast),
@@ -368,6 +415,7 @@ impl Territory {
     },
     Territory {
       base_name: "monotheist_realms".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Asia,
         sub_continent: Some(SubContinent::MiddleEast),
@@ -375,6 +423,7 @@ impl Territory {
     },
     Territory {
       base_name: "zagros_mountains".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Asia,
         sub_continent: Some(SubContinent::MiddleEast),
@@ -384,6 +433,7 @@ impl Territory {
     // Asia - EuropeRelatedAsia
     Territory {
       base_name: "caspian_coast".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Asia,
         sub_continent: Some(SubContinent::EuropeRelatedAsia),
@@ -391,6 +441,7 @@ impl Territory {
     },
     Territory {
       base_name: "caucasus".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Asia,
         sub_continent: Some(SubContinent::EuropeRelatedAsia),
@@ -398,6 +449,7 @@ impl Territory {
     },
     Territory {
       base_name: "east_siberia".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Asia,
         sub_continent: Some(SubContinent::EuropeRelatedAsia),
@@ -405,6 +457,7 @@ impl Territory {
     },
     Territory {
       base_name: "west_siberia".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Asia,
         sub_continent: Some(SubContinent::EuropeRelatedAsia),
@@ -412,6 +465,7 @@ impl Territory {
     },
     Territory {
       base_name: "lake_balkhash".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Asia,
         sub_continent: Some(SubContinent::EuropeRelatedAsia),
@@ -419,6 +473,7 @@ impl Territory {
     },
     Territory {
       base_name: "amu_darya_river".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Asia,
         sub_continent: Some(SubContinent::EuropeRelatedAsia),
@@ -426,6 +481,7 @@ impl Territory {
     },
     Territory {
       base_name: "aral_sea".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Asia,
         sub_continent: Some(SubContinent::EuropeRelatedAsia),
@@ -434,6 +490,7 @@ impl Territory {
 
     Territory {
       base_name: "borneo_island".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Asia,
         sub_continent: Some(SubContinent::PacificAndSoutheastAsia),
@@ -441,6 +498,7 @@ impl Territory {
     },
     Territory {
       base_name: "gede_pangrango".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Asia,
         sub_continent: Some(SubContinent::PacificAndSoutheastAsia),
@@ -448,6 +506,7 @@ impl Territory {
     },
     Territory {
       base_name: "banda_arc".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Asia,
         sub_continent: Some(SubContinent::PacificAndSoutheastAsia),
@@ -455,6 +514,7 @@ impl Territory {
     },
     Territory {
       base_name: "das_visayas_sea".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Asia,
         sub_continent: Some(SubContinent::PacificAndSoutheastAsia),
@@ -462,6 +522,7 @@ impl Territory {
     },
     Territory {
       base_name: "tri_an_lake".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Asia,
         sub_continent: Some(SubContinent::PacificAndSoutheastAsia),
@@ -469,6 +530,7 @@ impl Territory {
     },
     Territory {
       base_name: "asia_southeast_peninsula".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Asia,
         sub_continent: Some(SubContinent::PacificAndSoutheastAsia),
@@ -476,6 +538,7 @@ impl Territory {
     },
     Territory {
       base_name: "east_new_guinea".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Asia,
         sub_continent: Some(SubContinent::PacificAndSoutheastAsia),
@@ -483,6 +546,7 @@ impl Territory {
     },
     Territory {
       base_name: "han_land".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Asia,
         sub_continent: Some(SubContinent::PacificAndSoutheastAsia),
@@ -490,6 +554,7 @@ impl Territory {
     },
     Territory {
       base_name: "shibuya".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Asia,
         sub_continent: Some(SubContinent::PacificAndSoutheastAsia),
@@ -497,6 +562,7 @@ impl Territory {
     },
     Territory {
       base_name: "daisetsuzan".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Asia,
         sub_continent: Some(SubContinent::PacificAndSoutheastAsia),
@@ -504,6 +570,7 @@ impl Territory {
     },
     Territory {
       base_name: "korean_peninsula".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Asia,
         sub_continent: Some(SubContinent::PacificAndSoutheastAsia),
@@ -511,6 +578,7 @@ impl Territory {
     },
     Territory {
       base_name: "zeya_dam".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Asia,
         sub_continent: Some(SubContinent::PacificAndSoutheastAsia),
@@ -518,6 +586,7 @@ impl Territory {
     },
     Territory {
       base_name: "cantonese_lands".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Asia,
         sub_continent: Some(SubContinent::PacificAndSoutheastAsia),
@@ -525,6 +594,7 @@ impl Territory {
     },
     Territory {
       base_name: "phou_bia".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Asia,
         sub_continent: Some(SubContinent::PacificAndSoutheastAsia),
@@ -532,6 +602,7 @@ impl Territory {
     },
     Territory {
       base_name: "red_river".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Asia,
         sub_continent: Some(SubContinent::PacificAndSoutheastAsia),
@@ -539,6 +610,7 @@ impl Territory {
     },
     Territory {
       base_name: "tonle_sap".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Asia,
         sub_continent: Some(SubContinent::PacificAndSoutheastAsia),
@@ -546,6 +618,7 @@ impl Territory {
     },
     Territory {
       base_name: "great_wall".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Asia,
         sub_continent: Some(SubContinent::PacificAndSoutheastAsia),
@@ -553,6 +626,7 @@ impl Territory {
     },
     Territory {
       base_name: "manchuria".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Asia,
         sub_continent: Some(SubContinent::PacificAndSoutheastAsia),
@@ -560,6 +634,7 @@ impl Territory {
     },
     Territory {
       base_name: "mount_fuji".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Asia,
         sub_continent: Some(SubContinent::PacificAndSoutheastAsia),
@@ -567,6 +642,7 @@ impl Territory {
     },
     Territory {
       base_name: "chao_phraya_river".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Asia,
         sub_continent: Some(SubContinent::PacificAndSoutheastAsia),
@@ -574,6 +650,7 @@ impl Territory {
     },
     Territory {
       base_name: "irrawaddy_river".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Asia,
         sub_continent: Some(SubContinent::PacificAndSoutheastAsia),
@@ -583,6 +660,7 @@ impl Territory {
     // Asia - Indian Subcontinent
     Territory {
       base_name: "balimela_dam".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Asia,
         sub_continent: Some(SubContinent::IndianSubcontinent),
@@ -590,6 +668,7 @@ impl Territory {
     },
     Territory {
       base_name: "central_sub_continent_highlands".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Asia,
         sub_continent: Some(SubContinent::IndianSubcontinent),
@@ -597,6 +676,7 @@ impl Territory {
     },
     Territory {
       base_name: "ganges_delta_region".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Asia,
         sub_continent: Some(SubContinent::IndianSubcontinent),
@@ -604,6 +684,7 @@ impl Territory {
     },
     Territory {
       base_name: "indo_river".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Asia,
         sub_continent: Some(SubContinent::IndianSubcontinent),
@@ -611,6 +692,7 @@ impl Territory {
     },
     Territory {
       base_name: "kaveri_river".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Asia,
         sub_continent: Some(SubContinent::IndianSubcontinent),
@@ -618,6 +700,7 @@ impl Territory {
     },
     Territory {
       base_name: "mount_pidurutalagala".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Asia,
         sub_continent: Some(SubContinent::IndianSubcontinent),
@@ -625,6 +708,7 @@ impl Territory {
     },
     Territory {
       base_name: "thar_desert".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Asia,
         sub_continent: Some(SubContinent::IndianSubcontinent),
@@ -632,6 +716,7 @@ impl Territory {
     },
     Territory {
       base_name: "western_ghats".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Asia,
         sub_continent: Some(SubContinent::IndianSubcontinent),
@@ -641,6 +726,7 @@ impl Territory {
     // Asia - Interior Asia
     Territory {
       base_name: "gobi_desert".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Asia,
         sub_continent: Some(SubContinent::InteriorAsia),
@@ -648,6 +734,7 @@ impl Territory {
     },
     Territory {
       base_name: "himalayas".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Asia,
         sub_continent: Some(SubContinent::InteriorAsia),
@@ -655,6 +742,7 @@ impl Territory {
     },
     Territory {
       base_name: "k2_mountain".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Asia,
         sub_continent: Some(SubContinent::InteriorAsia),
@@ -662,6 +750,7 @@ impl Territory {
     },
     Territory {
       base_name: "loess_plateau".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Asia,
         sub_continent: Some(SubContinent::InteriorAsia),
@@ -669,6 +758,7 @@ impl Territory {
     },
     Territory {
       base_name: "registan_desert".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Asia,
         sub_continent: Some(SubContinent::InteriorAsia),
@@ -676,6 +766,7 @@ impl Territory {
     },
     Territory {
       base_name: "tian_shan_mountains".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Asia,
         sub_continent: Some(SubContinent::InteriorAsia),
@@ -683,6 +774,7 @@ impl Territory {
     },
     Territory {
       base_name: "lake_baikal".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Asia,
         sub_continent: Some(SubContinent::InteriorAsia),
@@ -693,6 +785,7 @@ impl Territory {
   pub fn list_europe() -> Vec<Territory> { vec![
     Territory {
       base_name: "nordics".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Europe,
         sub_continent: None,
@@ -700,6 +793,7 @@ impl Territory {
     },
     Territory {
       base_name: "the_islands".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Europe,
         sub_continent: None,
@@ -707,6 +801,7 @@ impl Territory {
     },
     Territory {
       base_name: "rhine_region".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Europe,
         sub_continent: None,
@@ -714,6 +809,7 @@ impl Territory {
     },
     Territory {
       base_name: "balkan_peninsula".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Europe,
         sub_continent: None,
@@ -721,6 +817,7 @@ impl Territory {
     },
     Territory {
       base_name: "latin_variations".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Europe,
         sub_continent: None,
@@ -728,6 +825,7 @@ impl Territory {
     },
     Territory {
       base_name: "west_slavs".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Europe,
         sub_continent: None,
@@ -735,6 +833,7 @@ impl Territory {
     },
     Territory {
       base_name: "baltics".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Europe,
         sub_continent: None,
@@ -742,6 +841,7 @@ impl Territory {
     },
     Territory {
       base_name: "big_plain".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Europe,
         sub_continent: None,
@@ -749,6 +849,7 @@ impl Territory {
     },
     Territory {
       base_name: "north_black_sea".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Europe,
         sub_continent: None,
@@ -756,6 +857,7 @@ impl Territory {
     },
     Territory {
       base_name: "urau_mountains".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Europe,
         sub_continent: None,
@@ -763,6 +865,7 @@ impl Territory {
     },
     Territory {
       base_name: "white_sea".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Europe,
         sub_continent: None,
@@ -773,6 +876,7 @@ impl Territory {
   pub fn list_oceania() -> Vec<Territory> { vec![
     Territory {
       base_name: "maoris".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Oceania,
         sub_continent: None,
@@ -780,6 +884,7 @@ impl Territory {
     },
     Territory {
       base_name: "aussie_desert".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Oceania,
         sub_continent: None,
@@ -787,6 +892,7 @@ impl Territory {
     },
     Territory {
       base_name: "coral_sea_coast".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Oceania,
         sub_continent: None,
@@ -794,6 +900,7 @@ impl Territory {
     },
     Territory {
       base_name: "daintree_rainforest".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Oceania,
         sub_continent: None,
@@ -801,6 +908,7 @@ impl Territory {
     },
     Territory {
       base_name: "kangaroos".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Oceania,
         sub_continent: None,
@@ -808,6 +916,7 @@ impl Territory {
     },
     Territory {
       base_name: "most_isolated_city".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Oceania,
         sub_continent: None,
@@ -815,6 +924,7 @@ impl Territory {
     },
     Territory {
       base_name: "temperate_land".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Oceania,
         sub_continent: None,
@@ -822,6 +932,7 @@ impl Territory {
     },
     Territory {
       base_name: "south_pacific_islands".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Oceania,
         sub_continent: None,
@@ -832,6 +943,7 @@ impl Territory {
   pub fn list_special() -> Vec<Territory> { vec![
     Territory {
       base_name: "diomede_islands".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Special,
         sub_continent: None,
@@ -839,6 +951,7 @@ impl Territory {
     },
     Territory {
       base_name: "asia_europe_connection".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Special,
         sub_continent: None,
@@ -846,6 +959,7 @@ impl Territory {
     },
     // Territory {
     //   base_name: "rest_of_world".to_string(),
+    //   coordinates: Vec::new(),
     //   location: Location {
     //     continent: Continent::Special,
     //     sub_continent: None,
@@ -856,6 +970,7 @@ impl Territory {
   pub fn list_antarctica() -> Vec<Territory> { vec![
     Territory {
       base_name: "west_antarctica".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Antarctica,
         sub_continent: None,
@@ -863,6 +978,7 @@ impl Territory {
     },
     Territory {
       base_name: "somov_sea".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Antarctica,
         sub_continent: None,
@@ -870,6 +986,7 @@ impl Territory {
     },
     Territory {
       base_name: "east_antarctica".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Antarctica,
         sub_continent: None,
@@ -877,6 +994,7 @@ impl Territory {
     },
     Territory {
       base_name: "riiser_larsen_ice_shelf".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Antarctica,
         sub_continent: None,
@@ -884,6 +1002,7 @@ impl Territory {
     },
     Territory {
       base_name: "everybodys_south".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Antarctica,
         sub_continent: None,
@@ -891,6 +1010,7 @@ impl Territory {
     },
     Territory {
       base_name: "antartica_peninsula".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Antarctica,
         sub_continent: None,
@@ -898,6 +1018,7 @@ impl Territory {
     },
     Territory {
       base_name: "unclaimed_area".to_string(),
+      coordinates: Vec::new(),
       location: Location {
         continent: Continent::Antarctica,
         sub_continent: None,

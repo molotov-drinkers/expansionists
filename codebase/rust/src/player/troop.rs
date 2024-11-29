@@ -1,6 +1,6 @@
 use godot::{classes::{ICharacterBody3D, CharacterBody3D}, prelude::*};
 
-use crate::globe::coordinates_system::surface_point::Coordinates;
+use crate::globe::coordinates_system::{surface_point::Coordinates, virtual_planet::{self, VirtualPlanet}};
 
 pub enum LocationSituation {
   SelfLand,
@@ -55,8 +55,7 @@ impl ICharacterBody3D for Troop {
 
   fn ready(&mut self) {
     godot_print!("Troop ready");
-    // TODO: how to attach a troop to a territory?
-
+    // TODO: how to attach a troop to a territory? Getting progress in "progress" function =)
 
     // According to Godot doc:
     // https://docs.godotengine.org/en/stable/classes/class_CharacterBody3D.html#class-CharacterBody3D-method-get-colliding-bodies
@@ -67,6 +66,30 @@ impl ICharacterBody3D for Troop {
   }
 
   fn physics_process(&mut self, _delta: f64) {
+
+    // TODO: Checking whats up w the troop spawning engine situation
+    // TODO: I PROLLY NEED TO CREATE A RUST GODOTCLASS FOR THE MAAAIN SCENE AND MOVOE THIS SPAWN ENGINE TO IT
+    let virtual_planet = self.base_mut()
+      .get_node_as::<VirtualPlanet>("virtual_planet");
+    let virtual_planet = &virtual_planet.bind();
+    let territories = &virtual_planet.territories;
+
+    let caatinga = territories.get("caatinga").unwrap();
+
+    let coordinate = caatinga.coordinates[4];
+
+    let coordinate_metadata = &virtual_planet.coordinate_map
+      .get(&coordinate)
+      .expect("Coordinate expected to exist");
+
+    let cartesian = coordinate_metadata.cartesian;
+
+    godot_print!("Coordinate: {:?}", coordinate);
+    godot_print!("Cartesian: {:?}", cartesian);
+
+    // TODO: Can I spawn a troop in this cartesian position?
+
+
     // godot_print!("Troop process");
 
     // let gg = self.base_mut();
