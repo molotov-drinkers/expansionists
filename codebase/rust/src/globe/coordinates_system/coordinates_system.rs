@@ -17,5 +17,17 @@ pub type CoordinateMap = HashMap<Coordinates, CoordinateMetadata>;
 pub struct CoordinatesSystem {}
 
 impl CoordinatesSystem {
+  
   //TODO: Implement Geodesic coordinate system
+  /// Receives the origin and destination coordinates and 
+  /// returns a list of coordinates represented by the 
+  /// trajectory where a moving point would pass by.
+  fn get_geodesic_trajectory(
+    origin: Coordinates,
+    destination: Coordinates,
+    coordinate_map: &CoordinateMap,
+  ) -> Vec<Coordinates> {
+    
+    [].to_vec()
+  }
 }

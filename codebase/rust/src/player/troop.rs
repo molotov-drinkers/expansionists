@@ -1,10 +1,28 @@
-use godot::{classes::{ICharacterBody3D, CharacterBody3D, StaticBody3D}, prelude::*};
+use godot::{classes::{ICharacterBody3D, CharacterBody3D}, prelude::*};
+
+use crate::globe::coordinates_system::surface_point::Coordinates;
+
+pub enum LocationSituation {
+  SelfLand,
+  AllieLand,
+  NeutralLand,
+  EnemyLand,
+}
+
+pub enum Surface {
+  Land,
+  Water,
+}
 
 #[derive(GodotClass)]
 #[class(base=CharacterBody3D)]
 pub struct Troop {
   base: Base<CharacterBody3D>,
-  pub territory: String,
+
+  pub located_at: Coordinates,
+  pub location_situation: LocationSituation,
+  pub surface_type: Surface,
+
   pub owner: String,
   pub count: i32,
 
@@ -20,7 +38,11 @@ impl ICharacterBody3D for Troop {
 
     Troop {
       base: base,
-      territory: "".to_string(),
+      
+      located_at: (0, 0),
+      location_situation: LocationSituation::NeutralLand,
+      surface_type: Surface::Land,
+
       owner: "".to_string(),
       count: 0,
 
