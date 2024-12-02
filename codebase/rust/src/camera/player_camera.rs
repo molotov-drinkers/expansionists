@@ -1,4 +1,4 @@
-use godot::classes::{ICamera3D, Camera3D};
+use godot::classes::{Camera3D, ICamera3D, InputEvent};
 use godot::prelude::*;
 
 use crate::globe::coordinates_system::coordinates_system::CoordinatesSystem;
@@ -40,6 +40,11 @@ impl ICamera3D for PlayerCamera {
     godot_print!("PlayerCamera ready");
   }
 
+  // todo: should the process content be here in input function?
+  fn input(&mut self, event: Gd<InputEvent>) {
+    godot_print!("PlayerCamera input");
+  }
+
   fn process(&mut self, delta: f64) {
     let mut transform = self.base().get_global_transform();
     let mut translation = transform.origin;
@@ -47,8 +52,8 @@ impl ICamera3D for PlayerCamera {
     let input = Input::singleton();
 
     // todo: implement zoom system
-    input.is_action_pressed("BUTTON_WHEEL_UP");
-    input.is_action_pressed("BUTTON_WHEEL_DOWN");
+    // input.is_action_pressed("BUTTON_WHEEL_UP");
+    // input.is_action_pressed("BUTTON_WHEEL_DOWN");
 
     if input.is_action_pressed("ui_up") {
       // todo: translation.z -= self.camera_speed * delta;
