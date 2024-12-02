@@ -4,7 +4,7 @@ use crate::globe::coordinates_system::{surface_point::Coordinates, virtual_plane
 
 pub enum LocationSituation {
   SelfLand,
-  AllieLand,
+  AllyLand,
   NeutralLand,
   EnemyLand,
 }
@@ -12,6 +12,9 @@ pub enum LocationSituation {
 pub enum Surface {
   Land,
   Water,
+
+  // future_version:
+  // Air,
 }
 
 #[derive(GodotClass)]
@@ -69,23 +72,23 @@ impl ICharacterBody3D for Troop {
 
     // TODO: Checking whats up w the troop spawning engine situation
     // TODO: I PROLLY NEED TO CREATE A RUST GODOTCLASS FOR THE MAAAIN SCENE AND MOVOE THIS SPAWN ENGINE TO IT
-    let virtual_planet = self.base_mut()
-      .get_node_as::<VirtualPlanet>("virtual_planet");
-    let virtual_planet = &virtual_planet.bind();
-    let territories = &virtual_planet.territories;
+    // let virtual_planet = self.base_mut()
+    //   .get_node_as::<VirtualPlanet>("virtual_planet");
+    // let virtual_planet = &virtual_planet.bind();
+    // let territories = &virtual_planet.territories;
 
-    let caatinga = territories.get("caatinga").unwrap();
+    // let caatinga = territories.get("caatinga").unwrap();
 
-    let coordinate = caatinga.coordinates[4];
+    // let coordinate = caatinga.coordinates[4];
 
-    let coordinate_metadata = &virtual_planet.coordinate_map
-      .get(&coordinate)
-      .expect("Coordinate expected to exist");
+    // let coordinate_metadata = &virtual_planet.coordinate_map
+    //   .get(&coordinate)
+    //   .expect("Coordinate expected to exist");
 
-    let cartesian = coordinate_metadata.cartesian;
+    // let cartesian = coordinate_metadata.cartesian;
 
-    godot_print!("Coordinate: {:?}", coordinate);
-    godot_print!("Cartesian: {:?}", cartesian);
+    // godot_print!("Coordinate: {:?}", coordinate);
+    // godot_print!("Cartesian: {:?}", cartesian);
 
     // TODO: Can I spawn a troop in this cartesian position?
 
