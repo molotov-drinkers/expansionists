@@ -1,5 +1,5 @@
-use godot::classes::{CollisionShape3D, ICamera3D, Camera3D, StandardMaterial3D};
-use godot::{classes::MeshInstance3D, prelude::*};
+use godot::classes::{ICamera3D, Camera3D};
+use godot::prelude::*;
 
 use crate::globe::coordinates_system::coordinates_system::CoordinatesSystem;
 use crate::globe::coordinates_system::surface_point::Coordinates;
