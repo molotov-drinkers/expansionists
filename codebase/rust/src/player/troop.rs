@@ -17,6 +17,26 @@ pub enum Surface {
   // Air,
 }
 
+pub enum FighthingBehavior {
+  /// will fight any non-ally troop who crosses by it doesn't matter the territory
+  Beligerent,
+
+  /// will only fight if attacked or if it's territory is attacked
+  Pacifist,
+}
+
+pub struct CombatStats {
+  pub in_combat: bool,
+  pub in_after_combat: bool,
+
+  pub damage: i32,
+  pub hp: i32,
+  pub speed: i32,
+  pub alive: bool,
+
+  pub fighting_behavior: FighthingBehavior,
+}
+
 #[derive(GodotClass)]
 #[class(base=CharacterBody3D)]
 pub struct Troop {
@@ -27,12 +47,12 @@ pub struct Troop {
   pub surface_type: Surface,
 
   pub owner: String,
-  pub count: i32,
 
-  pub damage: i32,
-  pub hp: i32,
-  pub speed: i32,
-  pub alive: bool,
+  pub combat_stats: CombatStats,
+
+  // used for animation inside of the territory
+  pub is_moving: bool,
+  pub randomly_walking_to: Coordinates,
 }
 
 #[godot_api]
@@ -47,72 +67,59 @@ impl ICharacterBody3D for Troop {
       surface_type: Surface::Land,
 
       owner: "".to_string(),
-      count: 0,
 
-      hp: 100,
-      damage: 5,
-      speed: 20,
-      alive: true,
+      combat_stats: CombatStats {
+        in_combat: false,
+        in_after_combat: false,
+        damage: 0,
+        hp: 0,
+        speed: 0,
+        alive: false,
+        fighting_behavior: FighthingBehavior::Beligerent,
+      },
+
+      is_moving: false,
+      randomly_walking_to: (0, 0),
     }
   }
 
   fn ready(&mut self) {
     godot_print!("Troop ready");
-    // TODO: how to attach a troop to a territory? Getting progress in "progress" function =)
 
-    // According to Godot doc:
-    // https://docs.godotengine.org/en/stable/classes/class_CharacterBody3D.html#class-CharacterBody3D-method-get-colliding-bodies
-    // contact_monitor has to be enabled to get colliding bodies
-    // self.base_mut().set_contact_monitor(true);
-
-    // self.base_mut().set_max_contacts_reported(1);
   }
 
   fn physics_process(&mut self, _delta: f64) {
 
-    // TODO: Checking whats up w the troop spawning engine situation
-    // TODO: I PROLLY NEED TO CREATE A RUST GODOTCLASS FOR THE MAAAIN SCENE AND MOVOE THIS SPAWN ENGINE TO IT
-    // let virtual_planet = self.base_mut()
-    //   .get_node_as::<VirtualPlanet>("virtual_planet");
-    // let virtual_planet = &virtual_planet.bind();
-    // let territories = &virtual_planet.territories;
+  }
+}
 
-    // let caatinga = territories.get("caatinga").unwrap();
+impl Troop {
+  fn is_on_self_land(&self) -> bool {
+    // TODO: implement
+    self.located_at;
+    true
+  }
 
-    // let coordinate = caatinga.coordinates[4];
-
-    // let coordinate_metadata = &virtual_planet.coordinate_map
-    //   .get(&coordinate)
-    //   .expect("Coordinate expected to exist");
-
-    // let cartesian = coordinate_metadata.cartesian;
-
-    // godot_print!("Coordinate: {:?}", coordinate);
-    // godot_print!("Cartesian: {:?}", cartesian);
-
-    // TODO: Can I spawn a troop in this cartesian position?
+  fn is_on_ally_land(&self) -> bool {
+    // TODO: implement
+    false
+  }
 
 
-    // godot_print!("Troop process");
+  fn start_random_walk_within_territory(&mut self) {
+    if
+      (Self::is_on_self_land(self) || Self::is_on_ally_land(self)) &&
+      self.combat_stats.in_combat == false {
 
-    // let gg = self.base_mut();
+      // TODO: implement
+      self.is_moving = true;
+      self.randomly_walking_to = (0, 0);
 
-    // let colliding_bodies = self.base_mut().get_colliding_bodies();
+      // let randomly_walking_to = VirtualPlanet::get_another_territory_coordinate(
+      //   &virtual_planet,
+      //   self.located_at
+      // );
 
-    // colliding_bodies.iter_shared().for_each(|colliding_body| {
-    //   let colliding_body = colliding_body.cast::<Node3D>();
-
-    //   let parent = colliding_body.get_parent().unwrap();
-    //   // let parent = parent.cast::<StaticBody3D>();
-    //   let parent_name = parent.get_name();
-    //   // godot_print!("parent: {:?}", parent_name);
-    // });
-
-
-    // colliding_bodies.iter_shared().for_each(|body| {
-    //   let body = body.cast::<Node3D>();
-    //   let body_name = body.get_name();
-    //   godot_print!("Colliding with: {:?}", body_name);
-    // });
+    }
   }
 }

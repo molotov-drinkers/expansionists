@@ -22,10 +22,10 @@ impl CoordinatesSystem {
   /// Receives the origin and destination coordinates and 
   /// returns a list of coordinates represented by the 
   /// trajectory where a moving point would pass by.
-  pub fn get_geodesic_trajectory(
-    origin: Coordinates,
-    destination: Coordinates,
-    coordinate_map: &CoordinateMap,
+  pub fn _get_geodesic_trajectory(
+    _origin: Coordinates,
+    _destination: Coordinates,
+    _coordinate_map: &CoordinateMap,
   ) -> Vec<Coordinates> {
 
     [].to_vec()
@@ -36,12 +36,12 @@ impl CoordinatesSystem {
   /// and the the direction the camera is going to move to
   /// returns the new position of the camera
   pub fn get_geodesic_neighbour_position(
-    looking_at: Coordinates,
-    current_position: Vector3,
-    direction: CameraDirection,
+    _looking_at: Coordinates,
+    _current_position: Vector3,
+    _direction: CameraDirection,
     // coordinate_map: &CoordinateMap,
   ) -> Vector3 {
-    let mut neighbour_position = Vector3::new(0.0, 0.0, 0.0);
+    let neighbour_position = Vector3::new(0.0, 0.0, 0.0);
 
     // TODO it's not just translate the trasform position,
     // the looking_at point also matters, so probably needs to use it or use "rotation"

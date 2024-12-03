@@ -61,18 +61,6 @@ impl INode3D for GlobeScene {
       // godot_print!("Territory: {:?}, position: {:?}", territory_name, territory_position);
 
 
-      // Troop Spawner Engine:
-      // let scene: Gd<PackedScene> = load("res://scenes/troop_scene.tscn");
-      // let mut new_troop = scene.instantiate_as::<Troop>();
-      // new_troop.set_name(&"troop".to_godot());
-      // self.base_mut().add_child(&new_troop);
-
-      // new_troop.set_position(Vector3::new(1.2, 0., 0.));
-
-      // let troop_node = new_troop.find_child("MeshInstance3D").expect("MeshInstance3D to exist");
-      // let mut troop_mesh = troop_node.cast::<MeshInstance3D>();
-      // troop_mesh.set_surface_override_material(0, &material);
-
     }
   }
 

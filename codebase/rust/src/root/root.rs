@@ -29,25 +29,21 @@ impl INode3D for RootScene {
 }
 
 impl RootScene {
+  // TODO: Do I need to move this to troops mod?
   pub fn troop_spawner(&mut self) {
     
     // STEP 1: GETTING TERRITORIES
     let virtual_planet = self.base_mut()
       .get_node_as::<VirtualPlanet>("virtual_planet");
     let virtual_planet = &virtual_planet.bind();
-    let territories = &virtual_planet.territories;
 
     // STEP 2: GETTING TERRITORY LAND LOCATION TO SPAWN TROOP
-    let spawning_land = territories.get("atlantic_forest").unwrap();
-    let spawning_land_coordinates_list_len = spawning_land.coordinates.len();
+    let coordinate = VirtualPlanet::get_an_random_territory_coordinate(
+      &virtual_planet,
+      "atlantic_forest"
+    );
 
-    // get a random coordinate from the territory
-    let mut rng = rand::thread_rng();
-    let random_index = rng.gen_range(1..spawning_land_coordinates_list_len);
-
-    let coordinate = spawning_land.coordinates[random_index];
-
-    let coordinate_metadata = &virtual_planet.coordinate_map
+    let coordinate_metadata = virtual_planet.coordinate_map
       .get(&coordinate)
       .expect("Coordinate expected to exist");
     let cartesian = coordinate_metadata.cartesian;

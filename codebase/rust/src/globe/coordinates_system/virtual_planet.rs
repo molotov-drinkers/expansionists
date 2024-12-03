@@ -1,11 +1,12 @@
 
 use std::{collections::HashMap, f64::consts::PI};
 use godot::{classes::{BoxMesh, BoxShape3D, CollisionShape3D, MeshInstance3D, StandardMaterial3D}, obj::NewAlloc, prelude::*};
+use rand::Rng;
 
-use crate::globe::territory::types::{Territories, Territory, TerritoryId};
+use crate::globe::territory::{self, types::{Territories, Territory, TerritoryId}};
 use super::{
   coordinates_system::{CoordinateMap, CoordinateMetadata},
-  surface_point::{SurfacePoint, SurfacePointMetadata}
+  surface_point::{Coordinates, SurfacePoint, SurfacePointMetadata}
 };
 
 /// VirtualPlanert is used to create a virtual sphere that will be used for physics and collision calculations
@@ -168,7 +169,7 @@ impl VirtualPlanet {
           let possible_territory_colission = self.territories.get_mut(&possible_territory_id);
           if possible_territory_colission.is_some() {
             let overlapped_territory = possible_territory_colission.unwrap();
-            Self::_paint_surface_point(&surface_point, overlapped_territory);
+            // Self::_paint_surface_point(&surface_point, overlapped_territory);
 
             let mut surface_point_bind = surface_point.bind_mut();
             let surface_point_metadata = surface_point_bind.get_surface_point_metadata_mut();
@@ -193,8 +194,8 @@ impl VirtualPlanet {
     }
   }
 
-  // Paints the surface point with the territory color
-  // usefull for debugging
+  /// Paints the surface point with the continent/territory color
+  /// useful for debugging
   pub fn _paint_surface_point(surface_point: &Gd<SurfacePoint>, territory: &Territory) {
     let color = Territory::get_territory_color(
       &territory.location.sub_continent,
@@ -211,5 +212,37 @@ impl VirtualPlanet {
       material.set_albedo(color);
       child.unwrap().set_material_override(&material);
     }
+  }
+
+
+  /// Receives a territory coordinate and returns a random coordinate from the same territory
+  /// It's used for keeping a troop walking inside of a territory
+  pub fn get_another_territory_coordinate(&self, given_coordinates: Coordinates) -> Coordinates {
+    let coordinate_metadata = self
+      .coordinate_map
+      .get(&given_coordinates)
+      .expect("Expected coordinates to exist");
+
+    let territory_id = coordinate_metadata
+      .territory_id
+      .clone()
+      .expect("expect territory_id to exist");
+
+    self.get_an_random_territory_coordinate(territory_id.as_str())
+  }
+
+  /// Receives a territory_id and returns a random coordinate from the territory
+  pub fn get_an_random_territory_coordinate(&self, territory_id: &str) -> Coordinates {
+    let territory = self.territories.get(territory_id).expect("Expected territory to exist");
+    let territory_coordinates = &territory.coordinates;
+    let mut rng = rand::thread_rng();
+    let random_index = rng.gen_range(0..territory_coordinates.len());
+    territory_coordinates[random_index]
+  }
+
+  /// Receives a latitude and longitude and returns the cartesian coordinates
+  pub fn _get_cartesian_from_coordinates(&self, given_coordinates: Coordinates) -> Vector3 {
+    let coordinate_metadata = self.coordinate_map.get(&given_coordinates).expect("Expected coordinates to exist");
+    coordinate_metadata.cartesian
   }
 }
