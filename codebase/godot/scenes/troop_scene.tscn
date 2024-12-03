@@ -9,7 +9,7 @@ albedo_color = Color(1, 0, 0.54902, 1)
 
 [node name="troop_scene" type="Troop"]
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+[node name="default_mesh" type="MeshInstance3D" parent="."]
 transform = Transform3D(0.02, 0, 0, 0, 0.02, 0, 0, 0, 0.02, 0, 0.01, 0)
 mesh = SubResource("BoxMesh_g5trk")
 skeleton = NodePath("")

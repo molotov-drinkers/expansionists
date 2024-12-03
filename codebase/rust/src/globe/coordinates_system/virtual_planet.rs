@@ -168,7 +168,7 @@ impl VirtualPlanet {
           let possible_territory_colission = self.territories.get_mut(&possible_territory_id);
           if possible_territory_colission.is_some() {
             let overlapped_territory = possible_territory_colission.unwrap();
-            // Self::_paint_surface_point(&surface_point, overlapped_territory);
+            Self::_paint_surface_point(&surface_point, overlapped_territory);
 
             let mut surface_point_bind = surface_point.bind_mut();
             let surface_point_metadata = surface_point_bind.get_surface_point_metadata_mut();
