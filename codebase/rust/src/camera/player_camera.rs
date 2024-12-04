@@ -41,13 +41,13 @@ impl ICamera3D for PlayerCamera {
   }
 
   // todo: should the process content be here in input function?
-  fn input(&mut self, event: Gd<InputEvent>) {
+  fn input(&mut self, _event: Gd<InputEvent>) {
     godot_print!("PlayerCamera input");
   }
 
-  fn process(&mut self, delta: f64) {
+  fn process(&mut self, _delta: f64) {
     let mut transform = self.base().get_global_transform();
-    let mut translation = transform.origin;
+    let translation = transform.origin;
     let mut direction = CameraDirection::None;
     let input = Input::singleton();
 

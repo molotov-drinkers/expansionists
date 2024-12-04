@@ -1,10 +1,7 @@
 use godot::classes::{CollisionShape3D, INode3D, Node3D, StandardMaterial3D};
 use godot::{classes::MeshInstance3D, prelude::*};
 
-use super::territory::types::{Territory, Territories, Continent, SubContinent};
-
-use crate::player;
-use player::troop::Troop;
+use super::territory::types::{Territory, Territories};
 
 #[derive(GodotClass)]
 #[class(base=Node3D)]
@@ -57,7 +54,7 @@ impl INode3D for GlobeScene {
 
       let collision_shape_territory = collision_shape_territory.cast::<CollisionShape3D>();
 
-      let territory_position = collision_shape_territory.get_global_transform();
+      let _territory_position = collision_shape_territory.get_global_transform();
       // godot_print!("Territory: {:?}, position: {:?}", territory_name, territory_position);
 
 

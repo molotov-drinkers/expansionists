@@ -3,7 +3,7 @@ use std::{collections::HashMap, f64::consts::PI};
 use godot::{classes::{BoxMesh, BoxShape3D, CollisionShape3D, MeshInstance3D, StandardMaterial3D}, obj::NewAlloc, prelude::*};
 use rand::Rng;
 
-use crate::globe::territory::{self, types::{Territories, Territory, TerritoryId}};
+use crate::globe::territory::types::{Territories, Territory, TerritoryId};
 use super::{
   coordinates_system::{CoordinateMap, CoordinateMetadata},
   surface_point::{Coordinates, SurfacePoint, SurfacePointMetadata}
@@ -226,7 +226,7 @@ impl VirtualPlanet {
     let territory_id = coordinate_metadata
       .territory_id
       .clone()
-      .expect("expect territory_id to exist");
+      .expect(&format!("expect territory_id to exist, {:?}", coordinate_metadata));
 
     self.get_an_random_territory_coordinate(territory_id.as_str())
   }
@@ -244,5 +244,10 @@ impl VirtualPlanet {
   pub fn _get_cartesian_from_coordinates(&self, given_coordinates: Coordinates) -> Vector3 {
     let coordinate_metadata = self.coordinate_map.get(&given_coordinates).expect("Expected coordinates to exist");
     coordinate_metadata.cartesian
+  }
+
+  /// TODO: Receives a latitude and longitude and returns the cartesian coordinates
+  pub fn _get_coordinates_from_cartesian(&self, _given_cartesian: Vector3) -> Coordinates {
+    (0,0)
   }
 }
