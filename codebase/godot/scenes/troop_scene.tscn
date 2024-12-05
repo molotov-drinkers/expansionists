@@ -8,6 +8,9 @@ albedo_color = Color(1, 0, 0.54902, 1)
 [sub_resource type="BoxShape3D" id="BoxShape3D_o6v62"]
 
 [node name="troop_scene" type="Troop"]
+floor_stop_on_slope = false
+floor_constant_speed = true
+floor_block_on_wall = false
 
 [node name="default_mesh" type="MeshInstance3D" parent="."]
 transform = Transform3D(0.02, 0, 0, 0, 0.02, 0, 0, 0, 0.02, 0, 0.01, 0)
@@ -15,6 +18,6 @@ mesh = SubResource("BoxMesh_g5trk")
 skeleton = NodePath("")
 surface_material_override/0 = SubResource("StandardMaterial3D_f4ec8")
 
-[node name="CollisionShape3D2" type="CollisionShape3D" parent="."]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 transform = Transform3D(0.02, 0, 0, 0, 0.02, 0, 0, 0, 0.02, 0, 0.01, 0)
 shape = SubResource("BoxShape3D_o6v62")

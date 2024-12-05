@@ -1,4 +1,4 @@
-use godot::{classes::{CharacterBody3D, ICharacterBody3D, MeshInstance3D, StandardMaterial3D}, prelude::*};
+use godot::{classes::{BoxMesh, CharacterBody3D, ICharacterBody3D, MeshInstance3D, StandardMaterial3D}, prelude::*};
 use crate::{globe::coordinates_system::{coordinates_system::CoordinatesSystem, surface_point::Coordinates, virtual_planet::VirtualPlanet}, root::root::RootScene};
 
 pub enum LocationSituation {
@@ -13,7 +13,8 @@ pub enum Surface {
   Water,
 
   // future_version:
-  // Air,
+  // Air, (Planes)
+  // Space, (Satellites)
 }
 
 pub enum FighthingBehavior {
@@ -52,6 +53,11 @@ pub struct Troop {
   // used for animation inside of the territory
   pub is_moving: bool,
   pub randomly_walking_to: Coordinates,
+  pub moving_speed: f32,
+  pub walking_trajectory_points: Vec<Vector3>,
+  pub current_trajectory_point: usize,
+
+  // pub distance_to_next_waypoint: f32,
 }
 
 #[godot_api]
@@ -79,51 +85,154 @@ impl ICharacterBody3D for Troop {
 
       is_moving: false,
       randomly_walking_to: (0, 0),
+      moving_speed: 0.05,
+      walking_trajectory_points: vec![],
+      current_trajectory_point: 0,
+
+      // distance_to_next_waypoint: 0.0,
     }
   }
 
   fn ready(&mut self) {
     // godot_print!("Troop ready");
+    // To avoid misbehaviors on geodesic movement, the troop collision layer and mask 
+    // are set to be separate 
+    let troop_collision_layer = 2;
+    let troop_collision_mask = 2;
+
+    self.base_mut().set_collision_mask(troop_collision_layer);
+    self.base_mut().set_collision_layer(troop_collision_mask);
   }
 
   fn physics_process(&mut self, _delta: f64) {
-    Self::start_random_walk_within_territory(self);
+    self.maybe_populate_trajectory_points();
+    self.maybe_move_along_the_trajectory();
   }
 }
 
 impl Troop {
-  fn is_on_self_land(&self) -> bool {
+  fn _is_on_self_land(&self) -> bool {
     // TODO: implement
-    self.located_at;
+    // self.located_at;
     true
   }
 
-  fn is_on_ally_land(&self) -> bool {
+  fn _is_on_ally_land(&self) -> bool {
     // TODO: implement
     false
   }
 
-
-  fn start_random_walk_within_territory(&mut self) {
+  fn maybe_populate_trajectory_points(&mut self) {
     if
-      (self.is_on_self_land() || self.is_on_ally_land()) &&
-      self.combat_stats.in_combat == false {
+      // (self._is_on_self_land() || self._is_on_ally_land()) &&
+      self.combat_stats.in_combat == false &&
+      self.is_moving == false {
 
       let virtual_planet = self.get_virtual_planet_from_troop_scope();
       let randomly_walking_to = virtual_planet
         .bind()
-        .get_another_territory_coordinate(self.located_at);
+        // .get_another_territory_coordinate(self.located_at);
+        // TODO: get back to get_another_territory_coordinate implementation
+        .get_an_random_territory_coordinate(
+          // "great_lakes"
+          // "kangaroos"
+          // "unclaimed_area"
+          // "latinos"
+          "west_slavs"
+        );
 
-      self.is_moving = true;
-      self.randomly_walking_to = randomly_walking_to;
-
-      // TODO: call start the movement implementation
-      CoordinatesSystem::_get_geodesic_trajectory(
+      let geodesic_trajectory = CoordinatesSystem::get_geodesic_trajectory(
         self.located_at,
         randomly_walking_to,
         &virtual_planet.bind().coordinate_map
       );
 
+      // self._highlight_geodesic_trajectory(&geodesic_trajectory);
+
+      self.walking_trajectory_points = geodesic_trajectory;
+      self.is_moving = true;
+      self.randomly_walking_to = randomly_walking_to;
+
+      godot_print!("Troop is moving from {:?}", self.located_at);
+      godot_print!("Troop is moving to {:?}", randomly_walking_to);
+      // godot_print!("Trajectory is {:?}", self.walking_trajectory_points);
+    }
+  }
+
+  fn maybe_move_along_the_trajectory(&mut self) {
+    if !self.walking_trajectory_points.is_empty() {
+
+      let current_target = self.walking_trajectory_points[self.current_trajectory_point];
+      let current_position = self.base().get_global_transform().origin;
+
+      let direction = (current_target - current_position).try_normalized();
+      if direction.is_none() {
+        return;
+      }
+      let direction = direction.unwrap();
+      let velocity = direction * self.moving_speed;
+
+      self.base_mut().set_velocity(velocity);
+      self.base_mut().move_and_slide();
+      // self.base_mut().move_and_collide(velocity);
+
+
+      // Check if the Troop has reached the target (within a small tolerance)
+      let current_distance = current_position.distance_to(current_target);
+
+      // godot_print!("Distance to target: {:?}", current_distance);
+      if current_distance < 0.05 && self.current_trajectory_point < self.walking_trajectory_points.len() {
+        // Move to the next waypoint
+        // godot_print!("-- Moving to the next waypoint");
+        self.current_trajectory_point = self.current_trajectory_point + 1;
+      }
+
+      // godot_print!("self.current_trajectory_point: {:?}", self.current_trajectory_point);
+      // godot_print!("self.walking_trajectory_points.len(): {:?}", self.walking_trajectory_points.len());
+      // Finish the movement if the troop has reached the last waypoint
+      if current_distance < 0.05 && self.current_trajectory_point == self.walking_trajectory_points.len() /* - 1 */ {
+        godot_print!("--- Troop has reached the destination");
+        self.is_moving = false;
+        self.current_trajectory_point = 0;
+        self.walking_trajectory_points.clear();
+
+
+        self.combat_stats.in_combat = true;
+      }
+    }
+  }
+
+  /// Creates 3d Meshe Cubes all along the trajectory of the troop
+  /// Used for debugging purposes
+  fn _highlight_geodesic_trajectory(&mut self, geodesic_trajectory: &Vec<Vector3>) {
+    let node_3d_name = "geodesic_mesh";
+
+    // Delete existing geodesic mesh
+    for child in self.base().get_children().iter_shared() {
+      if child.get_name() == node_3d_name.into() {
+        self.base_mut().remove_child(&child);
+      }
+    }
+
+    let mut geodesic_mesh = Node3D::new_alloc();
+    // Adding the geodesic mesh to the troop right away to be able to set the global position
+    // This way we avoid having the geodesic mesh with the relative position of the troop
+    self.base_mut().add_child(&geodesic_mesh);
+    geodesic_mesh.set_name(node_3d_name);
+    geodesic_mesh.set_global_position(Vector3::new(0.0, 0.0, 0.0));
+
+    for point in geodesic_trajectory {
+      let mut material = StandardMaterial3D::new_gd();
+      let mut box_mesh = BoxMesh::new_gd();
+      let mut geodesic_mesh_cube = MeshInstance3D::new_alloc();
+
+      material.set_albedo(Color::GOLD);
+      box_mesh.set_size(Vector3::new(0.02, 0.02, 0.02));
+      box_mesh.set_material(&material);
+      geodesic_mesh_cube.set_mesh(&box_mesh);
+      geodesic_mesh_cube.set_position(*point);
+      // geodesic_mesh_cube.set_surface_override_material(0, &material);
+      geodesic_mesh.add_child(&geodesic_mesh_cube);
     }
   }
 
@@ -166,7 +275,7 @@ pub fn troop_spawner(root_scene: &mut RootScene) {
   let cartesian = coordinate_metadata.cartesian;
 
   // STEP 3: SPAWNING TROOP
-  let player_color = Color::DARK_CYAN;
+  let player_color = Color::FLORAL_WHITE;
   let mut material = StandardMaterial3D::new_gd();
   material.set_albedo(player_color);
   let scene: Gd<PackedScene> = load("res://scenes/troop_scene.tscn");
