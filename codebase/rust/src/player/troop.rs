@@ -132,9 +132,9 @@ impl Troop {
         .get_an_random_territory_coordinate(
           // "great_lakes"
           // "kangaroos"
-          "unclaimed_area"
+          // "unclaimed_area"
           // "latinos"
-          // "west_slavs"
+          "west_slavs"
         );
 
       let geodesic_trajectory = CoordinatesSystem::get_geodesic_trajectory(

@@ -87,6 +87,8 @@ impl CoordinatesSystem {
       z: currrent_position.z * -1.,
     };
 
+    // TODO: possibly just "current_position * -1" does the job
+
     antipode
   }
 
