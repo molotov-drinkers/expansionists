@@ -1,3 +1,4 @@
 codebase/rust/target
 codebase/godot/.godot
-codebase/rust/.vscode/settings.json
+codebase/rust/.vscode
+codebase/.vscode
