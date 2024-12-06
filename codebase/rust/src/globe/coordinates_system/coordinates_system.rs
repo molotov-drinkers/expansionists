@@ -18,7 +18,6 @@ pub struct CoordinatesSystem {}
 
 impl CoordinatesSystem {
   
-  //TODO: Implement Geodesic coordinate system
   /// Receives the origin and destination coordinates and 
   /// returns a list of coordinates represented by the 
   /// trajectory where a moving point would pass by.
@@ -26,6 +25,7 @@ impl CoordinatesSystem {
     origin: Coordinates,
     destination: Coordinates,
     coordinate_map: &CoordinateMap,
+    radius: f32
   ) -> Vec<Vector3> {
     let origin = coordinate_map.get(&origin).unwrap().cartesian;
     let destination = coordinate_map.get(&destination).unwrap().cartesian;
@@ -37,10 +37,6 @@ impl CoordinatesSystem {
     // TODO: make this dynamic
     let hard_coded_num_of_points = 100;
 
-    // TODO: use dynamic radius
-    // let radius = 1.09;
-    let radius = 1.08;
-
     for i in 0..hard_coded_num_of_points{
       let t = i as f64 / (hard_coded_num_of_points - 1) as f64;
 
@@ -48,7 +44,7 @@ impl CoordinatesSystem {
       let trajectory_point = Self::radius_scale(trajectory_point, radius);
       trajectory.push(trajectory_point);
     }
-    godot_print!("Trajectory size is {:?}", trajectory.len());
+    // godot_print!("Trajectory size is {:?}", trajectory.len());
 
     trajectory
   }
@@ -61,21 +57,95 @@ impl CoordinatesSystem {
     }
   }
 
-  /// Receives the current position of the camera,
-  /// which is the central globe coordinate the camera is pointing to
-  /// and the the direction the camera is going to move to
-  /// returns the new position of the camera
-  pub fn get_geodesic_neighbour_position(
-    _looking_at: Coordinates,
-    _current_position: Vector3,
-    _direction: CameraDirection,
-    // coordinate_map: &CoordinateMap,
+  pub fn get_dynamic_geodesic_trajectory(
+    origin: Vector3,
+    direction_vector: Vector3,
+    pseudo_destination: Vector3,
+    radius: f32,
   ) -> Vector3 {
-    let neighbour_position = Vector3::new(0.0, 0.0, 0.0);
+    // Get the origin from the coordinate map
+    let origin = origin.normalized();
+    let pseudo_destination = pseudo_destination.normalized();
 
-    // TODO it's not just translate the trasform position,
-    // the looking_at point also matters, so probably needs to use it or use "rotation"
+    godot_print!("origin: {:?}", origin);
+    godot_print_rich!("pseudo_destination: {:?}", pseudo_destination);
+    godot_print_rich!("direction_vector: {:?}", direction_vector);
 
-    neighbour_position
+    // let t = 1. as f64 / (steps - 1) as f64;
+
+    // Calculate the point along the geodesic using slerp
+    let next_position = origin.slerp(direction_vector, 0.01);
+    // let next_position = origin.slerp(pseudo_destination, 0.02);
+    let next_position = Self::radius_scale(next_position, radius);
+    next_position
+  }
+
+  pub fn get_antipode(currrent_position: Vector3) -> Vector3 {
+    let antipode   = Vector3 {
+      x: currrent_position.x * -1.,
+      y: currrent_position.y * -1.,
+      z: currrent_position.z * -1.,
+    };
+
+    antipode
+  }
+
+
+  pub fn get_geodesic_trajectory_b(
+    origin: Vector3,
+    destination: Vector3,
+    direction_vector: Vector3,
+    radius: f32
+  ) -> Vector3 {
+   
+    // Calculate the point along the geodesic using slerp
+    let next_position = Self::a_slerp(origin, destination, 0.05, direction_vector);
+    // let next_position = origin.slerp(pseudo_destination, 0.02);
+    let next_position = Self::radius_scale(next_position, radius);
+    next_position
+  }
+  
+
+    // Function to perform Slerp between the origin and destination
+    pub fn a_slerp(
+      origin: Vector3, 
+      destination: Vector3, 
+      t: f32, 
+      direction: Vector3
+  ) -> Vector3 {
+      // Normalize both origin and destination to unit vectors
+      let origin = origin.normalized();
+      let destination = destination.normalized();
+
+      // Calculate the dot product between the two vectors
+      let dot = origin.dot(destination);
+
+      // // Handle case when the vectors are very close or exactly opposite (antipodal)
+      // if dot > 0.9995 {
+      //     // If the vectors are too close, do a linear interpolation (avoiding numerical errors)
+      //     return origin.linear_interpolate(destination, t);
+      // }
+
+      // Clamp dot product between -1 and 1 to avoid out of range errors due to floating point precision
+      let dot = dot.clamp(-1.0, 1.0);
+
+      // Compute the angle between the two vectors
+      let theta = dot.acos();
+      let sin_theta = theta.sin();
+
+      // Compute the scale factors for origin and destination vectors based on t
+      let scale_origin = (1.0 - t) * theta.sin() / sin_theta;
+      let scale_destination = t * theta.sin() / sin_theta;
+
+      // Slerp between the origin and destination (weighted average of both vectors)
+      let interpolated = origin * scale_origin + destination * scale_destination;
+
+      // Ensure the resulting vector stays normalized (it should already be normalized)
+      let result = interpolated.normalized();
+
+      // If direction is provided, adjust the result to ensure proper path alignment
+      // Normalize the direction vector and adjust the result to stay on the geodesic path
+      let direction = direction.normalized();
+      return result * direction.length(); // Scale the result according to the radius/direction
   }
 }

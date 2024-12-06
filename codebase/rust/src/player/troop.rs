@@ -56,8 +56,6 @@ pub struct Troop {
   pub moving_speed: f32,
   pub walking_trajectory_points: Vec<Vector3>,
   pub current_trajectory_point: usize,
-
-  // pub distance_to_next_waypoint: f32,
 }
 
 #[godot_api]
@@ -88,8 +86,6 @@ impl ICharacterBody3D for Troop {
       moving_speed: 0.05,
       walking_trajectory_points: vec![],
       current_trajectory_point: 0,
-
-      // distance_to_next_waypoint: 0.0,
     }
   }
 
@@ -136,15 +132,16 @@ impl Troop {
         .get_an_random_territory_coordinate(
           // "great_lakes"
           // "kangaroos"
-          // "unclaimed_area"
+          "unclaimed_area"
           // "latinos"
-          "west_slavs"
+          // "west_slavs"
         );
 
       let geodesic_trajectory = CoordinatesSystem::get_geodesic_trajectory(
         self.located_at,
         randomly_walking_to,
-        &virtual_planet.bind().coordinate_map
+        &virtual_planet.bind().coordinate_map,
+        VirtualPlanet::get_planet_radius() as f32
       );
 
       // self._highlight_geodesic_trajectory(&geodesic_trajectory);
@@ -166,12 +163,9 @@ impl Troop {
       let current_position = self.base().get_global_transform().origin;
 
       let direction = (current_target - current_position).try_normalized();
-      if direction.is_none() {
-        return;
-      }
+      if direction.is_none() { return; }
       let direction = direction.unwrap();
       let velocity = direction * self.moving_speed;
-
       self.base_mut().set_velocity(velocity);
       self.base_mut().move_and_slide();
       // self.base_mut().move_and_collide(velocity);

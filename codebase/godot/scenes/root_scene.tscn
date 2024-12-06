@@ -4,21 +4,37 @@
 
 [node name="root_scene" type="RootScene"]
 
-[node name="OmniLight3D" type="OmniLight3D" parent="."]
+[node name="lights" type="Node3D" parent="."]
+
+[node name="north_sun" type="DirectionalLight3D" parent="lights"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 10, 0)
+visible = false
+
+[node name="south_sun" type="DirectionalLight3D" parent="lights"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, -10, 0)
+visible = false
+
+[node name="africa_sun" type="DirectionalLight3D" parent="lights"]
+transform = Transform3D(4.37114e-08, 4.37114e-08, 1, -1.50996e-07, -1, 4.37114e-08, 1, -1.50996e-07, -4.37114e-08, 10, 0, 0)
+
+[node name="pacific_sun" type="DirectionalLight3D" parent="lights"]
+transform = Transform3D(4.37114e-08, 6.60023e-15, -1, 1.50996e-07, -1, 2.5411e-21, -1, -1.50996e-07, -4.37114e-08, -10, 0, 0)
+
+[node name="OmniLight3D" type="OmniLight3D" parent="lights"]
 transform = Transform3D(-0.964146, 0, 0.265371, 0, 1, 0, -0.265371, 0, -0.964146, 12.9001, -2.3875, 0)
+visible = false
 light_energy = 6.669
 light_indirect_energy = 4.962
 light_volumetric_fog_energy = 1.25
 omni_range = 22.523
 
-[node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(0.384387, -0.542154, 0.747206, 0.123838, 0.832355, 0.54023, -0.914828, -0.115125, 0.387085, 2.6485, 1.64798, 1.35792)
+[node name="player_camera" type="PlayerCamera" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00752747, 0, 3.46501)
 current = true
 
 [node name="globe_scene" parent="." instance=ExtResource("1_udvwj")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 
 [node name="virtual_planet" type="VirtualPlanet" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+visible = false
 
 [node name="troops" type="Node3D" parent="."]
