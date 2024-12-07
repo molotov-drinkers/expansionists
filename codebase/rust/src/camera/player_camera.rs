@@ -55,8 +55,10 @@ impl ICamera3D for PlayerCamera {
     }
 
     if input.is_action_pressed("zoom_out") {
-      radius = (radius - self.zoom_speed as f32 * delta as f32).max(1.5); // Minimum radius is 1.5
+      radius -= self.zoom_speed as f32 * delta as f32;
     }
+
+    radius = radius.clamp(1.5, 8.); // Clamp between 1.5 and 8
 
     //TODO: add reset camera position, like pressing spacebar and it goes back to the original position
 
