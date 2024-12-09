@@ -101,12 +101,45 @@ impl ICharacterBody3D for Troop {
   }
 
   fn physics_process(&mut self, _delta: f64) {
+    self.set_orientation(None);
     self.maybe_populate_trajectory_points();
-    self.maybe_move_along_the_trajectory();
+    self.maybe_move_along_the_trajectory_and_set_orientation();
   }
 }
 
 impl Troop {
+  fn set_orientation(&mut self, trajectory_vector: Option<Vector3>) {
+    let normal = self.base().get_global_position().normalized();  // This is the "up" direction on the surface
+
+    let forward = if trajectory_vector.is_some() {
+      trajectory_vector.unwrap()
+    } else {
+      // Choose a forward direction (assuming the character faces the -Z direction by default)
+      Vector3::new(0.0, 0.0, -1.0)
+    };
+  
+    // Calculate the right vector using the cross product (normal x forward)
+    let right = normal
+      .cross(forward)
+      .try_normalized()
+      .expect("normal and forward expected to exist");
+  
+    // Calculate the new forward vector as the cross product of right and normal
+    let new_forward = right
+      .cross(normal)
+      .try_normalized()
+      .expect("right vector expected to exist");
+  
+    // Create a new rotation basis
+    let basis = Basis::new_looking_at(new_forward, normal, true);
+
+    let origin = self.base().get_global_position();
+    self.base_mut().set_global_transform(Transform3D::new(
+      basis, 
+      origin
+    ));
+  }
+
   fn _is_on_self_land(&self) -> bool {
     // TODO: implement
     // self.located_at;
@@ -158,7 +191,7 @@ impl Troop {
     }
   }
 
-  fn maybe_move_along_the_trajectory(&mut self) {
+  fn maybe_move_along_the_trajectory_and_set_orientation(&mut self) {
     if !self.walking_trajectory_points.is_empty() {
 
       let current_target = self.walking_trajectory_points[self.current_trajectory_point];
@@ -166,12 +199,13 @@ impl Troop {
 
       let direction = (current_target - current_position).try_normalized();
       if direction.is_none() { return; }
+
       let direction = direction.unwrap();
       let velocity = direction * self.moving_speed;
+
+      self.set_orientation(Some(direction));
       self.base_mut().set_velocity(velocity);
       self.base_mut().move_and_slide();
-      // self.base_mut().move_and_collide(velocity);
-
 
       // Check if the Troop has reached the target (within a small tolerance)
       let current_distance = current_position.distance_to(current_target);

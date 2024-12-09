@@ -1,0 +1,12 @@
+[gd_scene load_steps=3 format=3 uid="uid://cddi63ruvdsj4"]
+
+[ext_resource type="PackedScene" uid="uid://cfxgxt8uup6ud" path="res://assets/War Low Poly Pack/War Low Poly Pack/LPWarPack_Tonk.fbx" id="1_w6ipk"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jstip"]
+albedo_color = Color(9.26517e-07, 0.397276, 0.0393742, 1)
+metallic = 1.0
+
+[node name="Tonk" instance=ExtResource("1_w6ipk")]
+
+[node name="Tonk" parent="." index="0"]
+surface_material_override/0 = SubResource("StandardMaterial3D_jstip")

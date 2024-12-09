@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3 uid="uid://cftr2e88ejsju"]
+
+[ext_resource type="PackedScene" uid="uid://cf1e1cqvthimj" path="res://assets/Pirate Low Poly Pack/Pirate Low Poly Pack/ChineseSailboat.fbx" id="1_jjydb"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jttc1"]
+albedo_color = Color(0.280319, 0.440198, 0.241095, 1)
+
+[node name="ChineseSailboat" instance=ExtResource("1_jjydb")]
+
+[node name="ChineseSailboat" parent="." index="0"]
+surface_material_override/2 = SubResource("StandardMaterial3D_jttc1")

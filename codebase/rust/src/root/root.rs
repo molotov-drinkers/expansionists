@@ -23,7 +23,7 @@ impl INode3D for RootScene {
   fn physics_process(&mut self, _delta: f64) {
 
     // TODO: Set race condition better to avoid trying to spawn troops before the planet is ready
-    let max_troops = 50;
+    let max_troops = 10;
     if self.troops_spawn < max_troops {
       troop::troop_spawner(self);
       self.troops_spawn+=1;
