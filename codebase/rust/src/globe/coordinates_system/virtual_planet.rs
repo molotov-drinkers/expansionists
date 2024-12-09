@@ -53,9 +53,9 @@ impl INode3D for VirtualPlanet {
 }
 
 impl VirtualPlanet {
-  #[inline] pub fn get_planet_radius() -> f64 { 1.08 }
-  #[inline] pub fn get_num_of_latitudes() -> i16 { 90 + 45 }
-  #[inline] pub fn get_num_of_longitudes() -> i16 { 180 + 90 }
+  #[inline] pub fn get_planet_radius() -> f64 { 1.08 * 3.0 }
+  #[inline] pub fn get_num_of_latitudes() -> i16 { ((90. + 45.) * 1.5) as i16 }
+  #[inline] pub fn get_num_of_longitudes() -> i16 { ((180. + 90.) * 1.5) as i16 }
 
   pub fn populate_surface_points_and_coordinate_map(&mut self) {
     let planet_radius = Self::get_planet_radius();
@@ -99,7 +99,7 @@ impl VirtualPlanet {
   }
 
   pub fn create_surface_point_area(surface_point_metadata: SurfacePointMetadata) -> Gd<SurfacePoint> {
-    let surface_mesh_and_collider_size = Vector3::new(0.05, 0.05, 0.05);
+    let surface_mesh_and_collider_size = Vector3::new(0.08, 0.08, 0.08);
     let mesh_instance = Self::create_surface_mesh(
       surface_mesh_and_collider_size,
       surface_point_metadata.cartesian

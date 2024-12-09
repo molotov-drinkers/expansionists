@@ -16,8 +16,8 @@ impl ICamera3D for PlayerCamera {
   fn init(base: Base<Camera3D>) -> PlayerCamera {
     PlayerCamera {
       base,
-      camera_speed: 5.,
-      zoom_speed: 5.,
+      camera_speed: 4.,
+      zoom_speed: 4.,
       theta: 0.0,
       phi: 0.0,
     }
@@ -37,7 +37,7 @@ impl ICamera3D for PlayerCamera {
     let min_height_angle = -89.9_f32.to_radians();
 
     if input.is_action_pressed("camera_up") {
-      self.phi = (self.phi + self.camera_speed as f32 * delta as f32).clamp(min_height_angle, max_height_angle); // Clamp between -90° and 90°
+      self.phi = (self.phi + self.camera_speed as f32 * delta as f32).clamp(min_height_angle, max_height_angle);
     }
     if input.is_action_pressed("camera_down") {
       self.phi = (self.phi - self.camera_speed as f32 * delta as f32).clamp(min_height_angle, max_height_angle);
@@ -58,14 +58,13 @@ impl ICamera3D for PlayerCamera {
       radius -= self.zoom_speed as f32 * delta as f32;
     }
 
-    radius = radius.clamp(1.5, 8.); // Clamp between 1.5 and 8
+    radius = radius.clamp(3.5, 11.); // Clamp between 1.5 and 8
 
-    //TODO: add reset camera position, like pressing spacebar and it goes back to the original position
-
-    let new_x = radius * self.phi.cos() * self.theta.cos();
-    let new_y = radius * self.phi.sin();
-    let new_z = radius * self.phi.cos() * self.theta.sin();
-    transform.origin = Vector3::new(new_x, new_y, new_z);
+    transform.origin = Vector3::new(
+      radius * self.phi.cos() * self.theta.cos(),
+      radius * self.phi.sin(),
+      radius * self.phi.cos() * self.theta.sin(),
+    );
 
     self.base_mut().set_global_transform(transform);
     self.base_mut().look_at(vector_to_origin);

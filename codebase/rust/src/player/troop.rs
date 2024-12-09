@@ -83,7 +83,7 @@ impl ICharacterBody3D for Troop {
 
       is_moving: false,
       randomly_walking_to: (0, 0),
-      moving_speed: 0.05,
+      moving_speed: 0.5,
       walking_trajectory_points: vec![],
       current_trajectory_point: 0,
     }
@@ -135,6 +135,8 @@ impl Troop {
           // "unclaimed_area"
           // "latinos"
           "west_slavs"
+          // "nordics"
+          // "most_isolated_city"
         );
 
       let geodesic_trajectory = CoordinatesSystem::get_geodesic_trajectory(
