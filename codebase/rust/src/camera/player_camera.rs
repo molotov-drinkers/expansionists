@@ -1,6 +1,12 @@
 use godot::classes::{Camera3D, ICamera3D};
 use godot::prelude::*;
 
+const MAX_HEIGHT_ANGLE: f32 = 89.9;
+const MIN_HEIGHT_ANGLE: f32 = -89.9;
+
+const MIN_DISTANCE_TO_ORIGIN: f32 = 3.5;
+const MAX_DISTANCE_TO_ORIGIN: f32 = 11.0;
+
 #[derive(GodotClass)]
 #[class(base=Camera3D)]
 pub struct PlayerCamera {
@@ -32,33 +38,34 @@ impl ICamera3D for PlayerCamera {
     let mut radius = cam_location.distance_to(world_origin);
     let vector_to_origin = (world_origin - cam_location).normalized();
 
-
-    let max_height_angle = 89.9_f32.to_radians();
-    let min_height_angle = -89.9_f32.to_radians();
-
     if input.is_action_pressed("camera_up") {
-      self.phi = (self.phi + self.camera_speed as f32 * delta as f32).clamp(min_height_angle, max_height_angle);
+      self.phi = (self.phi + self.camera_speed as f32 * delta as f32).clamp(
+        MIN_HEIGHT_ANGLE.to_radians(), 
+        MAX_HEIGHT_ANGLE.to_radians()
+      );
     }
     if input.is_action_pressed("camera_down") {
-      self.phi = (self.phi - self.camera_speed as f32 * delta as f32).clamp(min_height_angle, max_height_angle);
+      self.phi = (self.phi - self.camera_speed as f32 * delta as f32).clamp(
+        MIN_HEIGHT_ANGLE.to_radians(), 
+        MAX_HEIGHT_ANGLE.to_radians()
+      );
     }
     if input.is_action_pressed("camera_left") {
-      self.theta += self.camera_speed as f32 * delta as f32;
+      self.theta += (self.camera_speed * delta) as f32;
     }
     if input.is_action_pressed("camera_right") {
-      self.theta -= self.camera_speed as f32 * delta as f32;
+      self.theta -= (self.camera_speed * delta) as f32;
     }
 
     // Adjust radius (Zoom In/Out)
     if input.is_action_pressed("zoom_in") {
-      radius += self.zoom_speed as f32 * delta as f32;
+      radius += (self.zoom_speed * delta) as f32;
     }
-
     if input.is_action_pressed("zoom_out") {
-      radius -= self.zoom_speed as f32 * delta as f32;
+      radius -= (self.zoom_speed * delta) as f32;
     }
 
-    radius = radius.clamp(3.5, 11.); // Clamp between 1.5 and 8
+    radius = radius.clamp(MIN_DISTANCE_TO_ORIGIN, MAX_DISTANCE_TO_ORIGIN);
 
     transform.origin = Vector3::new(
       radius * self.phi.cos() * self.theta.cos(),
