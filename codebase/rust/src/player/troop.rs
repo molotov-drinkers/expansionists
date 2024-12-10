@@ -1,5 +1,15 @@
-use godot::{classes::{BoxMesh, CharacterBody3D, ICharacterBody3D, MeshInstance3D, StandardMaterial3D}, prelude::*};
-use crate::{globe::coordinates_system::{coordinates_system::CoordinatesSystem, surface_point::Coordinates, virtual_planet::VirtualPlanet}, root::root::RootScene};
+use godot::{
+  prelude::*,
+  classes::{BoxMesh, CharacterBody3D, CollisionShape3D, ICharacterBody3D, MeshInstance3D, StandardMaterial3D},
+};
+use crate::{
+  globe::coordinates_system::{
+    coordinates_system::CoordinatesSystem,
+    surface_point::Coordinates,
+    virtual_planet::VirtualPlanet,
+  },
+  root::root::RootScene,
+};
 
 pub enum LocationSituation {
   SelfLand,
@@ -8,13 +18,14 @@ pub enum LocationSituation {
   EnemyLand,
 }
 
+#[derive(PartialEq)]
 pub enum Surface {
   Land,
   Water,
 
   // future_version:
-  // Air, (Planes)
-  // Space, (Satellites)
+  // Air, // (Planes)
+  // Space, // (Satellites)
 }
 
 pub enum FighthingBehavior {
@@ -44,13 +55,13 @@ pub struct Troop {
 
   pub located_at: Coordinates,
   pub location_situation: LocationSituation,
-  pub surface_type: Surface,
+  pub surface: Surface,
 
   pub owner: String,
 
   pub combat_stats: CombatStats,
 
-  // used for animation inside of the territory
+  /// used for animation inside of the territory
   pub is_moving: bool,
   pub randomly_walking_to: Coordinates,
   pub moving_speed: f32,
@@ -67,7 +78,7 @@ impl ICharacterBody3D for Troop {
       
       located_at: (0, 0),
       location_situation: LocationSituation::NeutralLand,
-      surface_type: Surface::Land,
+      surface: Surface::Land,
 
       owner: "".to_string(),
 
@@ -90,17 +101,12 @@ impl ICharacterBody3D for Troop {
   }
 
   fn ready(&mut self) {
-    // godot_print!("Troop ready");
-    // To avoid misbehaviors on geodesic movement, the troop collision layer and mask 
-    // are set to be separate 
-    let troop_collision_layer = 2;
-    let troop_collision_mask = 2;
-
-    self.base_mut().set_collision_mask(troop_collision_layer);
-    self.base_mut().set_collision_layer(troop_collision_mask);
+    self.set_custom_collision();
   }
 
   fn physics_process(&mut self, _delta: f64) {
+    // self.get_surface_type();
+    self.check_and_change_mesh();
     self.set_orientation(None);
     self.maybe_populate_trajectory_points();
     self.maybe_move_along_the_trajectory_and_set_orientation();
@@ -108,9 +114,45 @@ impl ICharacterBody3D for Troop {
 }
 
 impl Troop {
-  fn set_orientation(&mut self, trajectory_vector: Option<Vector3>) {
-    let normal = self.base().get_global_position().normalized();  // This is the "up" direction on the surface
 
+  /// Sets troop collision layer and mask are set to be separate.
+  /// To avoid misbehaviors on geodesic movement
+  fn set_custom_collision(&mut self) {
+    let troop_collision_layer = 2;
+    let troop_collision_mask = 2;
+    self.base_mut().set_collision_mask(troop_collision_layer);
+    self.base_mut().set_collision_layer(troop_collision_mask);
+  }
+
+  /// Sets troop to show the proper mesh according to the surface the troop is touching
+  fn check_and_change_mesh(&mut self) {
+    let mut sea_mesh = self
+      .base_mut()
+      .find_child("sea")
+      .expect("Expected to find sea troop")
+      .cast::<Node3D>();
+
+    let mut land_mesh = self
+      .base_mut()
+      .find_child("land")
+      .expect("Expected to find land troop")
+      .cast::<Node3D>();
+
+    if self.surface == Surface::Land {
+      sea_mesh.set_visible(false);
+      land_mesh.set_visible(true);
+    } else {
+      sea_mesh.set_visible(true);
+      land_mesh.set_visible(false);
+    }
+  }
+
+  /// Sets orientation to respect the globe trajectory and gravity
+  fn set_orientation(&mut self, trajectory_vector: Option<Vector3>) {
+    // This is the "up" direction on the surface
+    let normal = self.base().get_global_position().normalized();
+
+    // If it's moving, gets trajectory forward vector
     let forward = if trajectory_vector.is_some() {
       trajectory_vector.unwrap()
     } else {
@@ -139,6 +181,7 @@ impl Troop {
       origin
     ));
   }
+
 
   fn _is_on_self_land(&self) -> bool {
     // TODO: implement
@@ -268,15 +311,15 @@ impl Troop {
 
   fn get_virtual_planet_from_troop_scope(&self) -> Gd<VirtualPlanet> {
     let root = self.base()
-    .get_parent()
-    .expect("troop parent to exist")
-    .get_parent()
-    .expect("root_scene to exist");
+      .get_parent()
+      .expect("troop parent to exist")
+      .get_parent()
+      .expect("root_scene to exist");
 
-  let virtual_planet = root
-    .find_child("virtual_planet")
-    .expect("virtual_planet to exist")
-    .cast::<VirtualPlanet>();
+    let virtual_planet = root
+      .find_child("virtual_planet")
+      .expect("virtual_planet to exist")
+      .cast::<VirtualPlanet>();
 
     virtual_planet
   }
@@ -284,32 +327,25 @@ impl Troop {
 
 
 /// Called from root.rs
-pub fn troop_spawner(root_scene: &mut RootScene) {
-    
-  // TODO: Refactor this spaghetti
-  // STEP 1: GETTING TERRITORIES
-  let virtual_planet = root_scene.base_mut()
-    .get_node_as::<VirtualPlanet>("virtual_planet");
-  let virtual_planet = &virtual_planet.bind();
-
-  // STEP 2: GETTING TERRITORY LAND LOCATION TO SPAWN TROOP
-  let hard_coded_territory = "atlantic_forest";
+pub fn troop_spawner(root_scene: &mut RootScene, virtual_planet: &VirtualPlanet) {
+  let temp_hard_coded_territory = "atlantic_forest";
   let coordinate = VirtualPlanet::get_an_random_territory_coordinate(
     &virtual_planet,
-    hard_coded_territory
+    temp_hard_coded_territory
   );
 
-  let coordinate_metadata = virtual_planet.coordinate_map
+  let cartesian = virtual_planet
+    .coordinate_map
     .get(&coordinate)
-    .expect("Coordinate expected to exist");
-  let cartesian = coordinate_metadata.cartesian;
+    .expect("Coordinate expected to exist")
+    .cartesian;
 
   // STEP 3: SPAWNING TROOP
   let player_color = Color::FLORAL_WHITE;
   let mut material = StandardMaterial3D::new_gd();
   material.set_albedo(player_color);
-  let scene: Gd<PackedScene> = load("res://scenes/troop_scene.tscn");
-  let mut new_troop = scene.instantiate_as::<Troop>();
+  let new_troop: Gd<PackedScene> = load("res://scenes/troop_scene.tscn");
+  let mut new_troop = new_troop.instantiate_as::<Troop>();
   //TODO: generate a troop ID base on: territory_id + player_id + timestamp
   //TODO: use troop_id to acknologe the troop location along the planet
   let troop_id = "troop";

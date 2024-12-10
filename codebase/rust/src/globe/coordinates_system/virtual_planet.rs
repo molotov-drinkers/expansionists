@@ -16,7 +16,8 @@ use super::{
 #[class(base=Node3D)]
 pub struct VirtualPlanet {
   base: Base<Node3D>,
-  is_ready_for_physics: bool,
+  pub is_ready_for_physics: bool,
+  pub are_surface_points_matched: bool,
   pub territories: Territories,
   pub surface_points_metadata: Vec<SurfacePointMetadata>,
   pub coordinate_map: CoordinateMap,
@@ -29,6 +30,7 @@ impl INode3D for VirtualPlanet {
     VirtualPlanet {
       base: base,
       is_ready_for_physics: false,
+      are_surface_points_matched: false,
       territories: Territory::get_map(),
       surface_points_metadata: vec![],
       coordinate_map: HashMap::new(),
@@ -39,16 +41,15 @@ impl INode3D for VirtualPlanet {
     // By default, the VirtualPlanet is not visible. It's only used for physics and collision calculations
     self.base_mut().set_visible(false);
 
-    Self::populate_surface_points_and_coordinate_map(self);
-    Self::create_virtual_sphere(self);
-    self.is_ready_for_physics = true;    
+    self.populate_surface_points_and_coordinate_map();
+    self.create_virtual_sphere();
+    self.is_ready_for_physics = true;
   }
 
   fn physics_process(&mut self, _delta: f64) {
     if self.is_ready_for_physics == true {
-      Self::match_surface_points_and_territories(self);
+      self.match_surface_points_and_territories();
     }
-    // godot_print!("Caatinga Coordinates: {:?}", self.territories.get("caatinga").unwrap().coordinates);
   }
 }
 
@@ -146,8 +147,8 @@ impl VirtualPlanet {
     collision_shape
   }
 
-  // Matches surface points with territories and
-  // sets the territory_id into SurfacePointMetadata, CoordinateMetadata, and Territory.coordinates
+  /// Matches surface points with territories and
+  /// sets the territory_id into SurfacePointMetadata, CoordinateMetadata, and Territory.coordinates
   pub fn match_surface_points_and_territories(&mut self) {
     for surface_point_node in self.base().get_children().iter_shared() {
       let mut surface_point = surface_point_node.cast::<SurfacePoint>();
@@ -171,11 +172,11 @@ impl VirtualPlanet {
             let overlapped_territory = possible_territory_colission.unwrap();
             // Self::_paint_surface_point(&surface_point, overlapped_territory);
 
+            surface_point.add_to_group(&possible_territory_id);
+            surface_point.add_to_group("land");
             let mut surface_point_bind = surface_point.bind_mut();
             let surface_point_metadata = surface_point_bind.get_surface_point_metadata_mut();
 
-            // TODO: this won't be available in other scopes, how to fix that?
-            // Maybe I can use get_node_as(virtual_planet) from other places
             overlapped_territory.coordinates.push(surface_point_metadata.lat_long);
 
             self.coordinate_map.insert(
@@ -192,6 +193,7 @@ impl VirtualPlanet {
         }
       }
     }
+    self.are_surface_points_matched = true;
   }
 
   /// Paints the surface point with the continent/territory color
@@ -235,6 +237,9 @@ impl VirtualPlanet {
   pub fn get_an_random_territory_coordinate(&self, territory_id: &str) -> Coordinates {
     let territory = self.territories.get(territory_id).expect("Expected territory to exist");
     let territory_coordinates = &territory.coordinates;
+    if territory_coordinates.len() == 0 {
+      panic!("Expected territory_coordinates to have at least one element");
+    }
     let mut rng = rand::thread_rng();
     let random_index = rng.gen_range(0..territory_coordinates.len());
     territory_coordinates[random_index]

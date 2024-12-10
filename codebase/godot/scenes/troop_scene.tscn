@@ -193,6 +193,8 @@ transform = Transform3D(0.02, 0, 0, 0, 0.02, 0, 0, 0, 0.02, 0, 0.01, 0)
 shape = SubResource("BoxShape3D_o6v62")
 
 [node name="sea" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.233, 0)
+visible = false
 
 [node name="SquareSloop" parent="sea" instance=ExtResource("1_mioln")]
 transform = Transform3D(0.05, 0, 0, 0, 0.05, 0, 0, 0, 0.05, 0, 0, 0)
@@ -220,19 +222,20 @@ visible = false
 
 [node name="ChineseSailboat" parent="sea" instance=ExtResource("7_j48ci")]
 transform = Transform3D(0.05, 0, 0, 0, 0.05, 0, 0, 0, 0.05, 0, 0, 0)
-visible = false
 
 [node name="land" type="Node3D" parent="."]
 transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, 0, 0)
+visible = false
 
 [node name="Tonk" parent="land" instance=ExtResource("8_mihlq")]
 
 [node name="Truck2" type="Node3D" parent="land"]
-transform = Transform3D(0.2, 0, 0, 0, 0.2, 0, 0, 0, 0.2, 0, 0, 0)
+transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, 0, 0, 0)
 visible = false
 
 [node name="Truck2" type="MeshInstance3D" parent="land/Truck2"]
 transform = Transform3D(100, 0, 0, 0, -1.19209e-05, 100, 0, -100, -1.19209e-05, 0, 0, 0)
+visible = false
 mesh = SubResource("ArrayMesh_fhke3")
 skeleton = NodePath("")
 surface_material_override/4 = SubResource("StandardMaterial3D_d30v3")
@@ -250,13 +253,12 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.174769, 0, 0.171094)
 visible = false
 
 [node name="air" type="Node3D" parent="."]
-visible = false
 
-[node name="LPWarPack_Helicopter" parent="air" instance=ExtResource("11_5e1ln")]
-visible = false
+[node name="helicopter" parent="air" instance=ExtResource("11_5e1ln")]
+transform = Transform3D(0.05, 0, 0, 0, 0.05, 0, 0, 0, 0.05, 0, 0.276998, 0)
 
 [node name="misc" type="Node3D" parent="."]
 visible = false
 
-[node name="LPWarPack_PineTree" parent="misc" instance=ExtResource("12_r8ela")]
-visible = false
+[node name="pine_tree" parent="misc" instance=ExtResource("12_r8ela")]
+transform = Transform3D(0.05, 0, 0, 0, 0.05, 0, 0, 0, 0.05, 0, 0, 0)

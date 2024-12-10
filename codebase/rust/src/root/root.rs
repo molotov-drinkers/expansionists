@@ -1,6 +1,7 @@
 use godot::classes::{INode3D, Node3D};
 use godot::prelude::*;
 
+use crate::globe::coordinates_system::virtual_planet::VirtualPlanet;
 use crate::player::troop;
 
 #[derive(GodotClass)]
@@ -20,12 +21,24 @@ impl INode3D for RootScene {
     }
   }
 
-  fn physics_process(&mut self, _delta: f64) {
+  fn process(&mut self, _delta: f64) {
+    let virtual_planet = self.base()
+      .find_child("virtual_planet")
+      .expect("Expected to find virtual_planet")
+      .cast::<VirtualPlanet>();
+    let virtual_planet = virtual_planet.bind();
 
-    // TODO: Set race condition better to avoid trying to spawn troops before the planet is ready
+    if virtual_planet.are_surface_points_matched && self.base().is_node_ready() {
+      self.startup_troops_spawn(&virtual_planet);
+    }
+  }
+}
+
+impl RootScene {
+  pub fn startup_troops_spawn(&mut self, virtual_planet: &VirtualPlanet) {
     let max_troops = 10;
-    if self.troops_spawn < max_troops {
-      troop::troop_spawner(self);
+    while self.troops_spawn < max_troops {
+      troop::troop_spawner(self, &virtual_planet);
       self.troops_spawn+=1;
     }
   }
