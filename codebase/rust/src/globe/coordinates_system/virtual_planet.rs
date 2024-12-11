@@ -251,8 +251,4 @@ impl VirtualPlanet {
     coordinate_metadata.cartesian
   }
 
-  /// TODO: Receives a latitude and longitude and returns the cartesian coordinates
-  pub fn _get_coordinates_from_cartesian(&self, _given_cartesian: Vector3) -> Coordinates {
-    (0,0)
-  }
 }

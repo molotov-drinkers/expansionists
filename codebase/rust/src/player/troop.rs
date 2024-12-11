@@ -194,35 +194,9 @@ impl Troop {
 
   #[func]
   fn set_surface(&mut self) {
-    let world_origin = Vector3::new(0.0, 0.0, 0.0);
-    let troop_position = self.base().get_global_position();
-
-    let mut world = self
-      .base_mut()
-      .get_world_3d()
-      .expect("World to exist");
-
-    let mut space_state = world
-      .get_direct_space_state()
-      .expect("Expected to get direct space state");
-
-    let mut query = PhysicsRayQueryParameters3D::create(
-      world_origin,
-      troop_position,
-    ).expect("Expected to create ray query");
-
-    query.set_collide_with_areas(true);
-    query.set_collide_with_bodies(false);
-
-    let collision_dict = space_state.intersect_ray(&query);
-    let collider = collision_dict
-      .get("collider")
-      .expect("collider key to exist");
-
-    // The collided area has to be a SurfacePoint
-    let surface_point = collider
-      .try_to::<Gd<SurfacePoint>>()
-      .expect("Expected to get surface point as collided area");
+    let surface_point = SurfacePoint::get_troop_surface_point(
+      self
+    );
 
     if surface_point.is_in_group(&Surface::Land.to_string()) {
       self.surface = Surface::Land;
