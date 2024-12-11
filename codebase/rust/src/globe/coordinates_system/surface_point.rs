@@ -1,10 +1,11 @@
 
-use godot::{classes::{Area3D, IArea3D}, prelude::*};
+use godot::{classes::{Area3D, IArea3D}, meta::GodotType, prelude::*};
 use crate::globe::territory::types::TerritoryId;
 
 type Latitude = i16;
 type Longitude = i16;
 pub type Coordinates = (Latitude, Longitude);
+
 #[derive(Debug, Clone)]
 pub struct SurfacePointMetadata {
   pub cartesian: Vector3,
@@ -12,7 +13,7 @@ pub struct SurfacePointMetadata {
   pub territory_id: Option<TerritoryId>,
 }
 
-#[derive(GodotClass)]
+#[derive(Debug, GodotClass)]
 #[class(base=Area3D)]
 pub struct SurfacePoint {
   base: Base<Area3D>,
@@ -26,6 +27,24 @@ impl IArea3D for SurfacePoint {
       base: base,
       surface_point_metadata: get_blank_surface_point_metadata(),
     }
+  }
+}
+
+impl GodotConvert for SurfacePoint {
+  type Via = Variant;
+}
+
+impl FromGodot for SurfacePoint {
+  fn try_from_godot(via: Self::Via) -> Result<Self, ConvertError> {
+    godot_print_rich!("SurfacePoint::try_from_godot: {:?}", via);
+    
+    // let mut surface_point = SurfacePoint::init(Area3D::new());
+    // let surface_point_metadata = SurfacePointMetadata {
+    //   cartesian: via.get("cartesian").try_to()?,
+    //   lat_long: via.get("lat_long").try_to()?,
+    //   territory_id: via.get("territory_id").try_to()?,
+    // };
+    todo!()
   }
 }
 

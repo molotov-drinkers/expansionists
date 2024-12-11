@@ -1,11 +1,10 @@
 use godot::{
-  prelude::*,
-  classes::{BoxMesh, CharacterBody3D, CollisionShape3D, ICharacterBody3D, MeshInstance3D, StandardMaterial3D},
+  classes::{BoxMesh, CharacterBody3D, ICharacterBody3D, MeshInstance3D, PhysicsRayQueryParameters3D, StandardMaterial3D, StaticBody3D}, prelude::*
 };
 use crate::{
   globe::coordinates_system::{
     coordinates_system::CoordinatesSystem,
-    surface_point::Coordinates,
+    surface_point::{Coordinates, SurfacePoint},
     virtual_planet::VirtualPlanet,
   },
   root::root::RootScene,
@@ -18,7 +17,7 @@ pub enum LocationSituation {
   EnemyLand,
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Debug)]
 pub enum Surface {
   Land,
   Water,
@@ -105,7 +104,7 @@ impl ICharacterBody3D for Troop {
   }
 
   fn physics_process(&mut self, _delta: f64) {
-    // self.get_surface_type();
+    self.get_surface_type();
     self.check_and_change_mesh();
     self.set_orientation(None);
     self.maybe_populate_trajectory_points();
@@ -113,6 +112,7 @@ impl ICharacterBody3D for Troop {
   }
 }
 
+#[godot_api]
 impl Troop {
 
   /// Sets troop collision layer and mask are set to be separate.
@@ -182,15 +182,123 @@ impl Troop {
     ));
   }
 
+  #[func]
+  fn get_surface_type(&mut self) {
+
+    let world_origin = Vector3::new(0.0, 0.0, 0.0);
+    let troop_position = self.base().get_global_position();
+    // let ray = (world_origin - troop_position).normalized();
+
+    // let mut area_3d = Area3D::new_alloc();
+    // self.base_mut().add_child(&area_3d);
+    // let troop_collision_layer = 1;
+    // let troop_collision_mask = 1;
+    // area_3d.set_collision_mask(troop_collision_layer);
+    // area_3d.set_collision_layer(troop_collision_mask);
+    // area_3d.set_global_position(troop_position);
+
+    // let area_3d = Area3D::new_alloc();
+    // let collider = CollisionShape3D::new_alloc();
+    
+    // let mut world = area_3d
+    //   .get_world_3d()
+    //   .expect("World to exist");
+
+    let mut world = self
+      .base_mut()
+      .get_world_3d()
+      .expect("World to exist");
+
+    let mut space_state = world
+      .get_direct_space_state()
+      .expect("Expected to get direct space state");
+
+    let mut query = PhysicsRayQueryParameters3D::create(
+      world_origin,
+      troop_position,
+    ).expect("Expected to create ray query");
+
+    query.set_collide_with_areas(true);
+    query.set_collide_with_bodies(false);
+
+    let collisions = space_state.intersect_ray(&query);
+    // space_state.intersect_shape(&query);
+    // godot_print!("collisions: {:?}", collisions);
+
+    // SurfacePoint
+
+    let collider = collisions.get("collider").expect("collider key to exist");
+
+
+    let aq = collider.get_property();
+
+    let gg = collider.get_type();
+
+    let a = collider.try_to::<SurfacePoint>();
+    godot_print!("Collider: {:?}", a);
+
+    // let a: SurfacePoint = collider.into();
+    // gg.type_id()
+
+
+    // let b = StaticBody3D::try_from(collider);
+    
+    // StaticBody3D::try_from(collider);
+
+    // let aa = collider.try_cast::<StaticBody3D>();
+    // collider.to::StaticBody3D();
+
+    // if collider.is_some() {
+    //   let collider = collider.unwrap();
+    //   let collider = collider.try_cast::<MeshInstance3D>();
+    //   if collider.is_ok() {
+    //     let collider = collider.unwrap();
+    //     let collider = collider.get_name();
+    //     godot_print!("Collider: {:?}", collider);
+    //   }
+    // }
+
+    // for collision in collisions.values_array().iter_shared() {
+    //   godot_print!("Collision ---> : {:?}", collision);
+    // }
+
+    // godot_print!("Collision: {:?}", collisions);
+
+    // let slide_collision = self.base_mut().get_slide_collision_count();
+
+    // for slide_idx in 0..slide_collision {
+    //   let b = self.base_mut().get_slide_collision(slide_idx);
+    //   // godot_print!("Collision: {:?}", b);
+
+    //   if b.is_some() {
+    //     let collision = b.unwrap();
+    //     // let collider = collision.get_collider().expect("collider to exist");
+    //     // godot_print!("Collider: {:?}", collider);
+
+    //     let collider_shape= collision.get_collider_shape().expect("collider shape to exist");
+    //     godot_print!("Collider: {:?}", collider_shape);
+
+    //     let collision_object_3d = collider_shape.try_cast::<CollisionShape3D>();
+
+    //     if collision_object_3d.is_ok() {
+    //       let collision_object_3d = collision_object_3d.unwrap();
+    //       let collider = collision_object_3d.get_parent().expect("parent to exist");
+    //       godot_print!("Collider: {:?}", collider);
+    //     }
+    //     // let collider = collider.try_cast::<MeshInstance3D>();
+    //   }
+    // }
+
+    // Surface::Water
+  }
 
   fn _is_on_self_land(&self) -> bool {
-    // TODO: implement
-    // self.located_at;
+    // TICKET: #12
     true
   }
 
   fn _is_on_ally_land(&self) -> bool {
-    // TODO: implement
+    // TICKET: #12
     false
   }
 
@@ -235,6 +343,7 @@ impl Troop {
   }
 
   fn maybe_move_along_the_trajectory_and_set_orientation(&mut self) {
+    // TODO: Needs to add delta to this move?
     if !self.walking_trajectory_points.is_empty() {
 
       let current_target = self.walking_trajectory_points[self.current_trajectory_point];
@@ -346,8 +455,8 @@ pub fn troop_spawner(root_scene: &mut RootScene, virtual_planet: &VirtualPlanet)
   material.set_albedo(player_color);
   let new_troop: Gd<PackedScene> = load("res://scenes/troop_scene.tscn");
   let mut new_troop = new_troop.instantiate_as::<Troop>();
-  //TODO: generate a troop ID base on: territory_id + player_id + timestamp
-  //TODO: use troop_id to acknologe the troop location along the planet
+
+  // TICKET: #39 generate a troop ID base on: territory_id + player_id + timestamp
   let troop_id = "troop";
   new_troop.set_name(&troop_id.to_godot());
   new_troop.bind_mut().located_at = coordinate;

@@ -41,6 +41,11 @@ impl INode3D for GlobeScene {
         &territory_data.unwrap().location.continent
       );
 
+      // let r: f32 = 0.; //rand::random();
+      // let g: f32 = rand::random();
+      // let b: f32 = 0.; // rand::random();
+      // let color = Color::from_rgba(r, g, b, 1.);
+
       let mut material = StandardMaterial3D::new_gd();
       material.set_albedo(color);
       territory.set_material_override(&material);
