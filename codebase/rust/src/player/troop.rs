@@ -1,7 +1,7 @@
 use std::fmt;
 
 use godot::{
-  classes::{BoxMesh, CharacterBody3D, ICharacterBody3D, MeshInstance3D, PhysicsRayQueryParameters3D, StandardMaterial3D}, prelude::*
+  classes::{BoxMesh, CharacterBody3D, ICharacterBody3D, MeshInstance3D, StandardMaterial3D}, prelude::*
 };
 use crate::{
   globe::coordinates_system::{
@@ -57,6 +57,9 @@ pub struct CombatStats {
 
   pub fighting_behavior: FighthingBehavior,
 }
+
+const ORIGIN: &str = "nordics";
+const DEST: &str = "diomede_islands";
 
 #[derive(GodotClass)]
 #[class(base=CharacterBody3D)]
@@ -227,13 +230,7 @@ impl Troop {
         // .get_another_territory_coordinate(self.located_at);
         // TODO: get back to get_another_territory_coordinate implementation
         .get_an_random_territory_coordinate(
-          // "great_lakes"
-          // "kangaroos"
-          // "unclaimed_area"
-          // "latinos"
-          "west_slavs"
-          // "nordics"
-          // "most_isolated_city"
+          DEST.into(),
         );
 
       let geodesic_trajectory = CoordinatesSystem::get_geodesic_trajectory(
@@ -249,21 +246,20 @@ impl Troop {
       self.is_moving = true;
       self.randomly_walking_to = randomly_walking_to;
 
-      godot_print!("Troop is moving from {:?}", self.located_at);
-      godot_print!("Troop is moving to {:?}", randomly_walking_to);
-      // godot_print!("Trajectory is {:?}", self.walking_trajectory_points);
     }
   }
 
   fn maybe_move_along_the_trajectory_and_set_orientation(&mut self) {
-    // TODO: Needs to add delta to this move?
-    if !self.walking_trajectory_points.is_empty() {
 
+    if self.walking_trajectory_points.len() != 0 {
       let current_target = self.walking_trajectory_points[self.current_trajectory_point];
       let current_position = self.base().get_global_transform().origin;
-
+      
       let direction = (current_target - current_position).try_normalized();
-      if direction.is_none() { return; }
+      if direction.is_none() && self.current_trajectory_point < self.walking_trajectory_points.len() {
+        self.current_trajectory_point = self.current_trajectory_point + 1;
+        return;
+      }
 
       let direction = direction.unwrap();
       let velocity = direction * self.moving_speed;
@@ -275,17 +271,12 @@ impl Troop {
       // Check if the Troop has reached the target (within a small tolerance)
       let current_distance = current_position.distance_to(current_target);
 
-      // godot_print!("Distance to target: {:?}", current_distance);
-      if current_distance < 0.05 && self.current_trajectory_point < self.walking_trajectory_points.len() {
-        // Move to the next waypoint
-        // godot_print!("-- Moving to the next waypoint");
+      if current_distance < 0.1 && self.current_trajectory_point < self.walking_trajectory_points.len() {
         self.current_trajectory_point = self.current_trajectory_point + 1;
       }
 
-      // godot_print!("self.current_trajectory_point: {:?}", self.current_trajectory_point);
-      // godot_print!("self.walking_trajectory_points.len(): {:?}", self.walking_trajectory_points.len());
       // Finish the movement if the troop has reached the last waypoint
-      if current_distance < 0.05 && self.current_trajectory_point == self.walking_trajectory_points.len() /* - 1 */ {
+      if current_distance < 0.1 && self.current_trajectory_point == self.walking_trajectory_points.len() {
         godot_print!("--- Troop has reached the destination");
         self.is_moving = false;
         self.current_trajectory_point = 0;
@@ -349,8 +340,8 @@ impl Troop {
 
 
 /// Called from root.rs
-pub fn troop_spawner(root_scene: &mut RootScene, virtual_planet: &VirtualPlanet) {
-  let temp_hard_coded_territory = "atlantic_forest";
+pub fn troop_spawner(root_scene: &mut RootScene, virtual_planet: &VirtualPlanet, troops_spawn: i8) {
+  let temp_hard_coded_territory = ORIGIN.into();
   let coordinate = VirtualPlanet::get_an_random_territory_coordinate(
     &virtual_planet,
     temp_hard_coded_territory
@@ -370,7 +361,7 @@ pub fn troop_spawner(root_scene: &mut RootScene, virtual_planet: &VirtualPlanet)
   let mut new_troop = new_troop.instantiate_as::<Troop>();
 
   // TICKET: #39 generate a troop ID base on: territory_id + player_id + timestamp
-  let troop_id = "troop";
+  let troop_id = format!("troop ... {:}-{:}", troops_spawn, temp_hard_coded_territory);
   new_troop.set_name(&troop_id.to_godot());
   new_troop.bind_mut().located_at = coordinate;
 

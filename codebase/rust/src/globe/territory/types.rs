@@ -42,6 +42,8 @@ pub struct Territory {
   // pub current_troops: i32,
 
   pub coordinates: Vec<Coordinates>,
+
+  // TICKET: #40 Implement territory size, used for organic_max_troops, etc.
 }
 
 pub type TerritoryId = String;

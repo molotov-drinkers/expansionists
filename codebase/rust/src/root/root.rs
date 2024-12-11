@@ -36,9 +36,12 @@ impl INode3D for RootScene {
 
 impl RootScene {
   pub fn startup_troops_spawn(&mut self, virtual_planet: &VirtualPlanet) {
-    let max_troops = 10;
+    let max_troops = 5;
     while self.troops_spawn < max_troops {
-      troop::troop_spawner(self, &virtual_planet);
+      troop::troop_spawner(
+        self, &virtual_planet,
+        self.troops_spawn
+      );
       self.troops_spawn+=1;
     }
   }
