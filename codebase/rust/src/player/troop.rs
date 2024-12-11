@@ -1,3 +1,5 @@
+use std::fmt;
+
 use godot::{
   classes::{BoxMesh, CharacterBody3D, ICharacterBody3D, MeshInstance3D, PhysicsRayQueryParameters3D, StandardMaterial3D}, prelude::*
 };
@@ -25,6 +27,15 @@ pub enum Surface {
   // future_version:
   // Air, // (Planes)
   // Space, // (Satellites)
+}
+
+impl fmt::Display for Surface {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    match self {
+      Surface::Land => write!(f, "land"),
+      Surface::Water =>  write!(f, "water"),
+    }
+  }
 }
 
 pub enum FighthingBehavior {
@@ -93,7 +104,7 @@ impl ICharacterBody3D for Troop {
 
       is_moving: false,
       randomly_walking_to: (0, 0),
-      moving_speed: 0.5,
+      moving_speed: 0.2,
       walking_trajectory_points: vec![],
       current_trajectory_point: 0,
     }
@@ -213,7 +224,7 @@ impl Troop {
       .try_to::<Gd<SurfacePoint>>()
       .expect("Expected to get surface point as collided area");
 
-    if surface_point.is_in_group("land") {
+    if surface_point.is_in_group(&Surface::Land.to_string()) {
       self.surface = Surface::Land;
     } else {
       self.surface = Surface::Water;

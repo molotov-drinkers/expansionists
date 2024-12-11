@@ -3,7 +3,7 @@ use std::{collections::HashMap, f64::consts::PI};
 use godot::{classes::{BoxMesh, BoxShape3D, CollisionShape3D, MeshInstance3D, StandardMaterial3D}, obj::NewAlloc, prelude::*};
 use rand::Rng;
 
-use crate::globe::territory::types::{Territories, Territory, TerritoryId};
+use crate::{globe::territory::types::{Territories, Territory, TerritoryId}, player::troop::Surface};
 use super::{
   coordinates_system::{CoordinateMap, CoordinateMetadata},
   surface_point::{Coordinates, SurfacePoint, SurfacePointMetadata}
@@ -173,7 +173,7 @@ impl VirtualPlanet {
             // Self::_paint_surface_point(&surface_point, overlapped_territory);
 
             surface_point.add_to_group(&possible_territory_id);
-            surface_point.add_to_group("land");
+            surface_point.add_to_group(&Surface::Land.to_string());
             let mut surface_point_bind = surface_point.bind_mut();
             let surface_point_metadata = surface_point_bind.get_surface_point_metadata_mut();
 
