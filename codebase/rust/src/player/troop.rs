@@ -1,5 +1,5 @@
 use godot::{
-  classes::{BoxMesh, CharacterBody3D, ICharacterBody3D, MeshInstance3D, PhysicsRayQueryParameters3D, StandardMaterial3D, StaticBody3D}, prelude::*
+  classes::{BoxMesh, CharacterBody3D, ICharacterBody3D, MeshInstance3D, PhysicsRayQueryParameters3D, StandardMaterial3D}, prelude::*
 };
 use crate::{
   globe::coordinates_system::{
@@ -104,7 +104,7 @@ impl ICharacterBody3D for Troop {
   }
 
   fn physics_process(&mut self, _delta: f64) {
-    self.get_surface_type();
+    self.set_surface();
     self.check_and_change_mesh();
     self.set_orientation(None);
     self.maybe_populate_trajectory_points();
@@ -114,7 +114,6 @@ impl ICharacterBody3D for Troop {
 
 #[godot_api]
 impl Troop {
-
   /// Sets troop collision layer and mask are set to be separate.
   /// To avoid misbehaviors on geodesic movement
   fn set_custom_collision(&mut self) {
@@ -183,26 +182,9 @@ impl Troop {
   }
 
   #[func]
-  fn get_surface_type(&mut self) {
-
+  fn set_surface(&mut self) {
     let world_origin = Vector3::new(0.0, 0.0, 0.0);
     let troop_position = self.base().get_global_position();
-    // let ray = (world_origin - troop_position).normalized();
-
-    // let mut area_3d = Area3D::new_alloc();
-    // self.base_mut().add_child(&area_3d);
-    // let troop_collision_layer = 1;
-    // let troop_collision_mask = 1;
-    // area_3d.set_collision_mask(troop_collision_layer);
-    // area_3d.set_collision_layer(troop_collision_mask);
-    // area_3d.set_global_position(troop_position);
-
-    // let area_3d = Area3D::new_alloc();
-    // let collider = CollisionShape3D::new_alloc();
-    
-    // let mut world = area_3d
-    //   .get_world_3d()
-    //   .expect("World to exist");
 
     let mut world = self
       .base_mut()
@@ -221,83 +203,21 @@ impl Troop {
     query.set_collide_with_areas(true);
     query.set_collide_with_bodies(false);
 
-    let collisions = space_state.intersect_ray(&query);
-    // space_state.intersect_shape(&query);
-    // godot_print!("collisions: {:?}", collisions);
+    let collision_dict = space_state.intersect_ray(&query);
+    let collider = collision_dict
+      .get("collider")
+      .expect("collider key to exist");
 
-    // SurfacePoint
+    // The collided area has to be a SurfacePoint
+    let surface_point = collider
+      .try_to::<Gd<SurfacePoint>>()
+      .expect("Expected to get surface point as collided area");
 
-    let collider = collisions.get("collider").expect("collider key to exist");
-
-
-    let aq = collider.get_property();
-
-    let gg = collider.get_type();
-
-    let a = collider.try_to::<Gd<SurfacePoint>>();
-
-    if a.is_ok() {
-      let a = a.unwrap();
-      let ab = a.bind();
-      let meta = ab.get_surface_point_metadata();
-      godot_print!("Collider: {:?}", meta);
+    if surface_point.is_in_group("land") {
+      self.surface = Surface::Land;
+    } else {
+      self.surface = Surface::Water;
     }
-    // godot_print!("Collider: {:?}", a);
-
-
-    // let a: SurfacePoint = collider.into();
-    // gg.type_id()
-
-
-    // let b = StaticBody3D::try_from(collider);
-    
-    // StaticBody3D::try_from(collider);
-
-    // let aa = collider.try_cast::<StaticBody3D>();
-    // collider.to::StaticBody3D();
-
-    // if collider.is_some() {
-    //   let collider = collider.unwrap();
-    //   let collider = collider.try_cast::<MeshInstance3D>();
-    //   if collider.is_ok() {
-    //     let collider = collider.unwrap();
-    //     let collider = collider.get_name();
-    //     godot_print!("Collider: {:?}", collider);
-    //   }
-    // }
-
-    // for collision in collisions.values_array().iter_shared() {
-    //   godot_print!("Collision ---> : {:?}", collision);
-    // }
-
-    // godot_print!("Collision: {:?}", collisions);
-
-    // let slide_collision = self.base_mut().get_slide_collision_count();
-
-    // for slide_idx in 0..slide_collision {
-    //   let b = self.base_mut().get_slide_collision(slide_idx);
-    //   // godot_print!("Collision: {:?}", b);
-
-    //   if b.is_some() {
-    //     let collision = b.unwrap();
-    //     // let collider = collision.get_collider().expect("collider to exist");
-    //     // godot_print!("Collider: {:?}", collider);
-
-    //     let collider_shape= collision.get_collider_shape().expect("collider shape to exist");
-    //     godot_print!("Collider: {:?}", collider_shape);
-
-    //     let collision_object_3d = collider_shape.try_cast::<CollisionShape3D>();
-
-    //     if collision_object_3d.is_ok() {
-    //       let collision_object_3d = collision_object_3d.unwrap();
-    //       let collider = collision_object_3d.get_parent().expect("parent to exist");
-    //       godot_print!("Collider: {:?}", collider);
-    //     }
-    //     // let collider = collider.try_cast::<MeshInstance3D>();
-    //   }
-    // }
-
-    // Surface::Water
   }
 
   fn _is_on_self_land(&self) -> bool {
