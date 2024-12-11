@@ -234,8 +234,16 @@ impl Troop {
 
     let gg = collider.get_type();
 
-    let a = collider.try_to::<SurfacePoint>();
-    godot_print!("Collider: {:?}", a);
+    let a = collider.try_to::<Gd<SurfacePoint>>();
+
+    if a.is_ok() {
+      let a = a.unwrap();
+      let ab = a.bind();
+      let meta = ab.get_surface_point_metadata();
+      godot_print!("Collider: {:?}", meta);
+    }
+    // godot_print!("Collider: {:?}", a);
+
 
     // let a: SurfacePoint = collider.into();
     // gg.type_id()
