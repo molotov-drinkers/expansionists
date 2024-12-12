@@ -3,7 +3,7 @@
 [ext_resource type="PackedScene" uid="uid://cf1e1cqvthimj" path="res://assets/Pirate Low Poly Pack/Pirate Low Poly Pack/ChineseSailboat.fbx" id="1_jjydb"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jttc1"]
-albedo_color = Color(9.14484e-07, 0.721299, 0.224568, 1)
+albedo_color = Color(0, 0.396078, 0.823529, 1)
 
 [node name="ChineseSailboat" instance=ExtResource("1_jjydb")]
 

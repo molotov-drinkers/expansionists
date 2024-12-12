@@ -59,7 +59,7 @@ pub struct CombatStats {
 }
 
 const ORIGIN: &str = "nordics";
-const DEST: &str = "diomede_islands";
+const DEST: &str = "aussie_desert";
 
 #[derive(GodotClass)]
 #[class(base=CharacterBody3D)]
