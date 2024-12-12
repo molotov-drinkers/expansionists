@@ -1,4 +1,4 @@
-[gd_scene load_steps=26 format=4 uid="uid://42q6iqdh5dd5"]
+[gd_scene load_steps=25 format=4 uid="uid://42q6iqdh5dd5"]
 
 [ext_resource type="PackedScene" uid="uid://b5dv4qdqxvrmc" path="res://assets/Pirate Low Poly Pack/Pirate Low Poly Pack/SquareSloop.fbx" id="1_mioln"]
 [ext_resource type="PackedScene" uid="uid://cf0pl6jdu5adv" path="res://assets/Pirate Low Poly Pack/Pirate Low Poly Pack/RowBoat.fbx" id="2_dlvr4"]
@@ -9,8 +9,8 @@
 [ext_resource type="PackedScene" uid="uid://cftr2e88ejsju" path="res://scenes/troops/chinese_sailboat.tscn" id="7_j48ci"]
 [ext_resource type="PackedScene" uid="uid://c3u38hkb2pddt" path="res://assets/War Low Poly Pack/War Low Poly Pack/LPWarPack_FuturisticTank.fbx" id="8_6d5ik"]
 [ext_resource type="PackedScene" uid="uid://cddi63ruvdsj4" path="res://scenes/troops/tonk.tscn" id="8_mihlq"]
+[ext_resource type="PackedScene" path="res://scenes/troops/cannon.tscn" id="9_5lh6o"]
 [ext_resource type="PackedScene" uid="uid://d125kpkpnwcn4" path="res://assets/War Low Poly Pack/War Low Poly Pack/LPWarPack_ArmedVehicle.fbx" id="9_7fxgo"]
-[ext_resource type="PackedScene" uid="uid://cfcxqrblwehtu" path="res://assets/Pirate Low Poly Pack/Pirate Low Poly Pack/Cannon.fbx" id="10_mhy8l"]
 [ext_resource type="PackedScene" uid="uid://bycjgeqhaf8yd" path="res://assets/War Low Poly Pack/War Low Poly Pack/LPWarPack_Helicopter.fbx" id="11_5e1ln"]
 [ext_resource type="PackedScene" uid="uid://dbu7njffesr8v" path="res://assets/War Low Poly Pack/War Low Poly Pack/LPWarPack_PineTree.fbx" id="12_r8ela"]
 
@@ -20,10 +20,6 @@
 albedo_color = Color(1, 0, 0.54902, 1)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_o6v62"]
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_di3p2"]
-albedo_color = Color(0.0128005, 0.356559, 0.634181, 1)
-metallic = 1.0
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_suc3x"]
 resource_name = "Metal1"
@@ -186,14 +182,14 @@ floor_constant_speed = true
 floor_block_on_wall = false
 
 [node name="default_mesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(0.02, 0, 0, 0, 0.02, 0, 0, 0, 0.02, 0, 0.01, 0)
+transform = Transform3D(0.02, 0, 0, 0, 0.02, 0, 0, 0, 0.02, 0, 0.9, 0)
 visible = false
 mesh = SubResource("BoxMesh_g5trk")
 skeleton = NodePath("")
 surface_material_override/0 = SubResource("StandardMaterial3D_f4ec8")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
-transform = Transform3D(0.02, 0, 0, 0, 0.02, 0, 0, 0, 0.02, 0, 0.01, 0)
+transform = Transform3D(0.02, 0, 0, 0, 0.02, 0, 0, 0, 0.02, 0, 0.9, 0)
 shape = SubResource("BoxShape3D_o6v62")
 
 [node name="sea" type="Node3D" parent="."]
@@ -231,13 +227,9 @@ transform = Transform3D(0.05, 0, 0, 0, 0.05, 0, 0, 0, 0.05, 0, 0, 0)
 transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, -0.02, 0)
 
 [node name="Tonk" parent="land" instance=ExtResource("8_mihlq")]
+
+[node name="Cannon" parent="land" instance=ExtResource("9_5lh6o")]
 visible = false
-
-[node name="Cannon" parent="land" instance=ExtResource("10_mhy8l")]
-transform = Transform3D(0.6, 0, 0, 0, 0.6, 0, 0, 0, 0.6, 0.174769, 0, 0.171094)
-
-[node name="Cannon" parent="land/Cannon" index="0"]
-surface_material_override/1 = SubResource("StandardMaterial3D_di3p2")
 
 [node name="Truck2" type="Node3D" parent="land"]
 transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, 0, 0, 0)
@@ -268,5 +260,3 @@ visible = false
 
 [node name="pine_tree" parent="misc" instance=ExtResource("12_r8ela")]
 transform = Transform3D(0.05, 0, 0, 0, 0.05, 0, 0, 0, 0.05, 0, 0, 0)
-
-[editable path="land/Cannon"]
