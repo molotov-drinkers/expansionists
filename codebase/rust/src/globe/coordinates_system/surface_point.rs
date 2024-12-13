@@ -68,7 +68,7 @@ impl SurfacePoint {
     let collision_dict = space_state.intersect_ray(&query);
     let collider = collision_dict
       .get("collider")
-      .expect(&format!("'collider' key to exist in collision dictionary {:?}", collision_dict));
+      .expect(&format!("'collider' key to exist in collision dictionary: {:?}", collision_dict));
 
     // The collided area has to be a SurfacePoint
     let surface_point = collider

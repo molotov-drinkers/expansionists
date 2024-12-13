@@ -58,8 +58,8 @@ pub struct CombatStats {
   pub fighting_behavior: FighthingBehavior,
 }
 
-const ORIGIN: &str = "nordics";
-const DEST: &str = "aussie_desert";
+const ORIGIN: &str = "atlantic_forest";
+const DEST: &str = "horn";
 
 #[derive(GodotClass)]
 #[class(base=CharacterBody3D)]
