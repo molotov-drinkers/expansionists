@@ -14,6 +14,8 @@ pub struct CoordinateMetadata {
 /// Populated by the `VirtualPlanet::populate_surface_points_and_coordinate_map` method
 pub type CoordinateMap = HashMap<Coordinates, CoordinateMetadata>;
 
+const NUM_OF_WAYPOINTS: usize = 100;
+
 pub struct CoordinatesSystem {}
 
 impl CoordinatesSystem {
@@ -31,17 +33,13 @@ impl CoordinatesSystem {
 
     let mut trajectory = vec![];
 
-    // TODO: make this dynamic
-    let hard_coded_num_of_points = 100;
-
-    for i in 0..hard_coded_num_of_points{
-      let t = i as f64 / (hard_coded_num_of_points - 1) as f64;
+    for i in 0..NUM_OF_WAYPOINTS{
+      let t = i as f64 / (NUM_OF_WAYPOINTS - 1) as f64;
 
       let trajectory_point = origin.slerp(destination, t as f32);
       let trajectory_point = Self::radius_scale(trajectory_point, radius);
       trajectory.push(trajectory_point);
     }
-    // godot_print!("Trajectory size is {:?}", trajectory.len());
 
     trajectory
   }
