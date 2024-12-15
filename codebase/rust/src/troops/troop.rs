@@ -54,7 +54,7 @@ impl ICharacterBody3D for Troop {
       combat_stats: CombatStats::new(),
 
       is_moving: false,
-      is_patrolling: false,
+      is_patrolling: true,
       in_territory_moving_speed: 0.05,
       idle_timer: IDLE_TIMER,
 

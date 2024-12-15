@@ -254,7 +254,9 @@ impl VirtualPlanet {
         panic!("Expected territory_coordinates to have at least one element");
       }
   
-      let territory_point = territory_coordinates.len() / 2;
+      // TICKET: #50 this divided by 4 is a hack to get a coordinate in the territory not close to the border
+      // Sometime it does not work, but it's good enough for now
+      let territory_point = territory_coordinates.len() / 1/4;
       territory_coordinates[territory_point]
     }
 
