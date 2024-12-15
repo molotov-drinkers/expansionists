@@ -59,7 +59,7 @@ pub struct CombatStats {
 }
 
 // const ORIGIN: &str = "latin_variations";
-const DEST: &str = "horn";
+const DEST: &str = "antartica_peninsula";
 
 const IDLE_TIMER: f32 = 0.2;
 
@@ -76,6 +76,8 @@ pub struct Troop {
 
   // owner: String,
   combat_stats: CombatStats,
+  // TODO: set this speed when goes outside if its own land
+  // fight_or_flight_speed: f32,
 
   is_moving: bool,
   is_patrolling: bool,
@@ -83,8 +85,6 @@ pub struct Troop {
   /// indicates the time the troop will wait before moving again while patrolling
   idle_timer: f32,
 
-  // TODO: set this speed when goes outside if its own land
-  // outsider_moving_speed: f32,
   walking_trajectory_points: Vec<Vector3>,
   current_trajectory_point: usize,
 
@@ -111,7 +111,7 @@ impl ICharacterBody3D for Troop {
       },
 
       is_moving: false,
-      is_patrolling: true,
+      is_patrolling: false,
       in_territory_moving_speed: 0.05,
       idle_timer: IDLE_TIMER,
 

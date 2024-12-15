@@ -1,6 +1,6 @@
 
 use godot::{classes::{Area3D, IArea3D, MeshInstance3D, PhysicsRayQueryParameters3D, World3D}, prelude::*};
-use crate::{globe::territory::types::TerritoryId, player::troop::Troop};
+use crate::{globe::territory::types::TerritoryId, troops::troop::Troop};
 
 type Latitude = i16;
 type Longitude = i16;

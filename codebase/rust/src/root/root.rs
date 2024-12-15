@@ -2,7 +2,7 @@ use godot::classes::{INode3D, Node3D};
 use godot::prelude::*;
 
 use crate::globe::coordinates_system::virtual_planet::VirtualPlanet;
-use crate::player::troop;
+use crate::troops::troop;
 
 #[derive(GodotClass)]
 #[class(base=Node3D)]
@@ -34,7 +34,7 @@ impl INode3D for RootScene {
   }
 }
 
-const ORIGIN: &str = "diomede_islands";
+const ORIGIN: &str = "maoris";
 const ORIGIN_B: &str = "nordics";
 
 impl RootScene {
