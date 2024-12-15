@@ -67,31 +67,24 @@ const IDLE_TIMER: f32 = 0.2;
 #[class(base=CharacterBody3D)]
 pub struct Troop {
   base: Base<CharacterBody3D>,
-
   /// holds troop's current location
   touching_surface_point: SurfacePointMetadata,
-  
   /// holds the territory id the troop belongs to
   deployed_to_territory: TerritoryId,
-
-  location_situation: LocationSituation,
+  // location_situation: LocationSituation,
   surface: Surface,
 
-  owner: String,
-
+  // owner: String,
   combat_stats: CombatStats,
 
-  
-  is_patrolling: bool,
   is_moving: bool,
+  is_patrolling: bool,
   in_territory_moving_speed: f32,
-  randomly_walking_to: Coordinates,
-
   /// indicates the time the troop will wait before moving again while patrolling
   idle_timer: f32,
 
   // TODO: set this speed when goes outside if its own land
-  outsider_moving_speed: f32,
+  // outsider_moving_speed: f32,
   walking_trajectory_points: Vec<Vector3>,
   current_trajectory_point: usize,
 
@@ -103,13 +96,9 @@ impl ICharacterBody3D for Troop {
 
     Troop {
       base: base,
-      
-      location_situation: LocationSituation::NeutralLand,
-      surface: Surface::Land,
-
+      touching_surface_point: SurfacePoint::get_blank_surface_point_metadata(),
       deployed_to_territory: "".to_string(),
-
-      owner: "".to_string(),
+      surface: Surface::Land,
 
       combat_stats: CombatStats {
         in_combat: false,
@@ -121,18 +110,14 @@ impl ICharacterBody3D for Troop {
         fighting_behavior: FighthingBehavior::Beligerent,
       },
 
-      is_patrolling: true,
       is_moving: false,
+      is_patrolling: true,
       in_territory_moving_speed: 0.05,
-
       idle_timer: IDLE_TIMER,
 
-      randomly_walking_to: SurfacePoint::get_blank_coordinates(),
-      outsider_moving_speed: 0.2,
       walking_trajectory_points: vec![],
       current_trajectory_point: 0,
       
-      touching_surface_point: SurfacePoint::get_blank_surface_point_metadata(),
     }
   }
 
@@ -203,6 +188,7 @@ impl Troop {
   }
 
   /// Sets orientation to respect the globe trajectory and gravity
+  /// if the troop is moving, it will set the orientation to the direction it's moving
   fn set_orientation(&mut self, trajectory_vector: Option<Vector3>) {
     // This is the "up" direction on the surface
     let normal = self.base().get_global_position().normalized();
@@ -270,65 +256,69 @@ impl Troop {
       // self._highlight_geodesic_trajectory(&geodesic_trajectory);
       self.walking_trajectory_points = geodesic_trajectory;
       self.is_moving = true;
-      self.randomly_walking_to = moving_to;
 
     }
   }
 
   fn maybe_move_along_the_trajectory_and_set_orientation(&mut self) {
-
-    if self.current_trajectory_point == (self.walking_trajectory_points.len() -1) {
-      self.reset_trajectory();
-      return
-    }
-
     if self.walking_trajectory_points.len() != 0 && self.idle_timer == 0.0 {
-      let current_target = self.walking_trajectory_points[self.current_trajectory_point];
-      let current_position = self.base().get_global_transform().origin;
-
-      // Where N is troop position + buffer on the geodesic trajectory
-      let buffer_checker = 5;
-      if (self.current_trajectory_point + buffer_checker) < self.walking_trajectory_points.len() -1 && self.is_patrolling {
-        let check_invasion = self.walking_trajectory_points[self.current_trajectory_point + buffer_checker];
-        let world = self.base().get_world_3d().expect("World to exist");
-        let surface_point = SurfacePoint::get_surface_point(check_invasion, world)
-          .expect("Expected to get surface point");
-        if self.is_patrolling && surface_point.bind().get_surface_point_metadata().territory_id.clone()
-          .is_some_and(|t| t != self.deployed_to_territory) {
-            self.reset_trajectory();
-            return;
-        }
+      if self.have_future_invasion_in_the_trajectory() {
+        self.reset_trajectory();
+        return;
       }
 
+      let current_target = self.walking_trajectory_points[self.current_trajectory_point];
+      let current_position = self.base().get_global_transform().origin;
       let direction = (current_target - current_position).try_normalized();
+      let on_the_last_waypoint = self.current_trajectory_point == (self.walking_trajectory_points.len() -1);
 
-      // TODO: join the logic w the two last ifs on this scope
       // If the direction is None, it means the current position is the same as the target
       // so we should move to the next point in the trajectory
-      if direction.is_none() && self.current_trajectory_point < self.walking_trajectory_points.len() {
+      if direction.is_none() && !on_the_last_waypoint {
         self.current_trajectory_point = self.current_trajectory_point + 1;
         return;
       }
 
       let direction = direction.unwrap();
       let velocity = direction * self.in_territory_moving_speed;
-
       self.set_orientation(Some(direction));
       self.base_mut().set_velocity(velocity);
       self.base_mut().move_and_slide();
 
       // Check if the Troop has reached the target (within a small tolerance)
       let current_distance = current_position.distance_to(current_target);
+      let too_close_to_the_waypoint = current_distance < 0.1;
 
-      if current_distance < 0.1 && self.current_trajectory_point < self.walking_trajectory_points.len() {
+      if too_close_to_the_waypoint && !on_the_last_waypoint {
         self.current_trajectory_point = self.current_trajectory_point + 1;
       }
 
       // Finish the movement if the troop has reached the last waypoint
-      if current_distance < 0.1 && self.current_trajectory_point == (self.walking_trajectory_points.len() -1) {
+      if too_close_to_the_waypoint && on_the_last_waypoint {
         self.reset_trajectory();
       }
     }
+  }
+
+  /// Avoids future invasion by checking if the next N points (buffer_checker) on the geodesic trajectory
+  /// are on an different territory as the troop is patrolling at
+  /// that happens because the point the troop is moving to is get randomly and the geodesic trajectory
+  /// may pass through other territories
+  fn have_future_invasion_in_the_trajectory(&mut self) -> bool {
+    // Where N is troop position + buffer on the geodesic trajectory
+    let buffer_checker = 5;
+
+    if self.is_patrolling && (self.current_trajectory_point + buffer_checker) < self.walking_trajectory_points.len() -1 {
+      let check_future_invasion = self.walking_trajectory_points[self.current_trajectory_point + buffer_checker];
+      let world = self.base().get_world_3d().expect("World to exist");
+      let surface_point = SurfacePoint::get_surface_point(check_future_invasion, world)
+        .expect("Expected to get surface point");
+      if surface_point.bind().get_surface_point_metadata().territory_id.clone()
+        .is_some_and(|t| t != self.deployed_to_territory) {
+          return true;
+      }
+    }
+    false
   }
 
   fn reset_trajectory(&mut self) {

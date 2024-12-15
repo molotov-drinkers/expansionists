@@ -229,9 +229,9 @@ transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, -0.000361934, 0)
 
 [node name="Tonk" parent="land" instance=ExtResource("8_mihlq")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.08461, 0)
+visible = false
 
 [node name="Cannon" parent="land" instance=ExtResource("9_5lh6o")]
-visible = false
 
 [node name="Truck2" type="Node3D" parent="land"]
 transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, 0, 0, 0)

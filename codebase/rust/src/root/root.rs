@@ -34,8 +34,8 @@ impl INode3D for RootScene {
   }
 }
 
-const ORIGIN: &str = "atlantic_forest";
-const ORIGIN_B: &str = "patagonia";
+const ORIGIN: &str = "diomede_islands";
+const ORIGIN_B: &str = "nordics";
 
 impl RootScene {
   pub fn startup_troops_spawn(&mut self, virtual_planet: &VirtualPlanet) {
