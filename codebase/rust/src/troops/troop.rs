@@ -1,66 +1,19 @@
-use std::fmt;
 
 use godot::{
   classes::{BoxMesh, CharacterBody3D, ICharacterBody3D, MeshInstance3D, StandardMaterial3D}, prelude::*
 };
-use crate::{
-  globe::{coordinates_system::{
+use crate::globe::{coordinates_system::{
     coordinates_system::CoordinatesSystem,
     surface_point::{Coordinates, SurfacePoint, SurfacePointMetadata},
     virtual_planet::VirtualPlanet,
-  }, territory::types::TerritoryId},
-  root::root::RootScene,
+  }, territory::types::TerritoryId};
+
+use super::{
+  combat_engine::CombatStats,
+  surface::Surface
 };
 
-pub enum LocationSituation {
-  SelfLand,
-  AllyLand,
-  NeutralLand,
-  EnemyLand,
-}
-
-#[derive(PartialEq, Debug)]
-pub enum Surface {
-  Land,
-  Water,
-
-  // future_version:
-  // Air, // (Planes)
-  // Space, // (Satellites)
-}
-
-impl fmt::Display for Surface {
-  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-    match self {
-      Surface::Land => write!(f, "land"),
-      Surface::Water =>  write!(f, "water"),
-    }
-  }
-}
-
-pub enum FighthingBehavior {
-  /// will fight any non-ally troop who crosses by it doesn't matter the territory
-  Beligerent,
-
-  /// will only fight if attacked or if it's territory is attacked
-  Pacifist,
-}
-
-pub struct CombatStats {
-  pub in_combat: bool,
-  pub in_after_combat: bool,
-
-  pub damage: i32,
-  pub hp: i32,
-  // pub speed: i32,
-  pub alive: bool,
-
-  pub fighting_behavior: FighthingBehavior,
-}
-
-// const ORIGIN: &str = "latin_variations";
 const DEST: &str = "antartica_peninsula";
-
 const IDLE_TIMER: f32 = 0.2;
 
 #[derive(GodotClass)]
@@ -70,14 +23,12 @@ pub struct Troop {
   /// holds troop's current location
   touching_surface_point: SurfacePointMetadata,
   /// holds the territory id the troop belongs to
-  deployed_to_territory: TerritoryId,
+  pub deployed_to_territory: TerritoryId,
   // location_situation: LocationSituation,
   surface: Surface,
 
   // owner: String,
   combat_stats: CombatStats,
-  // TODO: set this speed when goes outside if its own land
-  // fight_or_flight_speed: f32,
 
   is_moving: bool,
   is_patrolling: bool,
@@ -100,15 +51,7 @@ impl ICharacterBody3D for Troop {
       deployed_to_territory: "".to_string(),
       surface: Surface::Land,
 
-      combat_stats: CombatStats {
-        in_combat: false,
-        in_after_combat: false,
-        damage: 0,
-        hp: 0,
-        // speed: 0,
-        alive: false,
-        fighting_behavior: FighthingBehavior::Beligerent,
-      },
+      combat_stats: CombatStats::new(),
 
       is_moving: false,
       is_patrolling: false,
@@ -388,46 +331,4 @@ impl Troop {
 
     virtual_planet
   }
-}
-
-/// Called from root.rs
-pub fn troop_spawner(root_scene: &mut RootScene, virtual_planet: &VirtualPlanet, troops_spawn: i8, territory_id: TerritoryId) {
-  let coordinates: Coordinates = VirtualPlanet
-    ::get_spawner_territory_coordinate(
-    // ::get_an_random_territory_coordinate(
-      &virtual_planet,
-      &territory_id
-    );
-
-  let cartesian = virtual_planet
-    .coordinate_map
-    .get(&coordinates)
-    .expect("Coordinate expected to exist")
-    .cartesian;
-
-  // STEP 3: SPAWNING TROOP
-  let player_color = Color::FLORAL_WHITE;
-  let mut material = StandardMaterial3D::new_gd();
-  material.set_albedo(player_color);
-  let new_troop: Gd<PackedScene> = load("res://scenes/troop_scene.tscn");
-  let mut new_troop = new_troop.instantiate_as::<Troop>();
-
-  // TICKET: #39 generate a troop ID base on: territory_id + player_id + timestamp
-  let troop_id = format!("troop ... {:}-{:}", troops_spawn, territory_id);
-  new_troop.set_name(&troop_id.to_godot());
-  // new_troop.bind_mut().located_at = coordinate;
-
-  // For organization matter, new_troops are spawn under /root_scene/troops
-  root_scene.base()
-    .find_child("troops") 
-    .expect("troops to exist")
-    .add_child(&new_troop);
-
-  new_troop.set_position(cartesian);
-  new_troop.bind_mut().deployed_to_territory = territory_id.to_string();
-
-  let troop_node = new_troop.find_child("default_mesh").expect("MeshInstance3D to exist");
-  let mut troop_mesh = troop_node.cast::<MeshInstance3D>();
-  troop_mesh.set_surface_override_material(0, &material);
-
 }

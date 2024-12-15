@@ -2,7 +2,7 @@ use godot::classes::{INode3D, Node3D};
 use godot::prelude::*;
 
 use crate::globe::coordinates_system::virtual_planet::VirtualPlanet;
-use crate::troops::troop;
+use crate::troops::spawner_engine;
 
 #[derive(GodotClass)]
 #[class(base=Node3D)]
@@ -41,13 +41,13 @@ impl RootScene {
   pub fn startup_troops_spawn(&mut self, virtual_planet: &VirtualPlanet) {
     let max_troops = 10;
     while self.troops_spawn < max_troops {
-      troop::troop_spawner(
+      spawner_engine::troop_spawner(
         self, &virtual_planet,
         self.troops_spawn,
         ORIGIN.to_owned(),
       );
 
-      troop::troop_spawner(
+      spawner_engine::troop_spawner(
         self, &virtual_planet,
         self.troops_spawn,
         ORIGIN_B.to_owned(),

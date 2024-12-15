@@ -5,7 +5,7 @@ use fastrand;
 
 use crate::{
   globe::territory::types::{Territories, Territory, TerritoryId},
-  troops::troop::Surface
+  troops::surface::Surface
 };
 use super::{
   coordinates_system::{CoordinateMap, CoordinateMetadata},
