@@ -22,6 +22,7 @@ impl ICamera3D for PlayerCamera {
   fn init(base: Base<Camera3D>) -> PlayerCamera {
     PlayerCamera {
       base,
+      // TICKET: #44
       camera_speed: 4.,
       zoom_speed: 4.,
       theta: 0.0,

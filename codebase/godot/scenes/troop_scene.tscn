@@ -182,15 +182,16 @@ floor_constant_speed = true
 floor_block_on_wall = false
 
 [node name="default_mesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(0.02, 0, 0, 0, 0.02, 0, 0, 0, 0.02, 0, 0.9, 0)
+transform = Transform3D(0.02, 0, 0, 0, 0.02, 0, 0, 0, 0.02, 0, 0.2, 0)
 visible = false
 mesh = SubResource("BoxMesh_g5trk")
 skeleton = NodePath("")
 surface_material_override/0 = SubResource("StandardMaterial3D_f4ec8")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
-transform = Transform3D(0.02, 0, 0, 0, 0.02, 0, 0, 0, 0.02, 0, 0.9, 0)
+transform = Transform3D(0.02, 0, 0, 0, 0.02, 0, 0, 0, 0.02, 0, 0.2, 0)
 shape = SubResource("BoxShape3D_o6v62")
+disabled = true
 
 [node name="sea" type="Node3D" parent="."]
 transform = Transform3D(1.3, 0, 0, 0, 1.3, 0, 0, 0, 1.3, 0, -0.257259, 0)
@@ -224,9 +225,10 @@ visible = false
 transform = Transform3D(0.05, 0, 0, 0, 0.05, 0, 0, 0, 0.05, 0, 0, 0)
 
 [node name="land" type="Node3D" parent="."]
-transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, -0.02, 0)
+transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, -0.000361934, 0)
 
 [node name="Tonk" parent="land" instance=ExtResource("8_mihlq")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.08461, 0)
 
 [node name="Cannon" parent="land" instance=ExtResource("9_5lh6o")]
 visible = false

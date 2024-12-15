@@ -22,13 +22,10 @@ impl CoordinatesSystem {
   /// returns a list of coordinates represented by the 
   /// trajectory where a moving point would pass by.
   pub fn get_geodesic_trajectory(
-    origin: Coordinates,
-    destination: Coordinates,
-    coordinate_map: &CoordinateMap,
+    origin: Vector3,
+    destination: Vector3,
     radius: f32
   ) -> Vec<Vector3> {
-    let origin = coordinate_map.get(&origin).unwrap().cartesian;
-    let destination = coordinate_map.get(&destination).unwrap().cartesian;
     let origin = origin.normalized();
     let destination = destination.normalized();
 

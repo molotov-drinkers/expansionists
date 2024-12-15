@@ -1,11 +1,28 @@
-[gd_scene load_steps=3 format=3 uid="uid://cftr2e88ejsju"]
+[gd_scene load_steps=5 format=3 uid="uid://cftr2e88ejsju"]
 
 [ext_resource type="PackedScene" uid="uid://cf1e1cqvthimj" path="res://assets/Pirate Low Poly Pack/Pirate Low Poly Pack/ChineseSailboat.fbx" id="1_jjydb"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jttc1"]
-albedo_color = Color(0, 0.396078, 0.823529, 1)
+albedo_color = Color(0.635294, 0.0392157, 0.247059, 1)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_er8xg"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_kyiob"]
+transparency = 2
+alpha_scissor_threshold = 0.77
+alpha_antialiasing_mode = 0
+blend_mode = 1
+albedo_color = Color(0, 0, 0, 1)
+refraction_enabled = true
 
 [node name="ChineseSailboat" instance=ExtResource("1_jjydb")]
 
 [node name="ChineseSailboat" parent="." index="0"]
 surface_material_override/2 = SubResource("StandardMaterial3D_jttc1")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." index="1"]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 0, 0, 0)
+visible = false
+transparency = 1.0
+mesh = SubResource("PlaneMesh_er8xg")
+surface_material_override/0 = SubResource("StandardMaterial3D_kyiob")

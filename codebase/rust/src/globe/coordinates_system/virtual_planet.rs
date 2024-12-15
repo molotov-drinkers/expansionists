@@ -1,9 +1,12 @@
 
 use std::{collections::HashMap, f64::consts::PI};
 use godot::{classes::{BoxMesh, BoxShape3D, CollisionShape3D, MeshInstance3D, StandardMaterial3D}, obj::NewAlloc, prelude::*};
-use rand::Rng;
+use fastrand;
 
-use crate::{globe::territory::types::{Territories, Territory, TerritoryId}, player::troop::Surface};
+use crate::{
+  globe::territory::types::{Territories, Territory, TerritoryId},
+  player::troop::Surface
+};
 use super::{
   coordinates_system::{CoordinateMap, CoordinateMetadata},
   surface_point::{Coordinates, SurfacePoint, SurfacePointMetadata}
@@ -216,10 +219,9 @@ impl VirtualPlanet {
     }
   }
 
-
   /// Receives a territory coordinate and returns a random coordinate from the same territory
   /// It's used for keeping a troop walking inside of a territory
-  pub fn get_another_territory_coordinate(&self, given_coordinates: Coordinates) -> Coordinates {
+  fn _get_another_territory_coordinate(&self, given_coordinates: &Coordinates) -> Coordinates {
     let coordinate_metadata = self
       .coordinate_map
       .get(&given_coordinates)
@@ -240,13 +242,24 @@ impl VirtualPlanet {
     if territory_coordinates.len() == 0 {
       panic!("Expected territory_coordinates to have at least one element");
     }
-    let mut rng = rand::thread_rng();
-    let random_index = rng.gen_range(0..territory_coordinates.len());
+    let random_index = fastrand::usize(0..(territory_coordinates.len()-1));
     territory_coordinates[random_index]
   }
 
+  /// Receives a territory_id and returns a random coordinate from the territory
+  pub fn get_spawner_territory_coordinate(&self, territory_id: &str) -> Coordinates {
+      let territory = self.territories.get(territory_id).expect("Expected territory to exist");
+      let territory_coordinates = &territory.coordinates;
+      if territory_coordinates.len() == 0 {
+        panic!("Expected territory_coordinates to have at least one element");
+      }
+  
+      let territory_point = territory_coordinates.len() / 2;
+      territory_coordinates[territory_point]
+    }
+
   /// Receives a latitude and longitude and returns the cartesian coordinates
-  pub fn _get_cartesian_from_coordinates(&self, given_coordinates: Coordinates) -> Vector3 {
+  pub fn get_cartesian_from_coordinates(&self, given_coordinates: &Coordinates) -> Vector3 {
     let coordinate_metadata = self.coordinate_map.get(&given_coordinates).expect("Expected coordinates to exist");
     coordinate_metadata.cartesian
   }

@@ -4,11 +4,11 @@ use godot::{
   classes::{BoxMesh, CharacterBody3D, ICharacterBody3D, MeshInstance3D, StandardMaterial3D}, prelude::*
 };
 use crate::{
-  globe::coordinates_system::{
+  globe::{coordinates_system::{
     coordinates_system::CoordinatesSystem,
-    surface_point::{Coordinates, SurfacePoint},
+    surface_point::{Coordinates, SurfacePoint, SurfacePointMetadata},
     virtual_planet::VirtualPlanet,
-  },
+  }, territory::types::TerritoryId},
   root::root::RootScene,
 };
 
@@ -52,34 +52,49 @@ pub struct CombatStats {
 
   pub damage: i32,
   pub hp: i32,
-  pub speed: i32,
+  // pub speed: i32,
   pub alive: bool,
 
   pub fighting_behavior: FighthingBehavior,
 }
 
-const ORIGIN: &str = "atlantic_forest";
+// const ORIGIN: &str = "latin_variations";
 const DEST: &str = "horn";
+
+const IDLE_TIMER: f32 = 0.2;
 
 #[derive(GodotClass)]
 #[class(base=CharacterBody3D)]
 pub struct Troop {
   base: Base<CharacterBody3D>,
 
-  pub located_at: Coordinates,
-  pub location_situation: LocationSituation,
-  pub surface: Surface,
+  /// holds troop's current location
+  touching_surface_point: SurfacePointMetadata,
+  
+  /// holds the territory id the troop belongs to
+  deployed_to_territory: TerritoryId,
 
-  pub owner: String,
+  location_situation: LocationSituation,
+  surface: Surface,
 
-  pub combat_stats: CombatStats,
+  owner: String,
 
-  /// used for animation inside of the territory
-  pub is_moving: bool,
-  pub randomly_walking_to: Coordinates,
-  pub moving_speed: f32,
-  pub walking_trajectory_points: Vec<Vector3>,
-  pub current_trajectory_point: usize,
+  combat_stats: CombatStats,
+
+  
+  is_patrolling: bool,
+  is_moving: bool,
+  in_territory_moving_speed: f32,
+  randomly_walking_to: Coordinates,
+
+  /// indicates the time the troop will wait before moving again while patrolling
+  idle_timer: f32,
+
+  // TODO: set this speed when goes outside if its own land
+  outsider_moving_speed: f32,
+  walking_trajectory_points: Vec<Vector3>,
+  current_trajectory_point: usize,
+
 }
 
 #[godot_api]
@@ -89,9 +104,10 @@ impl ICharacterBody3D for Troop {
     Troop {
       base: base,
       
-      located_at: (0, 0),
       location_situation: LocationSituation::NeutralLand,
       surface: Surface::Land,
+
+      deployed_to_territory: "".to_string(),
 
       owner: "".to_string(),
 
@@ -100,16 +116,23 @@ impl ICharacterBody3D for Troop {
         in_after_combat: false,
         damage: 0,
         hp: 0,
-        speed: 0,
+        // speed: 0,
         alive: false,
         fighting_behavior: FighthingBehavior::Beligerent,
       },
 
+      is_patrolling: true,
       is_moving: false,
-      randomly_walking_to: (0, 0),
-      moving_speed: 0.2,
+      in_territory_moving_speed: 0.05,
+
+      idle_timer: IDLE_TIMER,
+
+      randomly_walking_to: SurfacePoint::get_blank_coordinates(),
+      outsider_moving_speed: 0.2,
       walking_trajectory_points: vec![],
       current_trajectory_point: 0,
+      
+      touching_surface_point: SurfacePoint::get_blank_surface_point_metadata(),
     }
   }
 
@@ -117,12 +140,16 @@ impl ICharacterBody3D for Troop {
     self.set_custom_collision();
   }
 
-  fn physics_process(&mut self, _delta: f64) {
-    self.set_surface();
-    self.check_and_change_mesh();
+  fn physics_process(&mut self, delta: f64) {    
+    // Sets orientation first, as we use default_mesh to get the global position
+    // it's important to set the orientation before setting the surface troop
     self.set_orientation(None);
+
+    self.set_surface_troop();
+    self.check_and_change_mesh();
     self.maybe_populate_trajectory_points();
     self.maybe_move_along_the_trajectory_and_set_orientation();
+    self.decrease_idle_timer(delta);
   }
 }
 
@@ -135,6 +162,21 @@ impl Troop {
     let troop_collision_mask = 2;
     self.base_mut().set_collision_mask(troop_collision_layer);
     self.base_mut().set_collision_layer(troop_collision_mask);
+  }
+
+  /// Sets troop surface according to the surface_point troop is touching
+  fn set_surface_troop(&mut self) {
+    let surface_point = SurfacePoint::get_troop_surface_point(
+      self
+    );
+
+    if surface_point.is_in_group(&Surface::Land.to_string()) {
+      self.surface = Surface::Land;
+    } else {
+      self.surface = Surface::Water;
+    }
+
+    self.touching_surface_point = surface_point.bind().surface_point_metadata.clone();
   }
 
   /// Sets troop to show the proper mesh according to the surface the troop is touching
@@ -169,7 +211,7 @@ impl Troop {
     let forward = if trajectory_vector.is_some() {
       trajectory_vector.unwrap()
     } else {
-      // Choose a forward direction (assuming the character faces the -Z direction by default)
+      // Choose a forward direction (assuming the troop faces the -Z direction by default)
       Vector3::new(0.0, 0.0, -1.0)
     };
   
@@ -195,19 +237,6 @@ impl Troop {
     ));
   }
 
-  #[func]
-  fn set_surface(&mut self) {
-    let surface_point = SurfacePoint::get_troop_surface_point(
-      self
-    );
-
-    if surface_point.is_in_group(&Surface::Land.to_string()) {
-      self.surface = Surface::Land;
-    } else {
-      self.surface = Surface::Water;
-    }
-  }
-
   fn _is_on_self_land(&self) -> bool {
     // TICKET: #12
     true
@@ -219,50 +248,70 @@ impl Troop {
   }
 
   fn maybe_populate_trajectory_points(&mut self) {
-    if
-      // (self._is_on_self_land() || self._is_on_ally_land()) &&
-      self.combat_stats.in_combat == false &&
-      self.is_moving == false {
-
+    if self.combat_stats.in_combat == false && self.is_moving == false {
       let virtual_planet = self.get_virtual_planet_from_troop_scope();
-      let randomly_walking_to = virtual_planet
-        .bind()
-        // .get_another_territory_coordinate(self.located_at);
-        // TODO: get back to get_another_territory_coordinate implementation
-        .get_an_random_territory_coordinate(
-          DEST.into(),
-        );
+      let virtual_planet = virtual_planet.bind();
+
+      let moving_to: Coordinates = match self.is_patrolling {
+        true => virtual_planet
+          .get_an_random_territory_coordinate(&self.deployed_to_territory),
+        
+        // TICKET: #12 This will be an order to move to other territory
+        false => virtual_planet
+          .get_an_random_territory_coordinate(DEST.into()),
+      };
 
       let geodesic_trajectory = CoordinatesSystem::get_geodesic_trajectory(
-        self.located_at,
-        randomly_walking_to,
-        &virtual_planet.bind().coordinate_map,
+        self.touching_surface_point.cartesian,
+        virtual_planet.get_cartesian_from_coordinates(&moving_to),
         VirtualPlanet::get_planet_radius() as f32
       );
 
       // self._highlight_geodesic_trajectory(&geodesic_trajectory);
-
       self.walking_trajectory_points = geodesic_trajectory;
       self.is_moving = true;
-      self.randomly_walking_to = randomly_walking_to;
+      self.randomly_walking_to = moving_to;
 
     }
   }
 
   fn maybe_move_along_the_trajectory_and_set_orientation(&mut self) {
 
-    if self.walking_trajectory_points.len() != 0 {
+    if self.current_trajectory_point == (self.walking_trajectory_points.len() -1) {
+      self.reset_trajectory();
+      return
+    }
+
+    if self.walking_trajectory_points.len() != 0 && self.idle_timer == 0.0 {
       let current_target = self.walking_trajectory_points[self.current_trajectory_point];
       let current_position = self.base().get_global_transform().origin;
-      
+
+      // Where N is troop position + buffer on the geodesic trajectory
+      let buffer_checker = 5;
+      if (self.current_trajectory_point + buffer_checker) < self.walking_trajectory_points.len() -1 && self.is_patrolling {
+        let check_invasion = self.walking_trajectory_points[self.current_trajectory_point + buffer_checker];
+        let world = self.base().get_world_3d().expect("World to exist");
+        let surface_point = SurfacePoint::get_surface_point(check_invasion, world)
+          .expect("Expected to get surface point");
+        if self.is_patrolling && surface_point.bind().get_surface_point_metadata().territory_id.clone()
+          .is_some_and(|t| t != self.deployed_to_territory) {
+            self.reset_trajectory();
+            return;
+        }
+      }
+
       let direction = (current_target - current_position).try_normalized();
+
+      // TODO: join the logic w the two last ifs on this scope
+      // If the direction is None, it means the current position is the same as the target
+      // so we should move to the next point in the trajectory
       if direction.is_none() && self.current_trajectory_point < self.walking_trajectory_points.len() {
         self.current_trajectory_point = self.current_trajectory_point + 1;
         return;
       }
 
       let direction = direction.unwrap();
-      let velocity = direction * self.moving_speed;
+      let velocity = direction * self.in_territory_moving_speed;
 
       self.set_orientation(Some(direction));
       self.base_mut().set_velocity(velocity);
@@ -276,15 +325,28 @@ impl Troop {
       }
 
       // Finish the movement if the troop has reached the last waypoint
-      if current_distance < 0.1 && self.current_trajectory_point == self.walking_trajectory_points.len() {
-        godot_print!("--- Troop has reached the destination");
-        self.is_moving = false;
-        self.current_trajectory_point = 0;
-        self.walking_trajectory_points.clear();
-
-
-        self.combat_stats.in_combat = true;
+      if current_distance < 0.1 && self.current_trajectory_point == (self.walking_trajectory_points.len() -1) {
+        self.reset_trajectory();
       }
+    }
+  }
+
+  fn reset_trajectory(&mut self) {
+    self.is_moving = false;
+    self.current_trajectory_point = 0;
+    self.walking_trajectory_points.clear();
+    self.reset_idle_timer();
+  }
+
+  fn reset_idle_timer(&mut self) {
+    self.idle_timer = IDLE_TIMER;
+  }
+
+  fn decrease_idle_timer(&mut self, delta: f64) {
+    if self.idle_timer <= 0.0 {
+      self.idle_timer = 0.0; // Ensure it doesn't go negative
+    } else {
+      self.idle_timer -= delta as f32;
     }
   }
 
@@ -338,18 +400,18 @@ impl Troop {
   }
 }
 
-
 /// Called from root.rs
-pub fn troop_spawner(root_scene: &mut RootScene, virtual_planet: &VirtualPlanet, troops_spawn: i8) {
-  let temp_hard_coded_territory = ORIGIN.into();
-  let coordinate = VirtualPlanet::get_an_random_territory_coordinate(
-    &virtual_planet,
-    temp_hard_coded_territory
-  );
+pub fn troop_spawner(root_scene: &mut RootScene, virtual_planet: &VirtualPlanet, troops_spawn: i8, territory_id: TerritoryId) {
+  let coordinates: Coordinates = VirtualPlanet
+    ::get_spawner_territory_coordinate(
+    // ::get_an_random_territory_coordinate(
+      &virtual_planet,
+      &territory_id
+    );
 
   let cartesian = virtual_planet
     .coordinate_map
-    .get(&coordinate)
+    .get(&coordinates)
     .expect("Coordinate expected to exist")
     .cartesian;
 
@@ -361,9 +423,9 @@ pub fn troop_spawner(root_scene: &mut RootScene, virtual_planet: &VirtualPlanet,
   let mut new_troop = new_troop.instantiate_as::<Troop>();
 
   // TICKET: #39 generate a troop ID base on: territory_id + player_id + timestamp
-  let troop_id = format!("troop ... {:}-{:}", troops_spawn, temp_hard_coded_territory);
+  let troop_id = format!("troop ... {:}-{:}", troops_spawn, territory_id);
   new_troop.set_name(&troop_id.to_godot());
-  new_troop.bind_mut().located_at = coordinate;
+  // new_troop.bind_mut().located_at = coordinate;
 
   // For organization matter, new_troops are spawn under /root_scene/troops
   root_scene.base()
@@ -372,6 +434,7 @@ pub fn troop_spawner(root_scene: &mut RootScene, virtual_planet: &VirtualPlanet,
     .add_child(&new_troop);
 
   new_troop.set_position(cartesian);
+  new_troop.bind_mut().deployed_to_territory = territory_id.to_string();
 
   let troop_node = new_troop.find_child("default_mesh").expect("MeshInstance3D to exist");
   let mut troop_mesh = troop_node.cast::<MeshInstance3D>();

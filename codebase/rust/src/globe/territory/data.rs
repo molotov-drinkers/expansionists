@@ -1,6 +1,8 @@
 use super::types::{Continent, Location, SubContinent, Territories, Territory};
 
 impl Territory {
+  /// returns a map of territories
+  /// called from GlobeScene::init
   pub fn get_map() -> Territories {
     let mut territories = Territories::new();
     for territory in Territory::list() {
