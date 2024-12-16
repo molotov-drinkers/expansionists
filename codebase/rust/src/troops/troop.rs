@@ -6,7 +6,7 @@ use crate::globe::{coordinates_system::{
     coordinates_system::CoordinatesSystem,
     surface_point::{Coordinates, SurfacePoint, SurfacePointMetadata},
     virtual_planet::VirtualPlanet,
-  }, territory::types::TerritoryId};
+  }, territories::territory::TerritoryId};
 
 use super::{
   combat_engine::CombatStats,

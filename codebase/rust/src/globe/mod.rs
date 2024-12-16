@@ -1,3 +1,3 @@
 pub mod globe;
-pub mod territory;
+pub mod territories;
 pub mod coordinates_system;

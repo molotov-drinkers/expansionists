@@ -1,7 +1,7 @@
 use godot::classes::{CollisionShape3D, INode3D, Node3D, StandardMaterial3D};
 use godot::{classes::MeshInstance3D, prelude::*};
 
-use super::territory::types::{Territory, Territories};
+use super::territories::territory::{Territory, Territories};
 
 #[derive(GodotClass)]
 #[class(base=Node3D)]

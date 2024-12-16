@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use godot::builtin::Color;
 
-use crate::globe::coordinates_system::surface_point::Coordinates;
+use crate::{globe::coordinates_system::surface_point::Coordinates, troops::troop::Troop};
 
 pub enum Continent {
   Africa,
@@ -28,37 +28,46 @@ pub struct Location {
   pub sub_continent: Option<SubContinent>,
 }
 
-pub struct Territory {
-  // base_name is also used as the territory id
-  pub base_name: String,
-  pub location: Location,
-
-  // pub neighbors: Vec<TerritoryId>,
-
-  // pub organic_max_troops: i32,
-  // pub troops_growth_velocity: i32,
-
-  // pub current_owner: String,
-  // pub current_troops: i32,
-
-  pub coordinates: Vec<Coordinates>,
-
-  // TICKET: #40 Implement territory size, used for organic_max_troops, etc.
+pub enum Size {
+  Tiny,
+  Small,
+  Medium,
+  Large,
+  Huge,
+  Humongous,
 }
 
 pub type TerritoryId = String;
 pub type Territories = HashMap<TerritoryId, Territory>;
 
+pub struct Territory {
+  pub territory_id: TerritoryId,
+  pub location: Location,
+
+  pub coordinates: Vec<Coordinates>,
+
+  /// (TODO:) backs up the population of organic_max_troops and troops_growth_velocity
+  pub size: Size,
+  pub organic_max_troops: i32,
+  pub troops_growth_velocity: f32,
+
+  // TICKET: #40 Implement territory size, used for organic_max_troops, etc.
+
+  pub current_landlord: Option<String>, // That will be player_id
+  /// (TODO:) uses all the surface points of the territory to calculate which troops are inside it
+  pub current_troops: Vec<Troop>,
+}
+
 impl Territory {
   fn continent_to_color(continent: &Continent) -> Color {
     match continent {
-      Continent::Africa => Color::DARK_ORANGE,
+      Continent::Africa => Color::LIGHT_SLATE_GRAY,
       Continent::Asia => Color::GREEN_YELLOW,
       Continent::Europe => Color::SKY_BLUE,
-      Continent::NorthAmerica => Color::DARK_RED,
+      Continent::NorthAmerica => Color::INDIAN_RED,
       Continent::Oceania => Color::BURLYWOOD,
       Continent::SouthAmerica => Color::TOMATO,
-      Continent::Antarctica => Color::DARK_CYAN,
+      Continent::Antarctica => Color::LAVENDER_BLUSH,
       Continent::Special => Color::GOLD,
     }
   }

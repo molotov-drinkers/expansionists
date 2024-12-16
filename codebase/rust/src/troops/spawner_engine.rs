@@ -6,7 +6,7 @@ use crate::{
   globe::{coordinates_system::{
     surface_point::Coordinates,
     virtual_planet::VirtualPlanet,
-  }, territory::types::TerritoryId},
+  }, territories::territory::TerritoryId},
   root::root::RootScene,
 };
 

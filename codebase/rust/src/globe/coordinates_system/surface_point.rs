@@ -1,6 +1,6 @@
 
 use godot::{classes::{Area3D, IArea3D, MeshInstance3D, PhysicsRayQueryParameters3D, World3D}, prelude::*};
-use crate::{globe::territory::types::TerritoryId, troops::troop::Troop};
+use crate::{globe::territories::territory::TerritoryId, troops::troop::Troop};
 
 type Latitude = i16;
 type Longitude = i16;
@@ -13,6 +13,8 @@ pub struct SurfacePointMetadata {
   pub territory_id: Option<TerritoryId>,
 }
 
+/// Represents a point on the surface of the virtual planet
+/// It's used, for instance, to trace rays from the origin of the world to the position of the troops
 #[derive(Debug, GodotClass)]
 #[class(base=Area3D)]
 pub struct SurfacePoint {

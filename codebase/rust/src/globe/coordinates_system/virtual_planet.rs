@@ -4,7 +4,7 @@ use godot::{classes::{BoxMesh, BoxShape3D, CollisionShape3D, MeshInstance3D, Sta
 use fastrand;
 
 use crate::{
-  globe::territory::types::{Territories, Territory, TerritoryId},
+  globe::territories::territory::{Territories, Territory, TerritoryId},
   troops::surface::Surface
 };
 use super::{
@@ -182,16 +182,16 @@ impl VirtualPlanet {
 
             overlapped_territory.coordinates.push(surface_point_metadata.lat_long);
 
+            let territory_id: &TerritoryId = &overlapped_territory.territory_id;
             self.coordinate_map.insert(
               surface_point_metadata.lat_long,
               CoordinateMetadata {
-                territory_id: Some(overlapped_territory.base_name.clone()),
+                territory_id: Some(territory_id.clone()),
                 cartesian: surface_point_metadata.cartesian,
               }
             );
 
-            surface_point_metadata.territory_id = Some(overlapped_territory.base_name.clone());
-
+            surface_point_metadata.territory_id = Some(territory_id.clone());
           }
         }
       }

@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use godot::prelude::*;
 
-use crate::globe::territory::types::TerritoryId;
+use crate::globe::territories::territory::TerritoryId;
 use super::surface_point::Coordinates;
 
 #[derive(Debug)]

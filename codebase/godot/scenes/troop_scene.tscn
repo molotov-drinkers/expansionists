@@ -9,7 +9,7 @@
 [ext_resource type="PackedScene" uid="uid://cftr2e88ejsju" path="res://scenes/troops/chinese_sailboat.tscn" id="7_j48ci"]
 [ext_resource type="PackedScene" uid="uid://c3u38hkb2pddt" path="res://assets/War Low Poly Pack/War Low Poly Pack/LPWarPack_FuturisticTank.fbx" id="8_6d5ik"]
 [ext_resource type="PackedScene" uid="uid://cddi63ruvdsj4" path="res://scenes/troops/tonk.tscn" id="8_mihlq"]
-[ext_resource type="PackedScene" path="res://scenes/troops/cannon.tscn" id="9_5lh6o"]
+[ext_resource type="PackedScene" uid="uid://ddxi6ijesuo5h" path="res://scenes/troops/cannon.tscn" id="9_5lh6o"]
 [ext_resource type="PackedScene" uid="uid://d125kpkpnwcn4" path="res://assets/War Low Poly Pack/War Low Poly Pack/LPWarPack_ArmedVehicle.fbx" id="9_7fxgo"]
 [ext_resource type="PackedScene" uid="uid://bycjgeqhaf8yd" path="res://assets/War Low Poly Pack/War Low Poly Pack/LPWarPack_Helicopter.fbx" id="11_5e1ln"]
 [ext_resource type="PackedScene" uid="uid://dbu7njffesr8v" path="res://assets/War Low Poly Pack/War Low Poly Pack/LPWarPack_PineTree.fbx" id="12_r8ela"]

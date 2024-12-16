@@ -16,7 +16,7 @@ visible = false
 
 [node name="africa_sun" type="DirectionalLight3D" parent="lights"]
 transform = Transform3D(4.37114e-08, 4.37114e-08, 1, -1.50996e-07, -1, 4.37114e-08, 1, -1.50996e-07, -4.37114e-08, 10, 0, 0)
-light_energy = 0.525
+light_energy = 0.3
 
 [node name="pacific_sun" type="DirectionalLight3D" parent="lights"]
 transform = Transform3D(4.37114e-08, 6.60023e-15, -1, 1.50996e-07, -1, 2.5411e-21, -1, -1.50996e-07, -4.37114e-08, -10, 0, 0)
