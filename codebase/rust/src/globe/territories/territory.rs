@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use godot::builtin::Color;
+use godot::{builtin::Color, classes::{MeshInstance3D, StandardMaterial3D}, prelude::*};
 
 use crate::{globe::coordinates_system::surface_point::Coordinates, troops::troop::Troop};
 
@@ -81,5 +81,17 @@ impl Territory {
       Some(SubContinent::EuropeRelatedAsia) => /* Color::from_rgba(0., 0.7, 0., 1.)*/ Color::LIGHT_SLATE_GRAY,
       None => Self::continent_to_color(&continent)
     }
+  }
+
+  pub fn checking_territory(mut territory: Gd<MeshInstance3D>) {
+    let mut material = StandardMaterial3D::new_gd();
+    material.set_albedo(Color::RED);
+    territory.set_material_override(&material);
+  }
+
+  pub fn unchecking_territory(mut territory: Gd<MeshInstance3D>) {
+    let mut material = StandardMaterial3D::new_gd();
+    material.set_albedo(Color::LIGHT_SLATE_GRAY);
+    territory.set_material_override(&material);
   }
 }

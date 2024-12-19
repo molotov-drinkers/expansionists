@@ -31,7 +31,7 @@ light_volumetric_fog_energy = 1.25
 omni_range = 22.523
 
 [node name="player_camera" type="PlayerCamera" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 7.169)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 5.95)
 current = true
 
 [node name="globe_scene" parent="." instance=ExtResource("1_udvwj")]

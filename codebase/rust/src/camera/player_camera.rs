@@ -5,7 +5,10 @@ const MAX_HEIGHT_ANGLE: f32 = 89.9;
 const MIN_HEIGHT_ANGLE: f32 = -89.9;
 
 const MIN_DISTANCE_TO_ORIGIN: f32 = 3.5;
-const MAX_DISTANCE_TO_ORIGIN: f32 = 11.0;
+
+/// That's the distance from the origin to the farthest point in the globe
+/// If greater, we will have problems to catch the mouse_enter on land.rs
+const MAX_DISTANCE_TO_ORIGIN: f32 = 5.95;
 
 #[derive(GodotClass)]
 #[class(base=Camera3D)]

@@ -1,4 +1,4 @@
-use godot::classes::{CollisionShape3D, INode3D, Node3D, StandardMaterial3D};
+use godot::classes::{INode3D, Node3D, StandardMaterial3D};
 use godot::{classes::MeshInstance3D, prelude::*};
 
 use super::territories::territory::{Territory, Territories};
@@ -49,23 +49,6 @@ impl INode3D for GlobeScene {
       let mut material = StandardMaterial3D::new_gd();
       material.set_albedo(color);
       territory.set_material_override(&material);
-
-      // let collision_shape_territory = territory
-      //   .find_child("StaticBody3D")
-      //   .expect("StaticBody3D to exist")
-      //   .find_child("CollisionShape3D")
-      //   .expect("CollisionShape3D to exist");
-
-      // let collision_shape_territory = collision_shape_territory.cast::<CollisionShape3D>();
-
-      // let _territory_position = collision_shape_territory.get_global_transform();
-      // godot_print!("Territory: {:?}, position: {:?}", territory_name, territory_position);
     }
-  }
-
-  fn physics_process(&mut self, _delta: f64) {
-
-    // TICKET: #49
-    // Should catch a event and highlight the territory by changing its color a by a color slightly ligheter
   }
 }
