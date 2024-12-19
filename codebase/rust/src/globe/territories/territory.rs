@@ -61,24 +61,24 @@ pub struct Territory {
 impl Territory {
   fn continent_to_color(continent: &Continent) -> Color {
     match continent {
-      Continent::Africa => Color::LIGHT_SLATE_GRAY,
-      Continent::Asia => Color::GREEN_YELLOW,
-      Continent::Europe => Color::SKY_BLUE,
-      Continent::NorthAmerica => Color::INDIAN_RED,
-      Continent::Oceania => Color::BURLYWOOD,
-      Continent::SouthAmerica => Color::TOMATO,
-      Continent::Antarctica => Color::LAVENDER_BLUSH,
-      Continent::Special => Color::GOLD,
+      Continent::Africa => /* Color::LIGHT_SLATE_GRAY */ Color::LIGHT_SLATE_GRAY,
+      Continent::Asia => /* Color::GREEN_YELLOW */ Color::LIGHT_SLATE_GRAY,
+      Continent::Europe => /* Color::SKY_BLUE */ Color::LIGHT_SLATE_GRAY,
+      Continent::NorthAmerica => /* Color::INDIAN_RED */ Color::LIGHT_SLATE_GRAY,
+      Continent::Oceania => /* Color::BURLYWOOD */ Color::LIGHT_SLATE_GRAY,
+      Continent::SouthAmerica => /* Color::TOMATO */ Color::LIGHT_SLATE_GRAY,
+      Continent::Antarctica => /* Color::LAVENDER_BLUSH */ Color::LIGHT_SLATE_GRAY,
+      Continent::Special => /* Color::GOLD */ Color::LIGHT_SLATE_GRAY,
     }
   }
 
   pub fn get_territory_color(sub_continent: &Option<SubContinent>, continent: &Continent) -> Color {
     match sub_continent {
-      Some(SubContinent::MiddleEast) => Color::from_rgba(0., 0.3, 0., 1.),
-      Some(SubContinent::InteriorAsia) => Color::from_rgba(0., 0.4, 0., 1.),
-      Some(SubContinent::IndianSubcontinent) => Color::from_rgba(0., 0.5, 0., 1.),
-      Some(SubContinent::PacificAndSoutheastAsia) => Color::from_rgba(0., 0.6, 0., 1.),
-      Some(SubContinent::EuropeRelatedAsia) => Color::from_rgba(0., 0.7, 0., 1.),
+      Some(SubContinent::MiddleEast) => /* Color::from_rgba(0., 0.3, 0., 1.)*/ Color::LIGHT_SLATE_GRAY,
+      Some(SubContinent::InteriorAsia) => /* Color::from_rgba(0., 0.4, 0., 1.)*/ Color::LIGHT_SLATE_GRAY,
+      Some(SubContinent::IndianSubcontinent) => /* Color::from_rgba(0., 0.5, 0., 1.)*/ Color::LIGHT_SLATE_GRAY,
+      Some(SubContinent::PacificAndSoutheastAsia) => /* Color::from_rgba(0., 0.6, 0., 1.)*/ Color::LIGHT_SLATE_GRAY,
+      Some(SubContinent::EuropeRelatedAsia) => /* Color::from_rgba(0., 0.7, 0., 1.)*/ Color::LIGHT_SLATE_GRAY,
       None => Self::continent_to_color(&continent)
     }
   }

@@ -41,36 +41,41 @@ impl INode3D for GlobeScene {
         &territory_data.unwrap().location.continent
       );
 
-      if territory_name == "atlantic_forest".into() || territory_name == "latin_variations".into() {
-        color = Color::WHITE_SMOKE;
-      }
+      // TODO: Remove all this commented code
+      // if territory_name == "atlantic_forest".into() || territory_name == "latin_variations".into() {
+      //   color = Color::WHITE_SMOKE;
+      // }
 
-      if territory_name == "pampas".into() || territory_name == "the_islands".into() {
-        color = Color::LIGHT_PINK;
-      }
+      // if territory_name == "pampas".into() || territory_name == "the_islands".into() {
+      //   color = Color::LIGHT_PINK;
+      // }
 
-      if territory_name == "tropical_highlands".into() {
-        color = Color::LIGHT_YELLOW;
-      }
+      // if territory_name == "tropical_highlands".into() {
+      //   color = Color::LIGHT_YELLOW;
+      // }
 
-      if territory_name == "caatinga".into() || territory_name == "west_slavs".into() {
-        color = Color::LIGHT_SALMON;
-      }
+      // if territory_name == "caatinga".into() || territory_name == "west_slavs".into() {
+      //   color = Color::LIGHT_SALMON;
+      // }
       
-      if territory_name == "amazon".into() || territory_name == "rhine_region".into() {
-        color = Color::LIGHT_GREEN;
-      }
+      // if territory_name == "amazon".into() || territory_name == "rhine_region".into() {
+      //   color = Color::LIGHT_CYAN;
+      // }
 
-      if territory_name == "andes".into() || territory_name == "nordics".into() {
-        color = Color::LIGHT_SLATE_GRAY;
-      }
+      // if territory_name == "andes".into() || territory_name == "nordics".into() {
+      //   color = Color::LIGHT_SLATE_GRAY;
+      // }
 
-      if territory_name == "incas".into() || territory_name == "balkan_peninsula".into() {
+      // if territory_name == "incas".into() || territory_name == "balkan_peninsula".into() {
+      //   color = Color::LIGHT_CYAN;
+      // }
+
+      // if territory_name == "patagonia".into() || territory_name == "north_black_sea".into()  {
+      //   color = Color::LIGHT_STEEL_BLUE;
+      // }
+
+      if territory_name == "patagonia".into() || territory_name == "antartica_peninsula".into() {
         color = Color::LIGHT_CYAN;
-      }
-
-      if territory_name == "patagonia".into() || territory_name == "north_black_sea".into()  {
-        color = Color::LIGHT_STEEL_BLUE;
       }
 
       let mut material = StandardMaterial3D::new_gd();
