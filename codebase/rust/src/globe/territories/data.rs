@@ -184,7 +184,7 @@ impl Territory {
   pub fn list_special() -> Vec<Territory> { vec![
     Self::get_base_territory("diomede_islands", Continent::Special, None),
     Self::get_base_territory("asia_europe_connection", Continent::Special, None),
-    Self::get_base_territory("rest_of_world", Continent::Special, None),
+    // Self::get_base_territory("rest_of_world", Continent::Special, None),
   ]}
 
   pub fn list_antarctica() -> Vec<Territory> { vec![
