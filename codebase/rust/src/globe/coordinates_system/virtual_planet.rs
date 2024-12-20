@@ -4,7 +4,7 @@ use godot::{classes::{BoxMesh, BoxShape3D, CollisionShape3D, MeshInstance3D, Sta
 use fastrand;
 
 use crate::{
-  globe::territories::territory::{Territories, Territory, TerritoryId},
+  globe::territories::{land::Land, territory::{Territories, Territory, TerritoryId}},
   troops::surface::Surface
 };
 use super::{
@@ -20,6 +20,7 @@ use super::{
 pub struct VirtualPlanet {
   base: Base<Node3D>,
   pub is_ready_for_physics: bool,
+  /// turns true when all surface points are matched with territories
   pub are_surface_points_matched: bool,
   pub territories: Territories,
   pub surface_points_metadata: Vec<SurfacePointMetadata>,
@@ -57,9 +58,12 @@ impl INode3D for VirtualPlanet {
 }
 
 impl VirtualPlanet {
-  #[inline] pub fn get_planet_radius() -> f64 { 1.08 * 3.0 }
-  #[inline] pub fn get_num_of_latitudes() -> i16 { ((90. + 45.) * 1.5) as i16 }
-  #[inline] pub fn get_num_of_longitudes() -> i16 { ((180. + 90.) * 1.5) as i16 }
+  /// Following inline functions have arbitrary numbers defined after checking the globe mesh size
+  /// that's the reason they all seem to be magic numbers
+  #[inline] pub fn get_planet_radius() -> f64 { 1.078 * 3.0 }
+  #[inline] pub fn get_num_of_latitudes() -> i16 { (90. * 2.5) as i16 }
+  #[inline] pub fn get_num_of_longitudes() -> i16 { (180. * 2.5) as i16 }
+  #[inline] pub fn get_surface_mesh_and_collider_size() -> Vector3 { Vector3::new(0.06, 0.06, 0.06) }
 
   pub fn populate_surface_points_and_coordinate_map(&mut self) {
     let planet_radius = Self::get_planet_radius();
@@ -103,7 +107,7 @@ impl VirtualPlanet {
   }
 
   pub fn create_surface_point_area(surface_point_metadata: SurfacePointMetadata) -> Gd<SurfacePoint> {
-    let surface_mesh_and_collider_size = Vector3::new(0.08, 0.08, 0.08);
+    let surface_mesh_and_collider_size = Self::get_surface_mesh_and_collider_size();
     let mesh_instance = Self::create_surface_mesh(
       surface_mesh_and_collider_size,
       surface_point_metadata.cartesian
@@ -162,36 +166,36 @@ impl VirtualPlanet {
         self.is_ready_for_physics = false;
 
         for body_overlapping_with_surface_point in bodies_overlapping_with_surface_point.iter_shared() {
+          if let Ok(collided_land) = body_overlapping_with_surface_point.try_cast::<Land>() {
 
-          // 'body_overlapping_with_surface_point' is a StaticBody3D and its parent is expected to be a territory
-          let possible_territory_id = body_overlapping_with_surface_point
-            .get_parent()
-            .unwrap()
-            .get_name()
-            .to_string();
+            let territory_id = collided_land
+              .get_parent()
+              .expect("Expected 'Land' to have a parent")
+              .get_name()
+              .to_string();
 
-          let possible_territory_colission = self.territories.get_mut(&possible_territory_id);
-          if possible_territory_colission.is_some() {
-            let overlapped_territory = possible_territory_colission.unwrap();
-            // Self::_paint_surface_point(&surface_point, overlapped_territory);
+            let possible_territory_colission = self.territories.get_mut(&territory_id);
+            if possible_territory_colission.is_some() {
+              let overlapped_territory = possible_territory_colission.unwrap();
+              // Self::_paint_surface_point(&surface_point, overlapped_territory);
 
-            surface_point.add_to_group(&possible_territory_id);
-            surface_point.add_to_group(&Surface::Land.to_string());
-            let mut surface_point_bind = surface_point.bind_mut();
-            let surface_point_metadata = surface_point_bind.get_surface_point_metadata_mut();
+              surface_point.add_to_group(&territory_id);
+              surface_point.add_to_group(&Surface::Land.to_string());
+              let mut surface_point_bind = surface_point.bind_mut();
+              let surface_point_metadata = surface_point_bind.get_surface_point_metadata_mut();
 
-            overlapped_territory.coordinates.push(surface_point_metadata.lat_long);
+              overlapped_territory.coordinates.push(surface_point_metadata.lat_long);
 
-            let territory_id: &TerritoryId = &overlapped_territory.territory_id;
-            self.coordinate_map.insert(
-              surface_point_metadata.lat_long,
-              CoordinateMetadata {
-                territory_id: Some(territory_id.clone()),
-                cartesian: surface_point_metadata.cartesian,
-              }
-            );
+              self.coordinate_map.insert(
+                surface_point_metadata.lat_long,
+                CoordinateMetadata {
+                  territory_id: Some(territory_id.clone()),
+                  cartesian: surface_point_metadata.cartesian,
+                }
+              );
 
-            surface_point_metadata.territory_id = Some(territory_id.clone());
+              surface_point_metadata.territory_id = Some(territory_id);
+            }
           }
         }
       }
