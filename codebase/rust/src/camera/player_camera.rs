@@ -1,4 +1,4 @@
-use godot::classes::{Camera3D, ICamera3D, InputEvent, InputEventMouseButton};
+use godot::classes::{Camera3D, ICamera3D, InputEvent, InputEventMagnifyGesture, InputEventMouseButton};
 use godot::global::MouseButton;
 use godot::prelude::*;
 
@@ -62,19 +62,31 @@ impl ICamera3D for PlayerCamera {
   }
 
   fn input(&mut self, event: Gd<InputEvent>) {
-    if let Ok(mouse_click) = event.try_cast::<InputEventMouseButton>() {
+    if let Ok(mouse_click) = event.clone().try_cast::<InputEventMouseButton>() {
+      let (mut radius, vector_to_origin) = self.get_data_to_move_camera();
       let mouse_button = mouse_click.get_button_index();
 
+      match mouse_button {
+        MouseButton::WHEEL_DOWN => radius += self.zoom_speed as f32,
+        MouseButton::WHEEL_UP => radius -= self.zoom_speed as f32,
+        _ => {}
+      }
+
+      self.set_new_position(radius, vector_to_origin);
+    }
+
+    // handling mouse Pad Pinch events
+    if let Ok(magnify_gesture) = event.try_cast::<InputEventMagnifyGesture>() {
       let (mut radius, vector_to_origin) = self.get_data_to_move_camera();
 
-      match mouse_button {
-        MouseButton::WHEEL_DOWN => {
-          radius += self.zoom_speed as f32
-        },
-        MouseButton::WHEEL_UP => {
-          radius -= self.zoom_speed as f32
-        },
-        _ => {}
+      // pad_factor is need because sensibility is greater on pad than on mouse, so we nerf the zoom speed
+      let pad_factor = 0.2;
+
+      if magnify_gesture.get_factor() > 1.0 {
+        radius -= (self.zoom_speed * pad_factor) as f32
+      }
+      else {
+        radius += (self.zoom_speed * pad_factor) as f32
       }
 
       self.set_new_position(radius, vector_to_origin);
