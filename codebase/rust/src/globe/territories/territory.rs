@@ -61,43 +61,43 @@ pub struct Territory {
 impl Territory {
   fn continent_to_color(continent: &Continent) -> Color {
     match continent {
-      Continent::Africa => /* Color::LIGHT_SLATE_GRAY */ Color::LIGHT_SLATE_GRAY,
-      Continent::Asia => /* Color::GREEN_YELLOW */ Color::LIGHT_SLATE_GRAY,
-      Continent::Europe => /* Color::SKY_BLUE */ Color::LIGHT_SLATE_GRAY,
-      Continent::NorthAmerica => /* Color::INDIAN_RED */ Color::LIGHT_SLATE_GRAY,
-      Continent::Oceania => /* Color::BURLYWOOD */ Color::LIGHT_SLATE_GRAY,
-      Continent::SouthAmerica => /* Color::TOMATO */ Color::LIGHT_SLATE_GRAY,
-      Continent::Antarctica => /* Color::LAVENDER_BLUSH */ Color::LIGHT_SLATE_GRAY,
-      Continent::Special => /* Color::GOLD */ Color::LIGHT_SLATE_GRAY,
+      Continent::Africa => /* Color::LIGHT_SLATE_GRAY */ Color::WHITE_SMOKE,
+      Continent::Asia => /* Color::GREEN_YELLOW */ Color::WHITE_SMOKE,
+      Continent::Europe => /* Color::SKY_BLUE */ Color::WHITE_SMOKE,
+      Continent::NorthAmerica => /* Color::INDIAN_RED */ Color::WHITE_SMOKE,
+      Continent::Oceania => /* Color::BURLYWOOD */ Color::WHITE_SMOKE,
+      Continent::SouthAmerica => /* Color::TOMATO */ Color::WHITE_SMOKE,
+      Continent::Antarctica => /* Color::LAVENDER_BLUSH */ Color::WHITE_SMOKE,
+      Continent::Special => /* Color::GOLD */ Color::WHITE_SMOKE,
     }
   }
 
   pub fn get_territory_color(sub_continent: &Option<SubContinent>, continent: &Continent) -> Color {
     match sub_continent {
-      Some(SubContinent::MiddleEast) => /* Color::from_rgba(0., 0.3, 0., 1.)*/ Color::LIGHT_SLATE_GRAY,
-      Some(SubContinent::InteriorAsia) => /* Color::from_rgba(0., 0.4, 0., 1.)*/ Color::LIGHT_SLATE_GRAY,
-      Some(SubContinent::IndianSubcontinent) => /* Color::from_rgba(0., 0.5, 0., 1.)*/ Color::LIGHT_SLATE_GRAY,
-      Some(SubContinent::PacificAndSoutheastAsia) => /* Color::from_rgba(0., 0.6, 0., 1.)*/ Color::LIGHT_SLATE_GRAY,
-      Some(SubContinent::EuropeRelatedAsia) => /* Color::from_rgba(0., 0.7, 0., 1.)*/ Color::LIGHT_SLATE_GRAY,
+      Some(SubContinent::MiddleEast) => /* Color::from_rgba(0., 0.3, 0., 1.)*/ Color::WHITE_SMOKE,
+      Some(SubContinent::InteriorAsia) => /* Color::from_rgba(0., 0.4, 0., 1.)*/ Color::WHITE_SMOKE,
+      Some(SubContinent::IndianSubcontinent) => /* Color::from_rgba(0., 0.5, 0., 1.)*/ Color::WHITE_SMOKE,
+      Some(SubContinent::PacificAndSoutheastAsia) => /* Color::from_rgba(0., 0.6, 0., 1.)*/ Color::WHITE_SMOKE,
+      Some(SubContinent::EuropeRelatedAsia) => /* Color::from_rgba(0., 0.7, 0., 1.)*/ Color::WHITE_SMOKE,
       None => Self::continent_to_color(&continent)
     }
   }
 
-  pub fn checking_territory(mut territory: Gd<MeshInstance3D>) {
+  pub fn set_color_to_territory(mut territory: Gd<MeshInstance3D>, color: Color) {
     let mut material = StandardMaterial3D::new_gd();
-    material.set_albedo(Color::RED);
+    material.set_albedo(color);
     territory.set_material_override(&material);
   }
 
-  pub fn unchecking_territory(mut territory: Gd<MeshInstance3D>) {
-    let mut material = StandardMaterial3D::new_gd();
-    material.set_albedo(Color::LIGHT_SLATE_GRAY);
-    territory.set_material_override(&material);
+  pub fn checking_territory(territory: Gd<MeshInstance3D>) {
+    Self::set_color_to_territory(territory, Color::LIGHT_PINK);
   }
 
-  pub fn clicking_territory(mut territory: Gd<MeshInstance3D>) {
-    let mut material = StandardMaterial3D::new_gd();
-    material.set_albedo(Color::GREEN);
-    territory.set_material_override(&material);
+  pub fn unchecking_territory(territory: Gd<MeshInstance3D>) {
+    Self::set_color_to_territory(territory, Color::WHITE_SMOKE);
+  }
+
+  pub fn clicking_territory(territory: Gd<MeshInstance3D>) {
+    Self::set_color_to_territory(territory, Color::LIGHT_GREEN);
   }
 }

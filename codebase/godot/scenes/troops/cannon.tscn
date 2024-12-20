@@ -97,7 +97,7 @@ blend_shape_mode = 0
 shadow_mesh = SubResource("ArrayMesh_k4ql5")
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_56dwi"]
-albedo_color = Color(0.633361, 0.0405395, 0.248569, 1)
+albedo_color = Color(0.0941176, 0.196078, 0.6, 1)
 metallic = 1.0
 
 [node name="Cannon" type="Node3D"]

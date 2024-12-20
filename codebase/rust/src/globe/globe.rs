@@ -36,15 +36,10 @@ impl INode3D for GlobeScene {
         continue;
       }
 
-      let mut color = Territory::get_territory_color(
+      let color = Territory::get_territory_color(
         &territory_data.unwrap().location.sub_continent,
         &territory_data.unwrap().location.continent
       );
-
-      // TODO: Remove this condition once we have all highlithing territories features
-      if territory_name == "patagonia".into() || territory_name == "antartica_peninsula".into() {
-        color = Color::LIGHT_CYAN;
-      }
 
       let mut material = StandardMaterial3D::new_gd();
       material.set_albedo(color);
