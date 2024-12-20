@@ -58,7 +58,7 @@ impl INode3D for VirtualPlanet {
 }
 
 impl VirtualPlanet {
-  /// Following inline functions have arbitrary numbers defined after checking the globe mesh size
+  /// Following inline functions have pseudo-arbitrary numbers defined after checking the globe mesh size
   /// that's the reason they all seem to be magic numbers
   #[inline] pub fn get_planet_radius() -> f64 { 1.078 * 3.0 }
   #[inline] pub fn get_num_of_latitudes() -> i16 { (90. * 2.5) as i16 }
