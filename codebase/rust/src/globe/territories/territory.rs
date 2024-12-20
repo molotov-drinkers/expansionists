@@ -94,4 +94,10 @@ impl Territory {
     material.set_albedo(Color::LIGHT_SLATE_GRAY);
     territory.set_material_override(&material);
   }
+
+  pub fn clicking_territory(mut territory: Gd<MeshInstance3D>) {
+    let mut material = StandardMaterial3D::new_gd();
+    material.set_albedo(Color::GREEN);
+    territory.set_material_override(&material);
+  }
 }
