@@ -90,7 +90,7 @@ impl Territory {
   }
 
   pub fn checking_territory(territory: Gd<MeshInstance3D>) {
-    Self::set_color_to_territory(territory, Color::LIGHT_PINK);
+    Self::set_color_to_territory(territory, Color::LIGHT_SKY_BLUE);
   }
 
   pub fn unchecking_territory(territory: Gd<MeshInstance3D>) {
@@ -98,6 +98,6 @@ impl Territory {
   }
 
   pub fn clicking_territory(territory: Gd<MeshInstance3D>) {
-    Self::set_color_to_territory(territory, Color::LIGHT_GREEN);
+    Self::set_color_to_territory(territory, Color::STEEL_BLUE);
   }
 }
