@@ -6,6 +6,7 @@ pub mod globe;
 pub mod camera;
 pub mod troops;
 pub mod player;
+pub mod heads_up_display;
 
 struct Expansinists;
 

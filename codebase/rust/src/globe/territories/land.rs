@@ -1,9 +1,12 @@
 
 use godot::{classes::{IStaticBody3D, InputEvent, InputEventMouseButton, MeshInstance3D, StaticBody3D}, global::MouseButton, prelude::*};
-use crate::globe::territories::territory::Territory;
+use crate::{globe::territories::territory::Territory, heads_up_display::territory_hud::TerritoryHUD};
 
 /// Every territory should be a MeshInstance3D with the 
 /// following "Land StaticBody3D" as a child
+/// |-territory
+/// |||- land
+/// ||||- collision_shape
 #[derive(GodotClass)]
 #[class(base=StaticBody3D)]
 pub struct Land {
@@ -38,6 +41,10 @@ impl IStaticBody3D for Land {
       .get_parent()
       .expect("Parent to exist")
       .cast::<MeshInstance3D>();
+    
+    let mut territory_hud = Self::get_territory_hud_from_land(&territory);
+    let territory_id = territory.get_name().to_string();
+    territory_hud.bind_mut().set_text(territory_id);
 
     Territory::checking_territory(territory);
   }
@@ -47,6 +54,10 @@ impl IStaticBody3D for Land {
       .get_parent()
       .expect("Parent to exist")
       .cast::<MeshInstance3D>();
+
+    let mut territory_hud = Self::get_territory_hud_from_land(&territory);
+    territory_hud.bind_mut().clean_hud();
+
     Territory::unchecking_territory(territory);
   }
 }
@@ -66,5 +77,29 @@ impl Land {
         }
       }
     }
+  }
+
+  /// expects the following hierarchy:
+  /// ```
+  /// root_scene
+  /// |-globe
+  /// |||-territories
+  /// ||||-territory (receives territory)
+  /// |||||-land
+  /// ||||||-collision_shape
+  /// |
+  /// |-canvas_layer
+  /// |||-hud
+  /// ||||-territory_hud (returns territory_hud)
+  /// ```
+  fn get_territory_hud_from_land(territory: &Gd<MeshInstance3D>) -> Gd<TerritoryHUD> {
+    let territory_hud = territory
+      .get_parent().expect("Expected Mesh territory to have territories as parent")
+      .get_parent().expect("Expected territories to have globe as parent")
+      .get_parent().expect("Expected globe to have root as parent")
+      .try_get_node_as::<TerritoryHUD>("canvas_layer/hud/territory_hud")
+      .expect("Expected to find TerritoryHUD from Land");
+
+    territory_hud
   }
 }
