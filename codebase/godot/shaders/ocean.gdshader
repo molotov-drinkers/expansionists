@@ -22,8 +22,10 @@ uniform sampler2D depth_texture: hint_screen_texture, repeat_disable, filter_nea
 
 // Depth Value
 uniform float depth_distance: hint_range(0.0, 20.0, 0.1) = 4.0;
-uniform float beers_law: hint_range(0.0, 20.0, 0.1) = 12.0;
-uniform float water_transparency: hint_range(0.0, 20.0, 0.1) = 0.5;
+uniform float beers_law: hint_range(-5.0, 20.0, 0.01) = 12.0;
+uniform float water_transparency: hint_range(-5.0, 20.0, 0.01) = 0.5;
+
+uniform float refraction_strength: hint_range(0.0, 8.0, 0.001) = 0.5;
 
 void vertex() {
 	// Called for every vertex the material is visible on.
@@ -42,35 +44,33 @@ float fresnel(float amount, vec3 normal, vec3 view) {
 }
 
 void fragment() {
-	
-	// Get Depth and Screen Textures
-	float depth = textureLod(depth_texture, SCREEN_UV, 0.0).r;
-	vec3 screen = textureLod(screen_texture, SCREEN_UV, 0.0).rgb;
-
-	// Get Depth in World Position (Y)
-	//vec3 ndc = vec3(SCREEN_UV * 2.0 - 1.0, depth);
-	//vec4 world = INV_VIEW_MATRIX * INV_PROJECTION_MATRIX * vec4(ndc, 1.0);
-	//float depth_texture_y = world.z / world.w;
-	//float vertex_y = (INV_VIEW_MATRIX * vec4(VERTEX, 1.0)).y;
-
-	// Set Depth Blend and adjust with Beer's Law
-	//float depth_blend = clamp( (vertex_y - depth_texture_y) / depth_distance, 0.0, 1.0);
-	//depth_blend = beers_law; //exp(-depth_blend * beers_law);
-
-	// Set depth color mix from depth blend and get final color mix using screen texture
-	vec3 depth_color = mix(secondary_color, primary_color, beers_law).rgb;
-	vec3 final_color = mix(depth_color.rgb, screen, water_transparency);
-
-	float basic_fresnel = fresnel(3.0, NORMAL, VIEW);
-	
-
 	vec2 uv = UV * uv_scale;
 	vec2 uv_movement = movement_direction * TIME * movement_strength;
 	
 	vec3 normalmap = texture(normalmap_a, uv + uv_movement).rgb * normalmap_a_strength;
 	normalmap += texture(normalmap_b, uv - uv_movement).rgb * normalmap_b_strength;
 
-	ALBEDO = mix(final_color, screen, beers_law * /* depth_blend * */ (1.0 - basic_fresnel));
+	// Create refraction with normalmap
+	vec3 ref_normalmap = normalmap * 2.0 - (normalmap_a_strength + normalmap_b_strength);
+	vec3 ref_normal = mix(NORMAL, TANGENT * ref_normalmap + BINORMAL * ref_normalmap + NORMAL * ref_normalmap, 1.0);
+	vec2 ref_ofs = SCREEN_UV - ref_normal.xy * refraction_strength;
+	
+	// Get Depth and Screen Textures
+	// float depth = textureLod(depth_texture, SCREEN_UV, 0.0).r;
+	// vec3 screen = textureLod(screen_texture, SCREEN_UV, 0.0).rgb;
+	float depth_clean = textureLod(depth_texture, SCREEN_UV, 0.0).r;
+	float depth = textureLod(depth_texture, ref_ofs, 0.0).r;
+	vec3 screen = textureLod(screen_texture, ref_ofs, 0.0).rgb;
+
+	// Set depth color mix from depth blend and get final color mix using screen texture
+	vec3 depth_color = mix(secondary_color, primary_color, beers_law).rgb;
+	float basic_fresnel = fresnel(3.0, NORMAL, VIEW);
+	
+	vec3 refraction_texture = textureLod(screen_texture, ref_ofs, ROUGHNESS * 2.0).rgb;
+	vec3 final_color = mix(depth_color, refraction_texture, water_transparency * beers_law);
+	ALBEDO = final_color;
+
+	//ALBEDO = mix(final_color, screen, beers_law * /* depth_blend * */ (1.0 - basic_fresnel));
 	ROUGHNESS = roughness * (1.0 - basic_fresnel);
 	NORMAL_MAP = normalmap;
 	// Called for every pixel the material is visible on.
