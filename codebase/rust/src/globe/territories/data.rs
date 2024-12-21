@@ -2,7 +2,8 @@ use super::territory::{Continent, Location, SubContinent, Size, Territories, Ter
 
 impl Territory {
   /// returns a map of territories
-  /// called from GlobeScene::init
+  /// called from GlobeScene::init and VirtualPlanet::init
+  /// at VirtualPlanet we have coordinates filled in too
   pub fn get_map() -> Territories {
     let mut territories = Territories::new();
     for territory in Territory::list() {

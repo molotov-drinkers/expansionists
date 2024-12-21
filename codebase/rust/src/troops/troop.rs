@@ -13,8 +13,8 @@ use super::{
   surface::Surface
 };
 
-const DEST: &str = "antartica_peninsula";
-const IDLE_TIMER: f32 = 0.2;
+const DEST: &str = "west_slavs";
+const IDLE_TIMER: f32 = 0.5;
 
 #[derive(GodotClass)]
 #[class(base=CharacterBody3D)]
