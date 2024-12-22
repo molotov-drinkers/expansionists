@@ -222,7 +222,7 @@ impl Troop {
         return;
       }
 
-      let direction = direction.unwrap();
+      let direction = direction.expect("Expected Troop direction to be a Vector3");
       let velocity = direction * self.in_territory_moving_speed;
       self.set_orientation(Some(direction));
       self.base_mut().set_velocity(velocity);

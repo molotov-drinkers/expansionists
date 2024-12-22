@@ -56,9 +56,8 @@ grow_vertical = 0
 
 [node name="territory_hud" type="TerritoryHUD" parent="canvas_layer/hud"]
 layout_mode = 0
-offset_left = -514.0
-offset_top = -258.0
-offset_right = -267.0
-offset_bottom = -137.0
-scale = Vector2(2, 2)
+offset_left = -185.0
+offset_top = -65.0
+offset_right = -9.0
+offset_bottom = -14.0
 horizontal_alignment = 2
