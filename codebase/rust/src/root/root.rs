@@ -8,7 +8,7 @@ use crate::troops::spawner_engine;
 #[class(base=Node3D)]
 pub struct RootScene {
   base: Base<Node3D>,
-  troops_spawn: i8
+  troops_spawn: i32
 }
 
 #[godot_api]
@@ -39,7 +39,7 @@ const ORIGIN_B: &str = "diomede_islands";
 
 impl RootScene {
   pub fn startup_troops_spawn(&mut self, virtual_planet: &VirtualPlanet) {
-    let max_troops = 50;
+    let max_troops = 25;
     while self.troops_spawn < max_troops {
       spawner_engine::troop_spawner(
         self,

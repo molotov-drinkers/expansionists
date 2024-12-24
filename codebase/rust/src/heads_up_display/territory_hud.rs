@@ -1,6 +1,8 @@
 use godot::classes::{ILabel, Label};
 use godot::prelude::*;
 
+use crate::globe::territories::territory::Territory;
+
 
 #[derive(GodotClass)]
 #[class(base=Label)]
@@ -30,8 +32,12 @@ impl ILabel for TerritoryHUD {
 }
 
 impl TerritoryHUD {
-  pub fn set_text(&mut self, text: String) {
-    self.showing_text = text;
+  pub fn set_text(&mut self, territory: &Territory) {
+    self.showing_text = format!("{}\n{} ({})",
+      territory.territory_id.clone(),
+      territory.size.to_string(),
+      territory.coordinates.len()
+   );
   }
 
   pub fn clean_hud(&mut self) {

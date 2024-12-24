@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::fmt;
 
 use godot::{builtin::Color, classes::{MeshInstance3D, StandardMaterial3D}, prelude::*};
 
@@ -35,7 +36,24 @@ pub enum Size {
   Large,
   Huge,
   Humongous,
+  None,
 }
+
+impl fmt::Display for Size {
+  /// allows to use `&Size::Tiny.to_string()`
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    match self {
+      Size::Tiny => write!(f, "tiny"),
+      Size::Small => write!(f, "small"),
+      Size::Medium => write!(f, "medium"),
+      Size::Large => write!(f, "large"),
+      Size::Huge => write!(f, "huge"),
+      Size::Humongous => write!(f, "humongous"),
+      Size::None => write!(f, "none"),
+    }
+  }
+}
+
 
 pub type TerritoryId = String;
 pub type Territories = HashMap<TerritoryId, Territory>;
@@ -45,17 +63,21 @@ pub struct Territory {
   pub location: Location,
 
   pub coordinates: Vec<Coordinates>,
-
-  /// (TODO:) backs up the population of organic_max_troops and troops_growth_velocity
   pub size: Size,
+
   pub organic_max_troops: i32,
   pub troops_growth_velocity: f32,
 
-  // TICKET: #40 Implement territory size, used for organic_max_troops, etc.
-
-  pub current_landlord: Option<String>, // That will be player_id
   /// (TODO:) uses all the surface points of the territory to calculate which troops are inside it
   pub current_troops: Vec<Troop>,
+
+  pub current_ruler: Option<String>, // That will be player_id
+}
+
+pub enum ColorChange {
+  Lighten,
+  Darken,
+  Exact,
 }
 
 impl Territory {
@@ -83,32 +105,11 @@ impl Territory {
     }
   }
 
-  pub fn set_color_to_territory(mut territory: Gd<MeshInstance3D>, color: Color) {
-    let mut material = StandardMaterial3D::new_gd();
-    material.set_albedo(color);
-    territory.set_material_override(&material);
-  }
-
-  pub fn checking_territory(territory: Gd<MeshInstance3D>) {
+  pub fn set_color_to_territory(mut territory_mesh: Gd<MeshInstance3D>, color_change: ColorChange) {
     // (TODO:) Calling get_map from here is temporary, 
     // should be removed after setting colors on land dinamically on game
     let binding = Self::get_map();
-    let territory_id = territory.get_name().to_string();
-    let territory_metadata = binding.get(&territory_id).unwrap();
-
-    let color = Territory::get_territory_color(
-      &territory_metadata.location.sub_continent,
-      &territory_metadata.location.continent
-    ).lightened(0.5);
-
-    Self::set_color_to_territory(territory, color);
-  }
-
-  pub fn unchecking_territory(territory: Gd<MeshInstance3D>) {
-    // (TODO:) Calling get_map from here is temporary, 
-    // should be removed after setting colors on land dinamically on game
-    let binding = Self::get_map();
-    let territory_id = territory.get_name().to_string();
+    let territory_id = territory_mesh.get_name().to_string();
     let territory_metadata = binding.get(&territory_id).unwrap();
 
     let color = Territory::get_territory_color(
@@ -116,21 +117,42 @@ impl Territory {
       &territory_metadata.location.continent
     );
 
-    Self::set_color_to_territory(territory, color);
+    let color = match color_change {
+      ColorChange::Lighten => color.lightened(0.5),
+      ColorChange::Darken => color.darkened(0.5),
+      ColorChange::Exact => color,
+    };
+
+    let mut material = StandardMaterial3D::new_gd();
+    material.set_albedo(color);
+    territory_mesh.set_material_override(&material);
   }
 
-  pub fn clicking_territory(territory: Gd<MeshInstance3D>) {
-    // (TODO:) Calling get_map from here is temporary, 
-    // should be removed after setting colors on land dinamically on game
-    let binding = Self::get_map();
-    let territory_id = territory.get_name().to_string();
-    let territory_metadata = binding.get(&territory_id).unwrap();
+  pub fn checking_territory(territory_mesh: Gd<MeshInstance3D>) {
+    Self::set_color_to_territory(territory_mesh, ColorChange::Lighten);
+  }
 
-    let color = Territory::get_territory_color(
-      &territory_metadata.location.sub_continent,
-      &territory_metadata.location.continent
-    ).darkened(0.5);
+  pub fn unchecking_territory(territory_mesh: Gd<MeshInstance3D>) {
+    Self::set_color_to_territory(territory_mesh, ColorChange::Exact);
+  }
 
-    Self::set_color_to_territory(territory, color);
+  pub fn clicking_territory(territory_mesh: Gd<MeshInstance3D>) {
+    Self::set_color_to_territory(territory_mesh, ColorChange::Darken);
+  }
+
+  /// Should be called when the coordinates of the territory are set
+  pub fn set_territory_size(&mut self) {
+    // TODO: Instead of using size, use coordinates.len to calculate organic_max_troops and troops_growth_velocity
+    let num_of_coordinates = self.coordinates.len();
+
+    self.size = match num_of_coordinates {
+      1..=40 => Size::Tiny,
+      41..=150 => Size::Small,
+      151..=450 => Size::Medium,
+      451..=750 => Size::Large,
+      751..=1000 => Size::Huge,
+      1001..=9999 => Size::Humongous,
+      _ => Size::None,
+    };
   }
 }

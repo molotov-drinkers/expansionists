@@ -198,6 +198,11 @@ impl VirtualPlanet {
             }
           }
         }
+
+        self.territories.iter_mut().for_each(|(_, territory)| {
+          territory.set_territory_size();
+        });
+
       }
     }
     self.are_surface_points_matched = true;

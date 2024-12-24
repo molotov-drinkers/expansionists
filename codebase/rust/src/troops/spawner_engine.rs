@@ -13,7 +13,7 @@ use crate::{
 use super::troop::Troop;
 
 /// Called from root.rs
-pub fn troop_spawner(root_scene: &mut RootScene, virtual_planet: &VirtualPlanet, troops_spawn: i8, territory_id: TerritoryId) {
+pub fn troop_spawner(root_scene: &mut RootScene, virtual_planet: &VirtualPlanet, troops_spawn: i32, territory_id: TerritoryId) {
   let coordinates: Coordinates = VirtualPlanet
     ::get_spawner_territory_coordinate(&virtual_planet, &territory_id);
 

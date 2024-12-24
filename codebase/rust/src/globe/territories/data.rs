@@ -31,12 +31,12 @@ impl Territory {
       location: Location { continent, sub_continent },
 
       coordinates: Vec::new(),
-      size: Size::Tiny,
+      size: Size::None,
 
       organic_max_troops: 0,
       troops_growth_velocity: 0.1,
 
-      current_landlord: None,
+      current_ruler: None,
       current_troops: Vec::new(),
     }
   }

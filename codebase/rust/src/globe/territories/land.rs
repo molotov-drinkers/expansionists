@@ -1,6 +1,6 @@
 
 use godot::{classes::{IStaticBody3D, InputEvent, InputEventMouseButton, MeshInstance3D, StaticBody3D}, global::MouseButton, prelude::*};
-use crate::{globe::territories::territory::Territory, heads_up_display::territory_hud::TerritoryHUD};
+use crate::{globe::{coordinates_system::virtual_planet::VirtualPlanet, territories::territory::Territory}, heads_up_display::territory_hud::TerritoryHUD};
 
 /// Every territory should be a MeshInstance3D with the 
 /// following "Land StaticBody3D" as a child
@@ -37,16 +37,22 @@ impl IStaticBody3D for Land {
   }
 
   fn mouse_enter(&mut self) {
-    let territory = self.base()
+    let territory_mesh = self.base()
       .get_parent()
       .expect("Parent to exist")
       .cast::<MeshInstance3D>();
     
-    let mut territory_hud = Self::get_territory_hud_from_land(&territory);
-    let territory_id = territory.get_name().to_string();
-    territory_hud.bind_mut().set_text(territory_id);
+    let mut territory_hud = self.get_territory_hud_from_land();
+    let virtual_planet = self.get_virtual_planet_from_land();
+    
+    let territories = &virtual_planet.bind().territories;
+    let territory = territories
+      .get(&territory_mesh.get_name().to_string())
+      .expect("Expected to find territory");
 
-    Territory::checking_territory(territory);
+    territory_hud.bind_mut().set_text(territory);
+
+    Territory::checking_territory(territory_mesh);
   }
 
   fn mouse_exit(&mut self) {
@@ -55,7 +61,7 @@ impl IStaticBody3D for Land {
       .expect("Parent to exist")
       .cast::<MeshInstance3D>();
 
-    let mut territory_hud = Self::get_territory_hud_from_land(&territory);
+    let mut territory_hud = self.get_territory_hud_from_land();
     territory_hud.bind_mut().clean_hud();
 
     Territory::unchecking_territory(territory);
@@ -84,21 +90,33 @@ impl Land {
   /// root_scene
   /// |-globe
   /// |||-territories
-  /// ||||-territory (receives territory)
-  /// |||||-land
+  /// ||||-territory
+  /// |||||-land (receives land)
   /// ||||||-collision_shape
-  /// |
-  /// |-canvas_layer
-  /// |||-hud
-  /// ||||-territory_hud (returns territory_hud)
   /// ```
-  fn get_territory_hud_from_land(territory: &Gd<MeshInstance3D>) -> Gd<TerritoryHUD> {
-    let territory_hud = territory
+  fn get_root_from_land(&mut self) -> Gd<Node> {
+    self
+      .base()
+      .get_parent().expect("Expected Land to have mesh Territory as parent")
       .get_parent().expect("Expected Mesh territory to have territories as parent")
       .get_parent().expect("Expected territories to have globe as parent")
       .get_parent().expect("Expected globe to have root as parent")
+  }
+
+  fn get_territory_hud_from_land(&mut self) -> Gd<TerritoryHUD> {
+    let territory_hud = self
+      .get_root_from_land()
       .try_get_node_as::<TerritoryHUD>("canvas_layer/hud/territory_hud")
-      .expect("Expected to find TerritoryHUD from Land");
+      .expect("Expected to find TerritoryHUD from RootScene");
+
+    territory_hud
+  }
+
+  fn get_virtual_planet_from_land(&mut self) -> Gd<VirtualPlanet> {
+    let territory_hud = self
+      .get_root_from_land()
+      .try_get_node_as::<VirtualPlanet>("virtual_planet")
+      .expect("Expected to find VirtualPlanet from RootScene");
 
     territory_hud
   }
