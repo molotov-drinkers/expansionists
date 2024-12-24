@@ -34,7 +34,7 @@ impl INode3D for RootScene {
   }
 }
 
-const ORIGIN: &str = "atlantic_forest";
+const ORIGIN: &str = "everybodys_south";
 const ORIGIN_B: &str = "diomede_islands";
 
 impl RootScene {
