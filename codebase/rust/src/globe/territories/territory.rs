@@ -155,4 +155,22 @@ impl Territory {
       _ => Size::None,
     };
   }
+  
+  /// Should be called when the coordinates of the territory are set
+  pub fn set_troops_growth_velocity(&mut self) {
+    let base_factor: f32 = 0.001;
+    let num_of_coordinates = self.coordinates.len();
+
+    self.troops_growth_velocity = (base_factor * num_of_coordinates as f32)
+      .clamp(0.01, 3.);
+  }
+
+  /// Should be called when the coordinates of the territory are set
+  pub fn set_organic_max_troops(&mut self) {
+    let base_factor: f32 = 0.05;
+    let num_of_coordinates = self.coordinates.len();
+
+    self.organic_max_troops = ((base_factor * num_of_coordinates as f32) as i32)
+      .clamp(1, 40);
+  }
 }

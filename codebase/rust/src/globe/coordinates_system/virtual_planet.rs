@@ -201,6 +201,8 @@ impl VirtualPlanet {
 
         self.territories.iter_mut().for_each(|(_, territory)| {
           territory.set_territory_size();
+          territory.set_troops_growth_velocity();
+          territory.set_organic_max_troops();
         });
 
       }

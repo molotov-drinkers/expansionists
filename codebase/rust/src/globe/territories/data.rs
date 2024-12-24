@@ -12,7 +12,7 @@ impl Territory {
     territories
   }
 
-  pub fn list() -> Vec<Territory> {
+  fn list() -> Vec<Territory> {
     let mut territories = Vec::new();
     territories.extend(Territory::list_africa());
     territories.extend(Territory::list_antarctica());
@@ -25,14 +25,13 @@ impl Territory {
     territories
   }
 
-  pub fn get_base_territory(territory_id: &str, continent: Continent, sub_continent: Option<SubContinent>) -> Territory {
+  fn get_base_territory(territory_id: &str, continent: Continent, sub_continent: Option<SubContinent>) -> Territory {
     Territory {
       territory_id: territory_id.to_string(),
       location: Location { continent, sub_continent },
 
       coordinates: Vec::new(),
       size: Size::None,
-
       organic_max_troops: 0,
       troops_growth_velocity: 0.1,
 
@@ -41,7 +40,7 @@ impl Territory {
     }
   }
 
-  pub fn list_africa() -> Vec<Territory> {
+  fn list_africa() -> Vec<Territory> {
     vec![
       Self::get_base_territory("horn", Continent::Africa, None),
       Self::get_base_territory("sahel", Continent::Africa, None),
@@ -59,7 +58,7 @@ impl Territory {
     ]
   }
 
-  pub fn list_south_america() -> Vec<Territory> {
+  fn list_south_america() -> Vec<Territory> {
     vec![
       Self::get_base_territory("amazon", Continent::SouthAmerica, None),
       Self::get_base_territory("andes", Continent::SouthAmerica, None),
@@ -73,7 +72,7 @@ impl Territory {
     ]
   }
 
-  pub fn list_north_america() -> Vec<Territory> { vec![
+  fn list_north_america() -> Vec<Territory> { vec![
     Self::get_base_territory("californias", Continent::NorthAmerica, None),
     Self::get_base_territory("caribbean_islands", Continent::NorthAmerica, None),
     Self::get_base_territory("north_america_desert", Continent::NorthAmerica, None),
@@ -97,7 +96,7 @@ impl Territory {
     Self::get_base_territory("cocibolca_lake", Continent::NorthAmerica, None),
   ]}
 
-  pub fn list_asia() -> Vec<Territory> { vec![
+  fn list_asia() -> Vec<Territory> { vec![
     // Middle East
     Self::get_base_territory("arabian_peninsula", Continent::Asia, Some(SubContinent::MiddleEast)),
     Self::get_base_territory("suez_canal", Continent::Asia, Some(SubContinent::MiddleEast)),
@@ -157,7 +156,7 @@ impl Territory {
     Self::get_base_territory("lake_baikal", Continent::Asia, Some(SubContinent::InteriorAsia)),
   ]}
 
-  pub fn list_europe() -> Vec<Territory> { vec![
+  fn list_europe() -> Vec<Territory> { vec![
     Self::get_base_territory("nordics", Continent::Europe, None),
     Self::get_base_territory("the_islands", Continent::Europe, None),
     Self::get_base_territory("rhine_region", Continent::Europe, None),
@@ -171,7 +170,7 @@ impl Territory {
     Self::get_base_territory("white_sea", Continent::Europe, None),
   ]}
 
-  pub fn list_oceania() -> Vec<Territory> { vec![
+  fn list_oceania() -> Vec<Territory> { vec![
     Self::get_base_territory("maoris", Continent::Oceania, None),
     Self::get_base_territory("aussie_desert", Continent::Oceania, None),
     Self::get_base_territory("coral_sea_coast", Continent::Oceania, None),
@@ -182,13 +181,13 @@ impl Territory {
     Self::get_base_territory("south_pacific_islands", Continent::Oceania, None),
   ]}
 
-  pub fn list_special() -> Vec<Territory> { vec![
+  fn list_special() -> Vec<Territory> { vec![
     Self::get_base_territory("diomede_islands", Continent::Special, None),
     Self::get_base_territory("asia_europe_connection", Continent::Special, None),
     // Self::get_base_territory("rest_of_world", Continent::Special, None),
   ]}
 
-  pub fn list_antarctica() -> Vec<Territory> { vec![
+  fn list_antarctica() -> Vec<Territory> { vec![
     Self::get_base_territory("west_antarctica", Continent::Antarctica, None),
     Self::get_base_territory("somov_sea", Continent::Antarctica, None),
     Self::get_base_territory("east_antarctica", Continent::Antarctica, None),

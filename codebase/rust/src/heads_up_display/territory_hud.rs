@@ -33,10 +33,13 @@ impl ILabel for TerritoryHUD {
 
 impl TerritoryHUD {
   pub fn set_text(&mut self, territory: &Territory) {
-    self.showing_text = format!("{}\n{} ({})",
+    self.showing_text = format!(
+      "{}\n{} ({}) \n Growth Velocity: {:.2} \n Max Organic Troop: {}",
       territory.territory_id.clone(),
       territory.size.to_string(),
-      territory.coordinates.len()
+      territory.coordinates.len(),
+      territory.troops_growth_velocity,
+      territory.organic_max_troops,
    );
   }
 
