@@ -19,7 +19,7 @@ impl ILabel for DebuggerHUD {
 
   fn process(&mut self, _delta: f64) {
     let fps = Engine::singleton().get_frames_per_second();
-    let text = format!("Frames Per Second: {}", fps);
+    let text = format!("FPS: {}", fps);
 
     let color =
       if fps < 30.0 { Color::RED }

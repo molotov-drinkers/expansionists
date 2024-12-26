@@ -8,7 +8,6 @@ use crate::globe::territories::territory::Territory;
 #[class(base=Control)]
 pub struct TerritoryHUD {
   base: Base<Control>,
-  showing_text: String,
 }
 
 #[godot_api]
@@ -17,14 +16,12 @@ impl IControl for TerritoryHUD {
 
     TerritoryHUD {
       base: base,
-      showing_text: "".to_string(),
     }
   }
 
   fn ready(&mut self) {
     self.base_mut().set_visible(false);
   }
-
 }
 
 impl TerritoryHUD {
@@ -61,7 +58,7 @@ impl TerritoryHUD {
     };
     
     name.set_text(&territory.territory_id.clone().to_uppercase().replace("_", " "));
-    size_info.set_text(&format!("{formatted_size} {formatted_growth:.2} -> {max_troops}"));
+    size_info.set_text(&format!("{formatted_size} [{formatted_growth:.2} -> {max_troops}]"));
     continent.set_text(&format!("{formatted_continent}{formatted_sub_continent}"));
   }
 
@@ -73,6 +70,5 @@ impl TerritoryHUD {
 
   pub fn clean_hud(&mut self) {
     self.base_mut().set_visible(false);
-    // self.showing_text = "".to_string();
   }
 }

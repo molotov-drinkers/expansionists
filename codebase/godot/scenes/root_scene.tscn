@@ -121,6 +121,7 @@ uppercase = true
 
 [node name="name" type="HBoxContainer" parent="canvas_layer/territory_hud/territory_margin_container/PanelContainer/MarginContainer/VBoxContainer"]
 layout_mode = 2
+size_flags_vertical = 3
 theme_override_constants/separation = -5
 
 [node name="TextureRect" type="TextureRect" parent="canvas_layer/territory_hud/territory_margin_container/PanelContainer/MarginContainer/VBoxContainer/name"]
@@ -140,6 +141,7 @@ text = "{{territory_name}}"
 
 [node name="size_info" type="HBoxContainer" parent="canvas_layer/territory_hud/territory_margin_container/PanelContainer/MarginContainer/VBoxContainer"]
 layout_mode = 2
+size_flags_vertical = 3
 theme_override_constants/separation = -5
 
 [node name="TextureRect" type="TextureRect" parent="canvas_layer/territory_hud/territory_margin_container/PanelContainer/MarginContainer/VBoxContainer/size_info"]
@@ -159,6 +161,7 @@ text = "{{size}} {{max_troops}}  "
 
 [node name="continent" type="HBoxContainer" parent="canvas_layer/territory_hud/territory_margin_container/PanelContainer/MarginContainer/VBoxContainer"]
 layout_mode = 2
+size_flags_vertical = 3
 theme_override_constants/separation = -5
 
 [node name="TextureRect" type="TextureRect" parent="canvas_layer/territory_hud/territory_margin_container/PanelContainer/MarginContainer/VBoxContainer/continent"]
@@ -213,14 +216,15 @@ horizontal_alignment = 1
 uppercase = true
 
 [node name="HBoxContainer" type="HBoxContainer" parent="canvas_layer/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer"]
-visible = false
 layout_mode = 2
 
 [node name="VBoxContainer" type="VBoxContainer" parent="canvas_layer/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/HBoxContainer"]
 layout_mode = 2
 
 [node name="ruler_name" type="HBoxContainer" parent="canvas_layer/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer"]
+visible = false
 layout_mode = 2
+size_flags_vertical = 3
 theme_override_constants/separation = -5
 
 [node name="TextureRect" type="TextureRect" parent="canvas_layer/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/ruler_name"]
@@ -239,7 +243,9 @@ theme_override_fonts/font = ExtResource("2_8w76i")
 text = "{{player_name}}  "
 
 [node name="troops" type="HBoxContainer" parent="canvas_layer/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer"]
+visible = false
 layout_mode = 2
+size_flags_vertical = 3
 theme_override_constants/separation = -5
 
 [node name="TextureRect" type="TextureRect" parent="canvas_layer/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/troops"]
