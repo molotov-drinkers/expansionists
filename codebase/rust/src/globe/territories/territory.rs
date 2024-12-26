@@ -16,12 +16,41 @@ pub enum Continent {
   Special,
 }
 
+impl fmt::Display for Continent {
+  /// allows to use `&Continent::Africa.to_string()`
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    match self {
+      Continent::Africa => write!(f, "africa"),
+      Continent::Asia => write!(f, "asia"),
+      Continent::Europe => write!(f, "europe"),
+      Continent::NorthAmerica => write!(f, "north_america"),
+      Continent::Oceania => write!(f, "oceania"),
+      Continent::SouthAmerica => write!(f, "south_america"),
+      Continent::Antarctica => write!(f, "antarctica"),
+      Continent::Special => write!(f, "special"),
+    }
+  }
+}
+
 pub enum SubContinent {
   MiddleEast,
   InteriorAsia,
   IndianSubcontinent,
   PacificAndSoutheastAsia,
   EuropeRelatedAsia,
+}
+
+impl fmt::Display for SubContinent {
+  /// allows to use `&SubContinent::MiddleEast.to_string()`
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    match self {
+      SubContinent::MiddleEast => write!(f, "middle_east"),
+      SubContinent::InteriorAsia => write!(f, "interior_asia"),
+      SubContinent::IndianSubcontinent => write!(f, "indian_subcontinent"),
+      SubContinent::PacificAndSoutheastAsia => write!(f, "pacific_and_southeast_asia"),
+      SubContinent::EuropeRelatedAsia => write!(f, "europe_related_asia"),
+    }
+  }
 }
 
 pub struct Location {
@@ -53,7 +82,6 @@ impl fmt::Display for Size {
     }
   }
 }
-
 
 pub type TerritoryId = String;
 pub type Territories = HashMap<TerritoryId, Territory>;

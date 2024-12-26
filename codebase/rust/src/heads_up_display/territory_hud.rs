@@ -1,19 +1,19 @@
-use godot::classes::{ILabel, Label};
+use godot::classes::{IControl, Label, Control };
 use godot::prelude::*;
 
 use crate::globe::territories::territory::Territory;
 
 
 #[derive(GodotClass)]
-#[class(base=Label)]
+#[class(base=Control)]
 pub struct TerritoryHUD {
-  base: Base<Label>,
+  base: Base<Control>,
   showing_text: String,
 }
 
 #[godot_api]
-impl ILabel for TerritoryHUD {
-  fn init(base: Base<Label>) -> TerritoryHUD {
+impl IControl for TerritoryHUD {
+  fn init(base: Base<Control>) -> TerritoryHUD {
 
     TerritoryHUD {
       base: base,
@@ -21,29 +21,66 @@ impl ILabel for TerritoryHUD {
     }
   }
 
-  fn process(&mut self, _delta: f64) {
-    let text = self.showing_text
-      .clone()
-      .to_uppercase()
-      .replace("_", " ");
+  fn ready(&mut self) {
+    self.base_mut().set_visible(false);
+  }
 
-    self.base_mut().set_text(&text);
+  fn process(&mut self, _delta: f64) {
+    // let text = self.showing_text
+    //   .clone()
+    //   .to_uppercase()
+    //   .replace("_", " ");
+
+    // self.base_mut().set_text(&text);
   }
 }
 
 impl TerritoryHUD {
-  pub fn set_text(&mut self, territory: &Territory) {
-    self.showing_text = format!(
-      "{}\n{} ({}) \n Growth Velocity: {:.2} \n Max Organic Troop: {}",
-      territory.territory_id.clone(),
-      territory.size.to_string(),
-      territory.coordinates.len(),
-      territory.troops_growth_velocity,
-      territory.organic_max_troops,
-   );
+  pub fn activate_hud(&mut self, territory: &Territory) {
+    self.base_mut().set_visible(true);
+    
+    self.activate_territory_part(territory);
+    self.activate_ruler_part(territory);
+  }
+
+  fn activate_territory_part(&mut self, territory: &Territory) {
+    let shared_path = "territory_margin_container/PanelContainer/MarginContainer/VBoxContainer/";
+
+    let mut name = self.base().get_node_as::<Label>(
+      &(shared_path.to_owned() + "name/Label")
+    );
+    let mut size_info = self.base().get_node_as::<Label>(
+      &(shared_path.to_owned() + "size_info/Label")
+    );
+    let mut continent = self.base().get_node_as::<Label>(
+      &(shared_path.to_owned() + "continent/Label")
+    );
+
+    let formatted_size = territory.size.to_string().to_uppercase();
+    let formatted_growth = &territory.troops_growth_velocity;
+    let max_troops = &territory.organic_max_troops;
+
+    let formatted_continent = territory.location.continent.to_string().to_uppercase().replace("_", " ");
+    let formatted_sub_continent = if let Some(sub_continent) = &territory.location.sub_continent {
+      let sub = sub_continent.to_string().to_uppercase().replace("_", " ");
+      format!(" - {sub}")
+    } else {
+      "".to_string()
+    };
+    
+    name.set_text(&territory.territory_id.clone().to_uppercase().replace("_", " "));
+    size_info.set_text(&format!("{formatted_size} {formatted_growth:.2} -> {max_troops}"));
+    continent.set_text(&format!("{formatted_continent}{formatted_sub_continent}"));
+  }
+
+  fn activate_ruler_part(&mut self, territory: &Territory) {
+    if territory.current_ruler.is_some() {
+     // TODO: Create HUD for ruler once it has one
+    }
   }
 
   pub fn clean_hud(&mut self) {
-    self.showing_text = "".to_string();
+    self.base_mut().set_visible(false);
+    // self.showing_text = "".to_string();
   }
 }

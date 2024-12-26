@@ -1,6 +1,13 @@
 
 use godot::{classes::{IStaticBody3D, InputEvent, InputEventMouseButton, MeshInstance3D, StaticBody3D}, global::MouseButton, prelude::*};
-use crate::{globe::{coordinates_system::virtual_planet::VirtualPlanet, territories::territory::Territory}, heads_up_display::territory_hud::TerritoryHUD};
+use crate::{
+  globe::{
+    coordinates_system::virtual_planet::VirtualPlanet,
+    territories::territory::Territory
+  },
+  heads_up_display::territory_hud::TerritoryHUD,
+  // heads_up_display::temp_territory_hud::TerritoryHUD,
+};
 
 /// Every territory should be a MeshInstance3D with the 
 /// following "Land StaticBody3D" as a child
@@ -50,7 +57,7 @@ impl IStaticBody3D for Land {
       .get(&territory_mesh.get_name().to_string())
       .expect("Expected to find territory");
 
-    territory_hud.bind_mut().set_text(territory);
+    territory_hud.bind_mut().activate_hud(territory);
 
     Territory::checking_territory(territory_mesh);
   }
@@ -106,7 +113,7 @@ impl Land {
   fn get_territory_hud_from_land(&mut self) -> Gd<TerritoryHUD> {
     let territory_hud = self
       .get_root_from_land()
-      .try_get_node_as::<TerritoryHUD>("canvas_layer/hud/territory_hud")
+      .try_get_node_as::<TerritoryHUD>("canvas_layer/territory_hud")
       .expect("Expected to find TerritoryHUD from RootScene");
 
     territory_hud

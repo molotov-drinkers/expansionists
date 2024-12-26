@@ -1,6 +1,23 @@
-[gd_scene load_steps=2 format=3 uid="uid://dum28ksb8lenw"]
+[gd_scene load_steps=10 format=3 uid="uid://dum28ksb8lenw"]
 
 [ext_resource type="PackedScene" uid="uid://bjycwupj85nvr" path="res://scenes/globe_scene.tscn" id="1_udvwj"]
+[ext_resource type="FontFile" uid="uid://bqwjn4oqslif5" path="res://assets/font/Quantico-Bold.ttf" id="2_8w76i"]
+[ext_resource type="Texture2D" uid="uid://c3idlh73wsdt5" path="res://assets/heads_up_display/territory/fingerprint.png" id="2_qrucq"]
+[ext_resource type="Texture2D" uid="uid://benrl0olugxuv" path="res://assets/heads_up_display/territory/dimension.png" id="3_hsskn"]
+[ext_resource type="Texture2D" uid="uid://bgbe1m0mn2bhq" path="res://assets/heads_up_display/territory/land.png" id="4_ep7lk"]
+[ext_resource type="Texture2D" uid="uid://c1ovfei8xwsk4" path="res://assets/heads_up_display/territory/key.png" id="5_jcixk"]
+[ext_resource type="Texture2D" uid="uid://cwc4kcjc7f01a" path="res://assets/heads_up_display/territory/tank.png" id="6_xmkgp"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_modyv"]
+bg_color = Color(0.328375, 0.346451, 0.328944, 1)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.955827, 0.677546, 0.520735, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_i3hfw"]
+bg_color = Color(0, 0.376471, 0.588235, 1)
 
 [node name="root_scene" type="RootScene"]
 
@@ -44,31 +61,213 @@ visible = false
 
 [node name="canvas_layer" type="CanvasLayer" parent="."]
 
-[node name="hud" type="Control" parent="canvas_layer"]
-layout_mode = 3
-anchors_preset = 3
+[node name="debugger_hud" type="DebuggerHUD" parent="canvas_layer"]
+offset_left = 12.0
+offset_right = 412.0
+offset_bottom = 93.0
+theme_override_font_sizes/font_size = 30
+horizontal_alignment = 3
+vertical_alignment = 1
+
+[node name="territory_hud" type="TerritoryHUD" parent="canvas_layer"]
+anchors_preset = -1
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = -397.0
+offset_top = -274.0
+offset_right = -1.0
+offset_bottom = -4.0
+grow_horizontal = 0
+grow_vertical = 2
+size_flags_vertical = 3
+
+[node name="territory_margin_container" type="MarginContainer" parent="canvas_layer/territory_hud"]
+layout_mode = 2
+offset_left = -15.0
+offset_top = -15.0
+offset_right = 396.0
+offset_bottom = 168.0
 grow_horizontal = 0
 grow_vertical = 0
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
 
-[node name="territory_hud" type="TerritoryHUD" parent="canvas_layer/hud"]
-layout_mode = 0
-offset_left = -474.0
-offset_top = -230.0
-offset_right = -39.0
-offset_bottom = -24.0
-theme_override_font_sizes/font_size = 30
-horizontal_alignment = 2
-autowrap_mode = 2
+[node name="PanelContainer" type="PanelContainer" parent="canvas_layer/territory_hud/territory_margin_container"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_modyv")
 
-[node name="debugger_hud" type="DebuggerHUD" parent="canvas_layer/hud"]
-layout_mode = 0
-offset_left = -439.0
-offset_top = -325.0
-offset_right = -39.0
-offset_bottom = -232.0
-theme_override_font_sizes/font_size = 30
-horizontal_alignment = 2
+[node name="MarginContainer" type="MarginContainer" parent="canvas_layer/territory_hud/territory_margin_container/PanelContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 5
+
+[node name="VBoxContainer" type="VBoxContainer" parent="canvas_layer/territory_hud/territory_margin_container/PanelContainer/MarginContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="canvas_layer/territory_hud/territory_margin_container/PanelContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("2_8w76i")
+theme_override_font_sizes/font_size = 32
+text = "Territory"
+horizontal_alignment = 1
+uppercase = true
+
+[node name="name" type="HBoxContainer" parent="canvas_layer/territory_hud/territory_margin_container/PanelContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = -5
+
+[node name="TextureRect" type="TextureRect" parent="canvas_layer/territory_hud/territory_margin_container/PanelContainer/MarginContainer/VBoxContainer/name"]
+layout_mode = 2
+texture = ExtResource("2_qrucq")
+expand_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="canvas_layer/territory_hud/territory_margin_container/PanelContainer/MarginContainer/VBoxContainer/name"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+
+[node name="Label" type="Label" parent="canvas_layer/territory_hud/territory_margin_container/PanelContainer/MarginContainer/VBoxContainer/name"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("2_8w76i")
+text = "{{territory_name}}"
+
+[node name="size_info" type="HBoxContainer" parent="canvas_layer/territory_hud/territory_margin_container/PanelContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = -5
+
+[node name="TextureRect" type="TextureRect" parent="canvas_layer/territory_hud/territory_margin_container/PanelContainer/MarginContainer/VBoxContainer/size_info"]
+layout_mode = 2
+texture = ExtResource("3_hsskn")
+expand_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="canvas_layer/territory_hud/territory_margin_container/PanelContainer/MarginContainer/VBoxContainer/size_info"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+
+[node name="Label" type="Label" parent="canvas_layer/territory_hud/territory_margin_container/PanelContainer/MarginContainer/VBoxContainer/size_info"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("2_8w76i")
+text = "{{size}} {{max_troops}}  "
+
+[node name="continent" type="HBoxContainer" parent="canvas_layer/territory_hud/territory_margin_container/PanelContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = -5
+
+[node name="TextureRect" type="TextureRect" parent="canvas_layer/territory_hud/territory_margin_container/PanelContainer/MarginContainer/VBoxContainer/continent"]
+layout_mode = 2
+texture = ExtResource("4_ep7lk")
+expand_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="canvas_layer/territory_hud/territory_margin_container/PanelContainer/MarginContainer/VBoxContainer/continent"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+
+[node name="Label" type="Label" parent="canvas_layer/territory_hud/territory_margin_container/PanelContainer/MarginContainer/VBoxContainer/continent"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("2_8w76i")
+text = "{{continent}}  "
+
+[node name="ruler_margin_container" type="MarginContainer" parent="canvas_layer/territory_hud"]
+layout_mode = 2
+offset_left = -15.0
+offset_top = 144.0
+offset_right = 396.0
+offset_bottom = 273.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="PanelContainer" type="PanelContainer" parent="canvas_layer/territory_hud/ruler_margin_container"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_modyv")
+
+[node name="MarginContainer" type="MarginContainer" parent="canvas_layer/territory_hud/ruler_margin_container/PanelContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 5
+
+[node name="VBoxContainer" type="VBoxContainer" parent="canvas_layer/territory_hud/ruler_margin_container/PanelContainer/MarginContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="canvas_layer/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("2_8w76i")
+theme_override_font_sizes/font_size = 24
+text = "Ruler"
+horizontal_alignment = 1
+uppercase = true
+
+[node name="HBoxContainer" type="HBoxContainer" parent="canvas_layer/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer"]
+visible = false
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="canvas_layer/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+
+[node name="ruler_name" type="HBoxContainer" parent="canvas_layer/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = -5
+
+[node name="TextureRect" type="TextureRect" parent="canvas_layer/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/ruler_name"]
+layout_mode = 2
+texture = ExtResource("5_jcixk")
+expand_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="canvas_layer/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/ruler_name"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+
+[node name="Label" type="Label" parent="canvas_layer/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/ruler_name"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("2_8w76i")
+text = "{{player_name}}  "
+
+[node name="troops" type="HBoxContainer" parent="canvas_layer/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = -5
+
+[node name="TextureRect" type="TextureRect" parent="canvas_layer/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/troops"]
+layout_mode = 2
+texture = ExtResource("6_xmkgp")
+expand_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="canvas_layer/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/troops"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+
+[node name="Label" type="Label" parent="canvas_layer/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/troops"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("2_8w76i")
+text = "{{num of troops}}  "
+
+[node name="ColorRect" type="PanelContainer" parent="canvas_layer/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/HBoxContainer"]
+custom_minimum_size = Vector2(10, 0)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_i3hfw")
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="canvas_layer/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="canvas_layer/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/HBoxContainer2"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("2_8w76i")
+text = "Unoccupied Territory"
