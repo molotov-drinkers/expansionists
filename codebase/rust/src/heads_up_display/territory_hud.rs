@@ -25,14 +25,6 @@ impl IControl for TerritoryHUD {
     self.base_mut().set_visible(false);
   }
 
-  fn process(&mut self, _delta: f64) {
-    // let text = self.showing_text
-    //   .clone()
-    //   .to_uppercase()
-    //   .replace("_", " ");
-
-    // self.base_mut().set_text(&text);
-  }
 }
 
 impl TerritoryHUD {
