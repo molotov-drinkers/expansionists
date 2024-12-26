@@ -14,7 +14,7 @@ pub struct CoordinateMetadata {
 /// Populated by the `VirtualPlanet::populate_surface_points_and_coordinate_map` method
 pub type CoordinateMap = HashMap<Coordinates, CoordinateMetadata>;
 
-const NUM_OF_WAYPOINTS: usize = 100;
+pub const NUM_OF_WAYPOINTS: usize = 10;
 
 pub struct CoordinatesSystem {}
 
@@ -23,22 +23,25 @@ impl CoordinatesSystem {
   /// Receives the origin and destination coordinates and 
   /// returns a list of coordinates represented by the 
   /// trajectory where a moving point would pass by.
+  /// 
+  /// It returns an array of NUM_OF_WAYPOINTS size, this way the compiler 
+  /// puts the array on the stack instead of the heap. Providing a better performance.
   pub fn get_geodesic_trajectory(
     origin: Vector3,
     destination: Vector3,
     radius: f32
-  ) -> Vec<Vector3> {
+  ) -> [Vector3; NUM_OF_WAYPOINTS] {
     let origin = origin.normalized();
     let destination = destination.normalized();
 
-    let mut trajectory = vec![];
+    let mut trajectory = [Vector3::ZERO; NUM_OF_WAYPOINTS];
 
     for i in 0..NUM_OF_WAYPOINTS{
       let t = i as f64 / (NUM_OF_WAYPOINTS - 1) as f64;
 
       let trajectory_point = origin.slerp(destination, t as f32);
       let trajectory_point = Self::radius_scale(trajectory_point, radius);
-      trajectory.push(trajectory_point);
+      trajectory[i] = trajectory_point;
     }
 
     trajectory

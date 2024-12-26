@@ -3,7 +3,7 @@ use godot::{
   classes::{BoxMesh, CharacterBody3D, ICharacterBody3D, MeshInstance3D, StandardMaterial3D}, prelude::*
 };
 use crate::globe::{coordinates_system::{
-    coordinates_system::CoordinatesSystem,
+    coordinates_system::{CoordinatesSystem, NUM_OF_WAYPOINTS},
     surface_point::{Coordinates, SurfacePoint, SurfacePointMetadata},
     virtual_planet::VirtualPlanet,
   }, territories::territory::TerritoryId};
@@ -36,7 +36,8 @@ pub struct Troop {
   /// indicates the time the troop will wait before moving again while patrolling
   idle_timer: f32,
 
-  walking_trajectory_points: Vec<Vector3>,
+  moving_trajectory_points: [Vector3; NUM_OF_WAYPOINTS],
+  moving_trajectory_is_set: bool,
   current_trajectory_point: usize,
 
 }
@@ -58,9 +59,9 @@ impl ICharacterBody3D for Troop {
       in_territory_moving_speed: 0.05,
       idle_timer: IDLE_TIMER,
 
-      walking_trajectory_points: vec![],
+      moving_trajectory_points: [Vector3::ZERO; NUM_OF_WAYPOINTS],
+      moving_trajectory_is_set: false,
       current_trajectory_point: 0,
-      
     }
   }
 
@@ -197,23 +198,24 @@ impl Troop {
       );
 
       // self._highlight_geodesic_trajectory(&geodesic_trajectory);
-      self.walking_trajectory_points = geodesic_trajectory;
+      self.moving_trajectory_points = geodesic_trajectory;
+      self.moving_trajectory_is_set = true;
       self.is_moving = true;
 
     }
   }
 
   fn maybe_move_along_the_trajectory_and_set_orientation(&mut self) {
-    if self.walking_trajectory_points.len() != 0 && self.idle_timer == 0.0 {
+    if self.moving_trajectory_is_set && self.idle_timer == 0.0 {
       if self.have_future_invasion_in_the_trajectory() {
         self.reset_trajectory();
         return;
       }
 
-      let current_target = self.walking_trajectory_points[self.current_trajectory_point];
+      let current_target = self.moving_trajectory_points[self.current_trajectory_point];
       let current_position = self.base().get_global_transform().origin;
       let direction = (current_target - current_position).try_normalized();
-      let on_the_last_waypoint = self.current_trajectory_point == (self.walking_trajectory_points.len() -1);
+      let on_the_last_waypoint = self.current_trajectory_point == (self.moving_trajectory_points.len() -1);
 
       // If the direction is None, it means the current position is the same as the target
       // so we should move to the next point in the trajectory
@@ -251,8 +253,8 @@ impl Troop {
     // Where N is troop position + buffer on the geodesic trajectory
     let buffer_checker = 5;
 
-    if self.is_patrolling && (self.current_trajectory_point + buffer_checker) < self.walking_trajectory_points.len() -1 {
-      let check_future_invasion = self.walking_trajectory_points[self.current_trajectory_point + buffer_checker];
+    if self.is_patrolling && (self.current_trajectory_point + buffer_checker) < self.moving_trajectory_points.len() -1 {
+      let check_future_invasion = self.moving_trajectory_points[self.current_trajectory_point + buffer_checker];
       let world = self.base().get_world_3d().expect("World to exist");
       let surface_point = SurfacePoint::get_surface_point(check_future_invasion, world)
         .expect("Expected to get surface point");
@@ -267,7 +269,8 @@ impl Troop {
   fn reset_trajectory(&mut self) {
     self.is_moving = false;
     self.current_trajectory_point = 0;
-    self.walking_trajectory_points.clear();
+    self.moving_trajectory_points = [Vector3::ZERO; NUM_OF_WAYPOINTS];
+    self.moving_trajectory_is_set = false;
     self.reset_idle_timer();
   }
 

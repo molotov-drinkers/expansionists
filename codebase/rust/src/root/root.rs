@@ -39,7 +39,7 @@ const ORIGIN_B: &str = "diomede_islands";
 
 impl RootScene {
   pub fn startup_troops_spawn(&mut self, virtual_planet: &VirtualPlanet) {
-    let max_troops = 25;
+    let max_troops = 60;
     while self.troops_spawn < max_troops {
       spawner_engine::troop_spawner(
         self,
