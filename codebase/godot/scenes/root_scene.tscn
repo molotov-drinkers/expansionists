@@ -1,20 +1,19 @@
-[gd_scene load_steps=10 format=3 uid="uid://dum28ksb8lenw"]
+[gd_scene load_steps=9 format=3 uid="uid://dum28ksb8lenw"]
 
 [ext_resource type="PackedScene" uid="uid://bjycwupj85nvr" path="res://scenes/globe_scene.tscn" id="1_udvwj"]
 [ext_resource type="FontFile" uid="uid://bqwjn4oqslif5" path="res://assets/font/Quantico-Bold.ttf" id="2_8w76i"]
-[ext_resource type="Texture2D" uid="uid://c3idlh73wsdt5" path="res://assets/heads_up_display/territory/fingerprint.png" id="2_qrucq"]
 [ext_resource type="Texture2D" uid="uid://benrl0olugxuv" path="res://assets/heads_up_display/territory/dimension.png" id="3_hsskn"]
 [ext_resource type="Texture2D" uid="uid://bgbe1m0mn2bhq" path="res://assets/heads_up_display/territory/land.png" id="4_ep7lk"]
 [ext_resource type="Texture2D" uid="uid://c1ovfei8xwsk4" path="res://assets/heads_up_display/territory/key.png" id="5_jcixk"]
 [ext_resource type="Texture2D" uid="uid://cwc4kcjc7f01a" path="res://assets/heads_up_display/territory/tank.png" id="6_xmkgp"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_modyv"]
-bg_color = Color(0.328375, 0.346451, 0.328944, 1)
+bg_color = Color(0.639891, 0.661639, 0.640533, 1)
 border_width_left = 4
 border_width_top = 4
 border_width_right = 4
 border_width_bottom = 4
-border_color = Color(0.955827, 0.677546, 0.520735, 1)
+border_color = Color(0.575133, 0.302225, 0.126159, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_i3hfw"]
 bg_color = Color(0, 0.376471, 0.588235, 1)
@@ -70,25 +69,25 @@ theme_override_font_sizes/font_size = 24
 vertical_alignment = 1
 
 [node name="territory_hud" type="TerritoryHUD" parent="canvas_layer"]
-anchors_preset = -1
+anchors_preset = 3
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -397.0
-offset_top = -274.0
+offset_left = -472.0
+offset_top = -345.0
 offset_right = -1.0
 offset_bottom = -4.0
 grow_horizontal = 0
-grow_vertical = 2
+grow_vertical = 0
 size_flags_vertical = 3
 
 [node name="territory_margin_container" type="MarginContainer" parent="canvas_layer/territory_hud"]
 layout_mode = 2
-offset_left = -15.0
+offset_left = -90.0
 offset_top = -15.0
-offset_right = 396.0
-offset_bottom = 168.0
+offset_right = 470.0
+offset_bottom = 219.0
 grow_horizontal = 0
 grow_vertical = 0
 theme_override_constants/margin_left = 10
@@ -110,7 +109,7 @@ theme_override_constants/margin_bottom = 5
 [node name="VBoxContainer" type="VBoxContainer" parent="canvas_layer/territory_hud/territory_margin_container/PanelContainer/MarginContainer"]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="canvas_layer/territory_hud/territory_margin_container/PanelContainer/MarginContainer/VBoxContainer"]
+[node name="Label" type="TextLabels" parent="canvas_layer/territory_hud/territory_margin_container/PanelContainer/MarginContainer/VBoxContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_fonts/font = ExtResource("2_8w76i")
@@ -118,26 +117,6 @@ theme_override_font_sizes/font_size = 32
 text = "Territory"
 horizontal_alignment = 1
 uppercase = true
-
-[node name="name" type="HBoxContainer" parent="canvas_layer/territory_hud/territory_margin_container/PanelContainer/MarginContainer/VBoxContainer"]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_constants/separation = -5
-
-[node name="TextureRect" type="TextureRect" parent="canvas_layer/territory_hud/territory_margin_container/PanelContainer/MarginContainer/VBoxContainer/name"]
-layout_mode = 2
-texture = ExtResource("2_qrucq")
-expand_mode = 2
-
-[node name="MarginContainer" type="MarginContainer" parent="canvas_layer/territory_hud/territory_margin_container/PanelContainer/MarginContainer/VBoxContainer/name"]
-layout_mode = 2
-theme_override_constants/margin_left = 16
-
-[node name="Label" type="Label" parent="canvas_layer/territory_hud/territory_margin_container/PanelContainer/MarginContainer/VBoxContainer/name"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_fonts/font = ExtResource("2_8w76i")
-text = "{{territory_name}}"
 
 [node name="size_info" type="HBoxContainer" parent="canvas_layer/territory_hud/territory_margin_container/PanelContainer/MarginContainer/VBoxContainer"]
 layout_mode = 2
@@ -153,7 +132,7 @@ expand_mode = 2
 layout_mode = 2
 theme_override_constants/margin_left = 16
 
-[node name="Label" type="Label" parent="canvas_layer/territory_hud/territory_margin_container/PanelContainer/MarginContainer/VBoxContainer/size_info"]
+[node name="Label" type="TextLabels" parent="canvas_layer/territory_hud/territory_margin_container/PanelContainer/MarginContainer/VBoxContainer/size_info"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_fonts/font = ExtResource("2_8w76i")
@@ -173,7 +152,7 @@ expand_mode = 2
 layout_mode = 2
 theme_override_constants/margin_left = 16
 
-[node name="Label" type="Label" parent="canvas_layer/territory_hud/territory_margin_container/PanelContainer/MarginContainer/VBoxContainer/continent"]
+[node name="Label" type="TextLabels" parent="canvas_layer/territory_hud/territory_margin_container/PanelContainer/MarginContainer/VBoxContainer/continent"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_fonts/font = ExtResource("2_8w76i")
@@ -181,10 +160,10 @@ text = "{{continent}}  "
 
 [node name="ruler_margin_container" type="MarginContainer" parent="canvas_layer/territory_hud"]
 layout_mode = 2
-offset_left = -15.0
-offset_top = 144.0
-offset_right = 396.0
-offset_bottom = 273.0
+offset_left = -90.0
+offset_top = 195.0
+offset_right = 470.0
+offset_bottom = 343.0
 grow_horizontal = 0
 grow_vertical = 0
 theme_override_constants/margin_left = 10
@@ -210,69 +189,68 @@ layout_mode = 2
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_fonts/font = ExtResource("2_8w76i")
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 32
 text = "Ruler"
 horizontal_alignment = 1
 uppercase = true
 
-[node name="HBoxContainer" type="HBoxContainer" parent="canvas_layer/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer"]
-layout_mode = 2
-
-[node name="VBoxContainer" type="VBoxContainer" parent="canvas_layer/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/HBoxContainer"]
-layout_mode = 2
-
-[node name="ruler_name" type="HBoxContainer" parent="canvas_layer/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer"]
+[node name="occupied" type="HBoxContainer" parent="canvas_layer/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer"]
 visible = false
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="canvas_layer/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/occupied"]
+layout_mode = 2
+
+[node name="ruler_name" type="HBoxContainer" parent="canvas_layer/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/occupied/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = -5
 
-[node name="TextureRect" type="TextureRect" parent="canvas_layer/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/ruler_name"]
+[node name="TextureRect" type="TextureRect" parent="canvas_layer/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/occupied/VBoxContainer/ruler_name"]
 layout_mode = 2
 texture = ExtResource("5_jcixk")
 expand_mode = 2
 
-[node name="MarginContainer" type="MarginContainer" parent="canvas_layer/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/ruler_name"]
+[node name="MarginContainer" type="MarginContainer" parent="canvas_layer/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/occupied/VBoxContainer/ruler_name"]
 layout_mode = 2
 theme_override_constants/margin_left = 16
 
-[node name="Label" type="Label" parent="canvas_layer/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/ruler_name"]
+[node name="Label" type="TextLabels" parent="canvas_layer/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/occupied/VBoxContainer/ruler_name"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_fonts/font = ExtResource("2_8w76i")
 text = "{{player_name}}  "
 
-[node name="troops" type="HBoxContainer" parent="canvas_layer/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer"]
-visible = false
+[node name="troops" type="HBoxContainer" parent="canvas_layer/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/occupied/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = -5
 
-[node name="TextureRect" type="TextureRect" parent="canvas_layer/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/troops"]
+[node name="TextureRect" type="TextureRect" parent="canvas_layer/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/occupied/VBoxContainer/troops"]
 layout_mode = 2
 texture = ExtResource("6_xmkgp")
 expand_mode = 2
 
-[node name="MarginContainer" type="MarginContainer" parent="canvas_layer/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/troops"]
+[node name="MarginContainer" type="MarginContainer" parent="canvas_layer/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/occupied/VBoxContainer/troops"]
 layout_mode = 2
 theme_override_constants/margin_left = 16
 
-[node name="Label" type="Label" parent="canvas_layer/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/troops"]
+[node name="Label" type="TextLabels" parent="canvas_layer/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/occupied/VBoxContainer/troops"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_fonts/font = ExtResource("2_8w76i")
 text = "{{num of troops}}  "
 
-[node name="ColorRect" type="PanelContainer" parent="canvas_layer/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/HBoxContainer"]
+[node name="ColorRect" type="PanelContainer" parent="canvas_layer/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/occupied"]
 custom_minimum_size = Vector2(10, 0)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_i3hfw")
 
-[node name="HBoxContainer2" type="HBoxContainer" parent="canvas_layer/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer"]
+[node name="unoccupied" type="HBoxContainer" parent="canvas_layer/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer"]
 layout_mode = 2
 alignment = 1
 
-[node name="Label" type="Label" parent="canvas_layer/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/HBoxContainer2"]
+[node name="Label" type="TextLabels" parent="canvas_layer/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/unoccupied"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_fonts/font = ExtResource("2_8w76i")

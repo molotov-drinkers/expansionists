@@ -1,7 +1,9 @@
-use godot::classes::{IControl, Label, Control };
+use godot::classes::{Control, HBoxContainer, IControl};
 use godot::prelude::*;
 
 use crate::globe::territories::territory::Territory;
+
+use super::text_labels::TextLabels;
 
 
 #[derive(GodotClass)]
@@ -35,13 +37,13 @@ impl TerritoryHUD {
   fn activate_territory_part(&mut self, territory: &Territory) {
     let shared_path = "territory_margin_container/PanelContainer/MarginContainer/VBoxContainer/";
 
-    let mut name = self.base().get_node_as::<Label>(
-      &(shared_path.to_owned() + "name/Label")
+    let mut name = self.base().get_node_as::<TextLabels>(
+      &(shared_path.to_owned() + "Label")
     );
-    let mut size_info = self.base().get_node_as::<Label>(
+    let mut size_info = self.base().get_node_as::<TextLabels>(
       &(shared_path.to_owned() + "size_info/Label")
     );
-    let mut continent = self.base().get_node_as::<Label>(
+    let mut continent = self.base().get_node_as::<TextLabels>(
       &(shared_path.to_owned() + "continent/Label")
     );
 
@@ -58,14 +60,26 @@ impl TerritoryHUD {
     };
     
     name.set_text(&territory.territory_id.clone().to_uppercase().replace("_", " "));
+    name.bind_mut().set_font_size(32);
+
     size_info.set_text(&format!("{formatted_size} [{formatted_growth:.2} -> {max_troops}]"));
     continent.set_text(&format!("{formatted_continent}{formatted_sub_continent}"));
   }
 
   fn activate_ruler_part(&mut self, territory: &Territory) {
+    let shared_path = "ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/";
+    let mut occupied = self.base().get_node_as::<HBoxContainer>(
+      &(shared_path.to_owned() + "occupied")
+    );
+
+    let mut unoccupied = self.base().get_node_as::<HBoxContainer>(
+      &(shared_path.to_owned() + "unoccupied")
+    );
     if territory.current_ruler.is_some() {
-     // TODO: Create HUD for ruler once it has one
+      // TODO: Create HUD for ruler once it has one
     }
+    occupied.set_visible(false);
+    unoccupied.set_visible(true);
   }
 
   pub fn clean_hud(&mut self) {
