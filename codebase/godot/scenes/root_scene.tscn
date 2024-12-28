@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://dum28ksb8lenw"]
+[gd_scene load_steps=14 format=3 uid="uid://dum28ksb8lenw"]
 
 [ext_resource type="PackedScene" uid="uid://bjycwupj85nvr" path="res://scenes/globe_scene.tscn" id="1_udvwj"]
 [ext_resource type="FontFile" uid="uid://bqwjn4oqslif5" path="res://assets/font/Quantico-Bold.ttf" id="2_8w76i"]
@@ -6,6 +6,8 @@
 [ext_resource type="Texture2D" uid="uid://bgbe1m0mn2bhq" path="res://assets/heads_up_display/territory/land.png" id="4_ep7lk"]
 [ext_resource type="Texture2D" uid="uid://c1ovfei8xwsk4" path="res://assets/heads_up_display/territory/key.png" id="5_jcixk"]
 [ext_resource type="Texture2D" uid="uid://cwc4kcjc7f01a" path="res://assets/heads_up_display/territory/tank.png" id="6_xmkgp"]
+[ext_resource type="Shader" path="res://shaders/space.gdshader" id="7_lj0qq"]
+[ext_resource type="Texture2D" uid="uid://cw6fwmbh0nvmi" path="res://assets/space.jpg" id="8_r34p6"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_modyv"]
 bg_color = Color(0.639891, 0.661639, 0.640533, 1)
@@ -17,6 +19,17 @@ border_color = Color(0.575133, 0.302225, 0.126159, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_i3hfw"]
 bg_color = Color(0, 0.376471, 0.588235, 1)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_t4k8f"]
+shader = ExtResource("7_lj0qq")
+shader_parameter/sky_tex = ExtResource("8_r34p6")
+
+[sub_resource type="Sky" id="Sky_y453h"]
+sky_material = SubResource("ShaderMaterial_t4k8f")
+
+[sub_resource type="Environment" id="Environment_75xfn"]
+background_mode = 2
+sky = SubResource("Sky_y453h")
 
 [node name="root_scene" type="RootScene"]
 
@@ -255,3 +268,6 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_fonts/font = ExtResource("2_8w76i")
 text = "Unoccupied Territory"
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_75xfn")

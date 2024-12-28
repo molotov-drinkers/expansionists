@@ -166,7 +166,7 @@ impl Territory {
       Self::get_base_territory("the_islands", Continent::Europe, None),
       Self::get_base_territory("rhine_region", Continent::Europe, None),
       Self::get_base_territory("balkan_peninsula", Continent::Europe, None),
-      Self::get_base_territory("latin_variations", Continent::Europe, None),
+      Self::get_base_territory("euro_romance_lands", Continent::Europe, None),
       Self::get_base_territory("west_slavs", Continent::Europe, None),
       Self::get_base_territory("baltics", Continent::Europe, None),
       Self::get_base_territory("big_plain", Continent::Europe, None),
