@@ -9,17 +9,6 @@
 [ext_resource type="Shader" path="res://shaders/space.gdshader" id="7_lj0qq"]
 [ext_resource type="Texture2D" uid="uid://cw6fwmbh0nvmi" path="res://assets/space.jpg" id="8_r34p6"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_modyv"]
-bg_color = Color(0.639891, 0.661639, 0.640533, 1)
-border_width_left = 4
-border_width_top = 4
-border_width_right = 4
-border_width_bottom = 4
-border_color = Color(0.575133, 0.302225, 0.126159, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_i3hfw"]
-bg_color = Color(0, 0.376471, 0.588235, 1)
-
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_t4k8f"]
 shader = ExtResource("7_lj0qq")
 shader_parameter/sky_tex = ExtResource("8_r34p6")
@@ -30,6 +19,17 @@ sky_material = SubResource("ShaderMaterial_t4k8f")
 [sub_resource type="Environment" id="Environment_75xfn"]
 background_mode = 2
 sky = SubResource("Sky_y453h")
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_modyv"]
+bg_color = Color(0.639891, 0.661639, 0.640533, 1)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.575133, 0.302225, 0.126159, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_i3hfw"]
+bg_color = Color(0, 0.376471, 0.588235, 1)
 
 [node name="root_scene" type="RootScene"]
 
@@ -70,6 +70,9 @@ transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0)
 visible = false
 
 [node name="troops" type="Node3D" parent="."]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_75xfn")
 
 [node name="canvas_layer" type="CanvasLayer" parent="."]
 
@@ -268,6 +271,3 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_fonts/font = ExtResource("2_8w76i")
 text = "Unoccupied Territory"
-
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = SubResource("Environment_75xfn")
