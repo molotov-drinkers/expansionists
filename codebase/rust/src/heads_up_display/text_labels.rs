@@ -9,12 +9,13 @@ pub struct TextLabels {
   font: Gd<FontFile>
 }
 
+
 #[godot_api]
 impl ILabel for TextLabels {
   fn init(base: Base<Label>) -> TextLabels {
     let mut quantico_bold = FontFile::new_gd();
     quantico_bold.load_dynamic_font("res://assets/font/Quantico-Bold.ttf");
-    quantico_bold.set_fixed_size(24);
+    quantico_bold.set_fixed_size(Self::DEFAULT_FONT_SIZE);
 
     TextLabels {
       base: base,
@@ -29,6 +30,8 @@ impl ILabel for TextLabels {
 }
 
 impl TextLabels {
+  const DEFAULT_FONT_SIZE: i32 = 24;
+
   pub fn set_font_size(&mut self, size: i32) {
     self.font.set_fixed_size(size);
     let font_clone = self.font.clone();
