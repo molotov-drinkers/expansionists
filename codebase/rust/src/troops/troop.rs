@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 
 use godot::{
   classes::{BoxMesh, CharacterBody3D, ICharacterBody3D, MeshInstance3D, StandardMaterial3D}, prelude::*
@@ -14,7 +15,30 @@ use super::{
 };
 
 const DEST: &str = "west_slavs";
-const IDLE_TIMER: f32 = 0.5;
+
+#[derive(Hash, Eq, PartialEq)]
+enum TroopState {
+  /// Whenever the troop is moving it doesn't matter the place nor reason
+  Moving,
+
+  /// Whenever the troop is patrolling within its territory
+  Patrolling,
+  
+  /// Pauses in between movements while it patrols
+  Idle,
+  
+  /// Whenever the troop is being deployed to another territory
+  /// other than the one it was before
+  Deploying,
+
+  /// Whenever the troop is in combat
+  Combating,
+
+  /// If the troop is selected by the player
+  Selected,
+}
+
+type TroopActivities = HashSet<TroopState>;
 
 #[derive(GodotClass)]
 #[class(base=CharacterBody3D)]
@@ -28,10 +52,10 @@ pub struct Troop {
   surface: Surface,
 
   // owner: String,
-  combat_stats: CombatStats,
+  _combat_stats: CombatStats,
 
-  is_moving: bool,
-  is_patrolling: bool,
+  troop_activities: TroopActivities,
+
   in_territory_moving_speed: f32,
   /// indicates the time the troop will wait before moving again while patrolling
   idle_timer: f32,
@@ -39,7 +63,6 @@ pub struct Troop {
   moving_trajectory_points: [Vector3; NUM_OF_WAYPOINTS],
   moving_trajectory_is_set: bool,
   current_trajectory_point: usize,
-
 }
 
 #[godot_api]
@@ -52,12 +75,15 @@ impl ICharacterBody3D for Troop {
       deployed_to_territory: "".to_string(),
       surface: Surface::Land,
 
-      combat_stats: CombatStats::new(),
+      _combat_stats: CombatStats::new(),
 
-      is_moving: false,
-      is_patrolling: true,
+      troop_activities: HashSet::from([
+        TroopState::Idle,
+        TroopState::Patrolling,
+      ]),
+
       in_territory_moving_speed: 0.05,
-      idle_timer: IDLE_TIMER,
+      idle_timer: Self::DEFAULT_IDLE_TIMER,
 
       moving_trajectory_points: [Vector3::ZERO; NUM_OF_WAYPOINTS],
       moving_trajectory_is_set: false,
@@ -84,6 +110,10 @@ impl ICharacterBody3D for Troop {
 
 #[godot_api]
 impl Troop {
+
+  /// Defines the time the troop will wait before moving again while patrolling
+  const DEFAULT_IDLE_TIMER: f32 = 0.7;
+
   /// Sets troop collision layer and mask are set to be separate.
   /// To avoid misbehaviors on geodesic movement
   fn set_custom_collision(&mut self) {
@@ -178,11 +208,13 @@ impl Troop {
   }
 
   fn maybe_populate_trajectory_points(&mut self) {
-    if self.combat_stats.in_combat == false && self.is_moving == false {
+    if !self.troop_activities.contains(&TroopState::Combating) &&
+      !self.troop_activities.contains(&TroopState::Moving) {
+
       let virtual_planet = self.get_virtual_planet_from_troop_scope();
       let virtual_planet = virtual_planet.bind();
 
-      let moving_to: Coordinates = match self.is_patrolling {
+      let moving_to: Coordinates = match self.troop_activities.contains(&TroopState::Patrolling) {
         true => virtual_planet
           .get_an_random_territory_coordinate(&self.deployed_to_territory),
         
@@ -200,13 +232,12 @@ impl Troop {
       // self._highlight_geodesic_trajectory(&geodesic_trajectory);
       self.moving_trajectory_points = geodesic_trajectory;
       self.moving_trajectory_is_set = true;
-      self.is_moving = true;
-
+      self.troop_activities.insert(TroopState::Moving);
     }
   }
 
   fn maybe_move_along_the_trajectory_and_set_orientation(&mut self) {
-    if self.moving_trajectory_is_set && self.idle_timer == 0.0 {
+    if self.moving_trajectory_is_set && !self.troop_activities.contains(&TroopState::Idle) {
       if self.have_future_invasion_in_the_trajectory() {
         self.reset_trajectory();
         return;
@@ -253,7 +284,8 @@ impl Troop {
     // Where N is troop position + buffer on the geodesic trajectory
     let buffer_checker = 5;
 
-    if self.is_patrolling && (self.current_trajectory_point + buffer_checker) < self.moving_trajectory_points.len() -1 {
+    if self.troop_activities.contains(&TroopState::Patrolling) &&
+      (self.current_trajectory_point + buffer_checker) < self.moving_trajectory_points.len() -1 {
       let check_future_invasion = self.moving_trajectory_points[self.current_trajectory_point + buffer_checker];
       let world = self.base().get_world_3d().expect("World to exist");
       let surface_point = SurfacePoint::get_surface_point(check_future_invasion, world)
@@ -267,23 +299,22 @@ impl Troop {
   }
 
   fn reset_trajectory(&mut self) {
-    self.is_moving = false;
+    self.troop_activities.remove(&TroopState::Moving);
+    self.troop_activities.insert(TroopState::Idle);
     self.current_trajectory_point = 0;
     self.moving_trajectory_points = [Vector3::ZERO; NUM_OF_WAYPOINTS];
     self.moving_trajectory_is_set = false;
-    self.reset_idle_timer();
-  }
-
-  fn reset_idle_timer(&mut self) {
-    self.idle_timer = IDLE_TIMER;
   }
 
   fn decrease_idle_timer(&mut self, delta: f64) {
-    if self.idle_timer <= 0.0 {
-      self.idle_timer = 0.0; // Ensure it doesn't go negative
-    } else {
+    if self.troop_activities.contains(&TroopState::Idle) {
       self.idle_timer -= delta as f32;
     }
+    
+    if self.idle_timer <= 0.0 {
+      self.idle_timer = Self::DEFAULT_IDLE_TIMER;
+      self.troop_activities.remove(&TroopState::Idle);
+    } 
   }
 
   /// Creates 3d Meshe Cubes all along the trajectory of the troop

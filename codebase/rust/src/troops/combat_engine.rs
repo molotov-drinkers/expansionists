@@ -14,7 +14,6 @@ pub enum FighthingBehavior {
 }
 
 pub struct CombatStats {
-  pub in_combat: bool,
   _in_after_combat: bool,
 
   _damage: i32,
@@ -28,7 +27,6 @@ pub struct CombatStats {
 impl CombatStats {
   pub fn new() -> CombatStats {
     CombatStats {
-      in_combat: false,
       _in_after_combat: false,
       _damage: 0,
       _hp: 0,
