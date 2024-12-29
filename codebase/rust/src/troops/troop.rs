@@ -233,7 +233,7 @@ impl Troop {
         VirtualPlanet::get_planet_radius() as f32
       );
 
-      // self._highlight_geodesic_trajectory(&geodesic_trajectory);
+      self.highlight_geodesic_trajectory(&geodesic_trajectory);
       self.moving_trajectory_points = geodesic_trajectory;
       self.moving_trajectory_is_set = true;
       self.troop_activities.insert(TroopState::Moving);
@@ -285,8 +285,8 @@ impl Troop {
   /// that happens because the point the troop is moving to is get randomly and the geodesic trajectory
   /// may pass through other territories
   fn have_future_invasion_in_the_trajectory(&mut self) -> bool {
-    // Where N is troop position + buffer on the geodesic trajectory
-    let buffer_checker = 5;
+    // Where N is {troop position} + {buffer} on the geodesic trajectory
+    let buffer_checker = (NUM_OF_WAYPOINTS as f32 * 0.3) as usize;
 
     if self.troop_activities.contains(&TroopState::Patrolling) &&
       (self.current_trajectory_point + buffer_checker) < self.moving_trajectory_points.len() -1 {
@@ -321,22 +321,25 @@ impl Troop {
     } 
   }
 
-  /// Creates 3d Meshe Cubes all along the trajectory of the troop
+  #[allow(dead_code)]
+  /// Creates 3d Mesh Cubes all along the trajectory of the troop
   /// Used for debugging purposes
-  fn _highlight_geodesic_trajectory(&mut self, geodesic_trajectory: &Vec<Vector3>) {
+  fn highlight_geodesic_trajectory(&mut self, geodesic_trajectory: &[Vector3; NUM_OF_WAYPOINTS]) {
     let node_3d_name = "geodesic_mesh";
 
+    let mut highlighted_trajectories = self.base_mut()
+      .get_parent()
+      .expect("Parent to exist")
+      .find_child("highlighted_trajectories")
+      .expect("Expected to find highlighted_trajectories");
+
     // Delete existing geodesic mesh
-    for child in self.base().get_children().iter_shared() {
-      if child.get_name() == node_3d_name.into() {
-        self.base_mut().remove_child(&child);
-      }
+    for node in highlighted_trajectories.get_children().iter_shared() {
+      highlighted_trajectories.remove_child(&node);
     }
 
     let mut geodesic_mesh = Node3D::new_alloc();
-    // Adding the geodesic mesh to the troop right away to be able to set the global position
-    // This way we avoid having the geodesic mesh with the relative position of the troop
-    self.base_mut().add_child(&geodesic_mesh);
+    highlighted_trajectories.add_child(&geodesic_mesh);
     geodesic_mesh.set_name(node_3d_name);
     geodesic_mesh.set_global_position(Vector3::new(0.0, 0.0, 0.0));
 
@@ -345,12 +348,11 @@ impl Troop {
       let mut box_mesh = BoxMesh::new_gd();
       let mut geodesic_mesh_cube = MeshInstance3D::new_alloc();
 
-      material.set_albedo(Color::GOLD);
+      material.set_albedo(Color::LIGHT_PINK);
       box_mesh.set_size(Vector3::new(0.02, 0.02, 0.02));
       box_mesh.set_material(&material);
       geodesic_mesh_cube.set_mesh(&box_mesh);
       geodesic_mesh_cube.set_position(*point);
-      // geodesic_mesh_cube.set_surface_override_material(0, &material);
       geodesic_mesh.add_child(&geodesic_mesh_cube);
     }
   }

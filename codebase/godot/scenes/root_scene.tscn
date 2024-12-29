@@ -69,7 +69,13 @@ transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0)
 [node name="virtual_planet" type="VirtualPlanet" parent="."]
 visible = false
 
+[node name="playable" type="Node3D" parent="."]
+
+[node name="selection_system" type="SelectionSystem" parent="playable"]
+
 [node name="troops" type="Node3D" parent="."]
+
+[node name="highlighted_trajectories" type="Node3D" parent="troops"]
 
 [node name="world_environment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_75xfn")
@@ -271,7 +277,3 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_fonts/font = ExtResource("2_8w76i")
 text = "Unoccupied Territory"
-
-[node name="playable" type="Node3D" parent="."]
-
-[node name="selection_system" type="SelectionSystem" parent="playable"]
