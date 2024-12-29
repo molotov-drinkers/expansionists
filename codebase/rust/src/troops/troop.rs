@@ -67,6 +67,9 @@ pub struct Troop {
   moving_trajectory_points: [Vector3; CoordinatesSystem::NUM_OF_WAYPOINTS],
   moving_trajectory_is_set: bool,
   current_trajectory_point: usize,
+
+  /// it turns true when the troop is spawned and the orientation is set
+  initial_orientation_is_set: bool,
 }
 
 #[godot_api]
@@ -92,6 +95,8 @@ impl ICharacterBody3D for Troop {
       moving_trajectory_points: [Vector3::ZERO; CoordinatesSystem::NUM_OF_WAYPOINTS],
       moving_trajectory_is_set: false,
       current_trajectory_point: 0,
+
+      initial_orientation_is_set: false,
     }
   }
 
@@ -99,22 +104,24 @@ impl ICharacterBody3D for Troop {
     self.set_custom_collision();
   }
 
-  fn physics_process(&mut self, delta: f64) {    
+  fn physics_process(&mut self, _delta: f64) {    
+    self.maybe_move_along_the_trajectory_and_set_orientation();
+  }
+
+  fn process(&mut self, delta: f64) {
     // Sets orientation first, as we use default_mesh to get the global position
     // it's important to set the orientation before setting the surface troop
-    self.set_orientation(None);
+    self.set_initial_orientation();
 
     self.set_surface_troop();
     self.check_and_change_mesh();
     self.maybe_populate_trajectory_points();
-    self.maybe_move_along_the_trajectory_and_set_orientation();
     self.decrease_idle_timer(delta);
   }
 }
 
 #[godot_api]
 impl Troop {
-
   /// Defines the time the troop will wait before moving again while patrolling
   const DEFAULT_IDLE_TIMER: f32 = 0.7;
 
@@ -165,23 +172,25 @@ impl Troop {
     }
   }
 
+  /// Sets the initial orientation of the troop when it's spawned
+  fn set_initial_orientation(&mut self) {
+    if !self.initial_orientation_is_set {
+      // Choose a forward direction (assuming the troop faces the -Z direction by default)
+      let initial_orientation = Vector3::new(0.0, 0.0, -1.0);
+      self.set_orientation(initial_orientation);
+      self.initial_orientation_is_set = true;
+    }
+  }
+
   /// Sets orientation to respect the globe trajectory and gravity
   /// if the troop is moving, it will set the orientation to the direction it's moving
-  fn set_orientation(&mut self, trajectory_vector: Option<Vector3>) {
+  fn set_orientation(&mut self, trajectory_vector: Vector3) {
     // This is the "up" direction on the surface
     let normal = self.base().get_global_position().normalized();
 
-    // If it's moving, gets trajectory forward vector
-    let forward = if trajectory_vector.is_some() {
-      trajectory_vector.unwrap()
-    } else {
-      // Choose a forward direction (assuming the troop faces the -Z direction by default)
-      Vector3::new(0.0, 0.0, -1.0)
-    };
-  
     // Calculate the right vector using the cross product (normal x forward)
     let right = normal
-      .cross(forward)
+      .cross(trajectory_vector)
       .try_normalized()
       .expect("normal and forward expected to exist");
   
@@ -261,7 +270,7 @@ impl Troop {
 
       let direction = direction.expect("Expected Troop direction to be a Vector3");
       let velocity = direction * self.in_territory_moving_speed;
-      self.set_orientation(Some(direction));
+      self.set_orientation(direction);
       self.base_mut().set_velocity(velocity);
       self.base_mut().move_and_slide();
 
@@ -370,5 +379,14 @@ impl Troop {
       .cast::<VirtualPlanet>();
 
     virtual_planet
+  }
+
+  #[allow(dead_code)]
+  fn selecting_troop(&mut self) {
+    // TICKET: #63 Put it on the HUD
+  }
+
+  #[allow(dead_code)]
+  fn unselecting_troop(&mut self) {
   }
 }
