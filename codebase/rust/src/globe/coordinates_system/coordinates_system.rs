@@ -14,11 +14,10 @@ pub struct CoordinateMetadata {
 /// Populated by the `VirtualPlanet::populate_surface_points_and_coordinate_map` method
 pub type CoordinateMap = HashMap<Coordinates, CoordinateMetadata>;
 
-pub const NUM_OF_WAYPOINTS: usize = 10;
-
 pub struct CoordinatesSystem {}
 
 impl CoordinatesSystem {
+  pub const NUM_OF_WAYPOINTS: usize = 10;
   
   /// Receives the origin and destination coordinates and 
   /// returns a list of coordinates represented by the 
@@ -30,14 +29,14 @@ impl CoordinatesSystem {
     origin: Vector3,
     destination: Vector3,
     radius: f32
-  ) -> [Vector3; NUM_OF_WAYPOINTS] {
+  ) -> [Vector3; Self::NUM_OF_WAYPOINTS] {
     let origin = origin.normalized();
     let destination = destination.normalized();
 
-    let mut trajectory = [Vector3::ZERO; NUM_OF_WAYPOINTS];
+    let mut trajectory = [Vector3::ZERO; Self::NUM_OF_WAYPOINTS];
 
-    for i in 0..NUM_OF_WAYPOINTS{
-      let t = i as f64 / (NUM_OF_WAYPOINTS - 1) as f64;
+    for i in 0..Self::NUM_OF_WAYPOINTS{
+      let t = i as f64 / (Self::NUM_OF_WAYPOINTS - 1) as f64;
 
       let trajectory_point = origin.slerp(destination, t as f32);
       let trajectory_point = Self::radius_scale(trajectory_point, radius);

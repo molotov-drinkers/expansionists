@@ -2,15 +2,6 @@ use godot::classes::{Camera3D, ICamera3D, InputEvent, InputEventMagnifyGesture, 
 use godot::global::MouseButton;
 use godot::prelude::*;
 
-const MAX_HEIGHT_ANGLE: f32 = 89.9;
-const MIN_HEIGHT_ANGLE: f32 = -89.9;
-
-const MIN_DISTANCE_TO_ORIGIN: f32 = 3.5;
-
-/// That's the distance from the origin to the farthest point in the globe
-/// If greater, we will have problems to catch the mouse_enter on land.rs
-const MAX_DISTANCE_TO_ORIGIN: f32 = 5.95;
-
 #[derive(GodotClass)]
 #[class(base=Camera3D)]
 pub struct PlayerCamera {
@@ -41,14 +32,14 @@ impl ICamera3D for PlayerCamera {
 
     if input.is_action_pressed("camera_up") {
       self.phi = (self.phi + self.camera_speed as f32 * delta as f32).clamp(
-        MIN_HEIGHT_ANGLE.to_radians(), 
-        MAX_HEIGHT_ANGLE.to_radians()
+        Self::MIN_HEIGHT_ANGLE.to_radians(), 
+        Self::MAX_HEIGHT_ANGLE.to_radians()
       );
     }
     if input.is_action_pressed("camera_down") {
       self.phi = (self.phi - self.camera_speed as f32 * delta as f32).clamp(
-        MIN_HEIGHT_ANGLE.to_radians(), 
-        MAX_HEIGHT_ANGLE.to_radians()
+        Self::MIN_HEIGHT_ANGLE.to_radians(), 
+        Self::MAX_HEIGHT_ANGLE.to_radians()
       );
     }
     if input.is_action_pressed("camera_left") {
@@ -95,6 +86,15 @@ impl ICamera3D for PlayerCamera {
 }
 
 impl PlayerCamera {
+  const MAX_HEIGHT_ANGLE: f32 = 89.9;
+  const MIN_HEIGHT_ANGLE: f32 = -89.9;
+  
+  const MIN_DISTANCE_TO_ORIGIN: f32 = 3.5;
+  
+  /// That's the distance from the origin to the farthest point in the globe
+  /// If greater, we will have problems to catch the mouse_enter on land.rs
+  const MAX_DISTANCE_TO_ORIGIN: f32 = 5.95;
+
   fn get_data_to_move_camera(&mut self) -> (f32, Vector3) {
     let cam_location = self.base().get_global_position();
     let world_origin = Vector3::new(0.0, 0.0, 0.0);
@@ -107,7 +107,7 @@ impl PlayerCamera {
   fn set_new_position(&mut self, mut radius: f32, vector_to_origin: Vector3) {
     let mut transform = self.base().get_global_transform();
 
-    radius = radius.clamp(MIN_DISTANCE_TO_ORIGIN, MAX_DISTANCE_TO_ORIGIN);
+    radius = radius.clamp(Self::MIN_DISTANCE_TO_ORIGIN, Self::MAX_DISTANCE_TO_ORIGIN);
     transform.origin = Vector3::new(
       radius * self.phi.cos() * self.theta.cos(),
       radius * self.phi.sin(),

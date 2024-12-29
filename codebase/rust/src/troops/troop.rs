@@ -4,7 +4,7 @@ use godot::{
   classes::{BoxMesh, CharacterBody3D, ICharacterBody3D, MeshInstance3D, StandardMaterial3D}, prelude::*
 };
 use crate::globe::{coordinates_system::{
-    coordinates_system::{CoordinatesSystem, NUM_OF_WAYPOINTS},
+    coordinates_system::CoordinatesSystem,
     surface_point::{Coordinates, SurfacePoint, SurfacePointMetadata},
     virtual_planet::VirtualPlanet,
   }, territories::territory::TerritoryId};
@@ -64,7 +64,7 @@ pub struct Troop {
   /// indicates the time the troop will wait before moving again while patrolling
   idle_timer: f32,
 
-  moving_trajectory_points: [Vector3; NUM_OF_WAYPOINTS],
+  moving_trajectory_points: [Vector3; CoordinatesSystem::NUM_OF_WAYPOINTS],
   moving_trajectory_is_set: bool,
   current_trajectory_point: usize,
 }
@@ -89,7 +89,7 @@ impl ICharacterBody3D for Troop {
       in_territory_moving_speed: 0.05,
       idle_timer: Self::DEFAULT_IDLE_TIMER,
 
-      moving_trajectory_points: [Vector3::ZERO; NUM_OF_WAYPOINTS],
+      moving_trajectory_points: [Vector3::ZERO; CoordinatesSystem::NUM_OF_WAYPOINTS],
       moving_trajectory_is_set: false,
       current_trajectory_point: 0,
     }
@@ -286,7 +286,7 @@ impl Troop {
   /// may pass through other territories
   fn have_future_invasion_in_the_trajectory(&mut self) -> bool {
     // Where N is {troop position} + {buffer} on the geodesic trajectory
-    let buffer_checker = (NUM_OF_WAYPOINTS as f32 * 0.3) as usize;
+    let buffer_checker = (CoordinatesSystem::NUM_OF_WAYPOINTS as f32 * 0.3) as usize;
 
     if self.troop_activities.contains(&TroopState::Patrolling) &&
       (self.current_trajectory_point + buffer_checker) < self.moving_trajectory_points.len() -1 {
@@ -306,7 +306,7 @@ impl Troop {
     self.troop_activities.remove(&TroopState::Moving);
     self.troop_activities.insert(TroopState::Idle);
     self.current_trajectory_point = 0;
-    self.moving_trajectory_points = [Vector3::ZERO; NUM_OF_WAYPOINTS];
+    self.moving_trajectory_points = [Vector3::ZERO; CoordinatesSystem::NUM_OF_WAYPOINTS];
     self.moving_trajectory_is_set = false;
   }
 
@@ -324,7 +324,7 @@ impl Troop {
   #[allow(dead_code)]
   /// Creates 3d Mesh Cubes all along the trajectory of the troop
   /// Used for debugging purposes
-  fn highlight_geodesic_trajectory(&mut self, geodesic_trajectory: &[Vector3; NUM_OF_WAYPOINTS]) {
+  fn highlight_geodesic_trajectory(&mut self, geodesic_trajectory: &[Vector3; CoordinatesSystem::NUM_OF_WAYPOINTS]) {
     let node_3d_name = "geodesic_mesh";
 
     let mut highlighted_trajectories = self.base_mut()
