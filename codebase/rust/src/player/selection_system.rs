@@ -1,7 +1,7 @@
 // TODO: Remove this line once the file is implemented
 #![allow(dead_code)]
 
-use godot::{classes::{INinePatchRect, InputEvent, InputEventMagnifyGesture, InputEventMouseButton, NinePatchRect}, global::MouseButton, prelude::*};
+use godot::{classes::{INinePatchRect, InputEvent, InputEventMouseButton, NinePatchRect}, global::MouseButton, prelude::*};
 
 use crate::troops::troop::Troop;
 
@@ -59,7 +59,6 @@ impl INinePatchRect for UiDragBox {
         (MouseButton::LEFT, true) => {
           self.dragging = true;
           self.start_pos = clicked_at;
-          // self.base_mut().set_visible(true);
           self.base_mut().set_position(clicked_at);
         },
         (MouseButton::LEFT, false) => {
@@ -69,11 +68,6 @@ impl INinePatchRect for UiDragBox {
         },
         _ => {}
       }
-    }
-
-    // handling mouse Pad Pinch events
-    if let Ok(_magnify_gesture) = event.try_cast::<InputEventMagnifyGesture>() {
-      todo!()
     }
   }
 
@@ -96,7 +90,6 @@ impl INinePatchRect for UiDragBox {
       // The size of the drag box is the absolute value of the size
       self.base_mut().set_size(size.abs());
 
-
       if self.base_mut().get_size().length_squared() > Self::MIN_DRAG_SQUARE {
         self.base_mut().set_visible(true);
       }
@@ -109,8 +102,10 @@ impl UiDragBox {
   const MIN_DRAG_SQUARE: f32 = 164.;
 
   fn cast_troop_selection(&mut self) {
+    // TODO: Should check if troop is visible on camera before adding it to in_rect_troops
+    self.in_rect_troops.clear();
 
   }
+
 }
 
-// TODO: Should check if troop is visible on camera before adding it to in_rect_troops

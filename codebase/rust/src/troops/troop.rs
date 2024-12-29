@@ -32,7 +32,7 @@ enum TroopState {
   // Rotating,
   
   /// If the troop is selected by the player
-  // Selected,
+  Selected,
 
   /// Whenever the troop is being deployed to another territory
   /// other than the one it was before
@@ -384,9 +384,41 @@ impl Troop {
   #[allow(dead_code)]
   fn selecting_troop(&mut self) {
     // TICKET: #63 Put it on the HUD
+    self.troop_activities.insert(TroopState::Selected);
+
+
+    // TEMP CODE =======>
+      let mut default_node = self
+        .base_mut()
+        .find_child("default_mesh")
+        .expect("Expected to find default_mesh")
+        .cast::<MeshInstance3D>();
+
+      let player_color = Color::PURPLE;
+      let mut material = StandardMaterial3D::new_gd();
+      material.set_albedo(player_color);
+
+      default_node.set_surface_override_material(0, &material);
+    //=======> TEMP CODE 
   }
 
   #[allow(dead_code)]
   fn unselecting_troop(&mut self) {
+    self.troop_activities.remove(&TroopState::Moving);
+
+
+    // TEMP CODE =======>
+      let mut default_node = self
+        .base_mut()
+        .find_child("default_mesh")
+        .expect("Expected to find default_mesh")
+        .cast::<MeshInstance3D>();
+
+      let player_color = Color::HOT_PINK;
+      let mut material = StandardMaterial3D::new_gd();
+      material.set_albedo(player_color);
+
+      default_node.set_surface_override_material(0, &material);
+    //=======> TEMP CODE 
   }
 }

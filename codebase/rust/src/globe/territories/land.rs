@@ -113,7 +113,7 @@ impl Land {
   fn get_territory_hud_from_land(&mut self) -> Gd<TerritoryHUD> {
     let territory_hud = self
       .get_root_from_land()
-      .try_get_node_as::<TerritoryHUD>("canvas_layer/territory_hud")
+      .try_get_node_as::<TerritoryHUD>("ui/territory_hud")
       .expect("Expected to find TerritoryHUD from RootScene");
 
     territory_hud
