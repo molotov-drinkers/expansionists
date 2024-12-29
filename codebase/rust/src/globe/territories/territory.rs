@@ -86,6 +86,8 @@ impl fmt::Display for Size {
 pub type TerritoryId = String;
 pub type Territories = HashMap<TerritoryId, Territory>;
 
+/// Not a Godot class, look at `land.rs`, `surface_point.rs` and
+/// `virtual_planet.rs` for the Godot classes related to territories
 pub struct Territory {
   pub territory_id: TerritoryId,
   pub location: Location,

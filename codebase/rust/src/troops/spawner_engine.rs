@@ -1,6 +1,6 @@
 
 use godot::{
-  classes::{MeshInstance3D, StandardMaterial3D}, prelude::*
+  classes::StandardMaterial3D, prelude::*
 };
 use crate::{
   globe::{coordinates_system::{
@@ -43,8 +43,9 @@ pub fn troop_spawner(root_scene: &mut RootScene, virtual_planet: &VirtualPlanet,
   new_troop.set_position(cartesian);
   new_troop.bind_mut().deployed_to_territory = territory_id.to_string();
 
-  let troop_node = new_troop.find_child("default_mesh").expect("MeshInstance3D to exist");
-  let mut troop_mesh = troop_node.cast::<MeshInstance3D>();
-  troop_mesh.set_surface_override_material(0, &material);
+  // TICKET: #46, Get player color and set it for sea and land troops
+  // let troop_node = new_troop.find_child("default_mesh").expect("MeshInstance3D to exist");
+  // let mut troop_mesh = troop_node.cast::<MeshInstance3D>();
+  // troop_mesh.set_surface_override_material(0, &material);
 
 }

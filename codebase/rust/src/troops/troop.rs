@@ -21,21 +21,25 @@ enum TroopState {
   /// Whenever the troop is moving it doesn't matter the place nor reason
   Moving,
 
-  /// Whenever the troop is patrolling within its territory
+  /// Whenever the troop is patrolling in its territory
   Patrolling,
   
   /// Pauses in between movements while it patrols
   Idle,
+
+  /// Like a patrolling but the troop is rotating in place
+  /// (TODO:) Maybe it could be used as Idle instead
+  // Rotating,
   
+  /// If the troop is selected by the player
+  // Selected,
+
   /// Whenever the troop is being deployed to another territory
   /// other than the one it was before
-  Deploying,
+  // Deploying,
 
   /// Whenever the troop is in combat
   Combating,
-
-  /// If the troop is selected by the player
-  Selected,
 }
 
 type TroopActivities = HashSet<TroopState>;

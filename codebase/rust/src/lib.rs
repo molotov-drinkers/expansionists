@@ -8,7 +8,7 @@ pub mod troops;
 pub mod player;
 pub mod heads_up_display;
 
-struct Expansinists;
+struct Expansionists;
 
 #[gdextension]
-unsafe impl ExtensionLibrary for Expansinists {}
+unsafe impl ExtensionLibrary for Expansionists {}

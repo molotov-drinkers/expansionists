@@ -108,7 +108,7 @@ impl Territory {
       Self::get_base_territory("monotheist_realms", Continent::Asia, Some(SubContinent::MiddleEast)),
       Self::get_base_territory("zagros_mountains", Continent::Asia, Some(SubContinent::MiddleEast)),
 
-      // EuropeRelatedAsia
+      // Europe Related Asia
       Self::get_base_territory("caspian_coast", Continent::Asia, Some(SubContinent::EuropeRelatedAsia)),
       Self::get_base_territory("caucasus", Continent::Asia, Some(SubContinent::EuropeRelatedAsia)),
       Self::get_base_territory("east_siberia", Continent::Asia, Some(SubContinent::EuropeRelatedAsia)),
@@ -117,6 +117,7 @@ impl Territory {
       Self::get_base_territory("amu_darya_river", Continent::Asia, Some(SubContinent::EuropeRelatedAsia)),
       Self::get_base_territory("aral_sea", Continent::Asia, Some(SubContinent::EuropeRelatedAsia)),
 
+      // Pacific And Southeast Asia
       Self::get_base_territory("borneo_island", Continent::Asia, Some(SubContinent::PacificAndSoutheastAsia)),
       Self::get_base_territory("gede_pangrango", Continent::Asia, Some(SubContinent::PacificAndSoutheastAsia)),
       Self::get_base_territory("banda_arc", Continent::Asia, Some(SubContinent::PacificAndSoutheastAsia)),
