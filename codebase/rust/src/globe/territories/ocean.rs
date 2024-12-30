@@ -1,3 +1,6 @@
+// TODO: remove this when implementation is done
+#![allow(dead_code)]
+#![allow(unused_variables)]
 
 use godot::{classes::{IStaticBody3D, InputEvent, InputEventMouseButton, MeshInstance3D, StaticBody3D}, global::MouseButton, prelude::*};
 use crate::globe::coordinates_system::surface_point::SurfacePoint;
@@ -23,7 +26,7 @@ impl IStaticBody3D for Ocean {
 
   fn ready(&mut self) {
     self.base_mut().set_ray_pickable(true);
-    godot_print!("Ocean ready");
+    // godot_print!("Ocean ready");
   }
 
   fn input_event(
@@ -34,7 +37,7 @@ impl IStaticBody3D for Ocean {
       _normal: Vector3,
       _shape_idx: i32
     ) {
-    Self::catch_right_unclick(self, event, event_position);
+    // Self::catch_right_unclick(self, event, event_position);
   }
 
 }

@@ -1,28 +1,5 @@
-// TODO: Remove this line once the file is implemented
-#![allow(dead_code)]
-
 use godot::{classes::{INinePatchRect, InputEvent, InputEventMouseButton, NinePatchRect}, global::MouseButton, prelude::*};
-
-use crate::troops::troop::Troop;
-
-
-#[derive(GodotClass)]
-#[class(base=Node3D)]
-pub struct SelectionSystem {
-  dragging: bool,
-}
-
-#[godot_api]
-impl INode3D for SelectionSystem {
-  fn init(_base: Base<Node3D>) -> Self {
-    SelectionSystem {
-      dragging: false,
-    }
-  }
-
-  fn ready(&mut self) {
-  }
-}
+use crate::{globe::territories::land::Land, troops::troop::Troop};
 
 #[derive(GodotClass)]
 #[class(base=NinePatchRect)]
@@ -46,6 +23,7 @@ impl INinePatchRect for UiDragBox {
 
   fn ready(&mut self) {
     self.base_mut().set_visible(false);
+    self.set_reception_for_right_click_on_lands_signal();
   }
 
   fn input(&mut self, event: Gd<InputEvent>) {
@@ -96,7 +74,7 @@ impl INinePatchRect for UiDragBox {
   }
 
 }
-
+#[godot_api]
 impl UiDragBox {
   const MIN_DRAG_SQUARE: f32 = 164.;
 
@@ -104,6 +82,45 @@ impl UiDragBox {
     // TODO: Should check if troop is visible on camera before adding it to in_rect_troops
     self.in_rect_troops.clear();
 
+  }
+
+  fn set_reception_for_right_click_on_lands_signal(&mut self) {
+    let all_territory_lands = self.get_root_from_ui_drag_box()
+      .get_tree()
+      .expect("Expected tree to be found from root in UiDragBox::ready")
+      .get_nodes_in_group(Land::LAND_CLASS_NAME);
+
+    for land in all_territory_lands.iter_shared() {
+      let mut land = land.cast::<Land>();
+      let callable = self.base_mut().callable(
+        "move_selected_troops"
+      );
+      land.connect(Land::LAND_RIGHT_CLICKED, &callable);
+    }
+  }
+
+  #[func]
+  fn move_selected_troops(&mut self, moving_to: Vector3, territory_id: String) {
+    godot_print!(
+      "SIGNAL RECEIVED --> Move selected troops: {:?} at {:?}",
+      moving_to,
+      territory_id,
+    );
+  }
+
+  /// expects the following hierarchy:
+  /// ```
+  /// root_scene
+  /// |-playable
+  /// |||-selection_system
+  /// ||||-ui_drag_box
+  /// ```
+  fn get_root_from_ui_drag_box(&mut self) -> Gd<Node> {
+    self
+      .base()
+      .get_parent().expect("Expected UiDragBox to have SelectionSystem as parent")
+      .get_parent().expect("Expected SelectionSystem to have playable as parent")
+      .get_parent().expect("Expected playable to have root as parent")
   }
 
 }

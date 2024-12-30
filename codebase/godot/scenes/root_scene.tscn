@@ -72,7 +72,7 @@ visible = false
 
 [node name="playable" type="Node3D" parent="."]
 
-[node name="selection_system" type="SelectionSystem" parent="playable"]
+[node name="selection_system" type="Node3D" parent="playable"]
 
 [node name="ui_dragbox" type="UiDragBox" parent="playable/selection_system"]
 visible = false

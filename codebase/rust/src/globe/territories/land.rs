@@ -28,6 +28,7 @@ impl IStaticBody3D for Land {
   }
 
   fn ready(&mut self) {
+    self.base_mut().add_to_group(Self::LAND_CLASS_NAME);
     self.base_mut().set_ray_pickable(true);
   }
 
@@ -74,7 +75,14 @@ impl IStaticBody3D for Land {
   }
 }
 
+#[godot_api]
 impl Land {
+  pub const LAND_CLASS_NAME: &'static str = "is_a_land";
+  pub const LAND_RIGHT_CLICKED: &'static str = "land_right_clicked";
+
+  #[signal]
+  fn land_right_clicked(&self) {}
+
   fn catch_clicks(&mut self, event: Option<Gd<InputEvent>>, event_position: Vector3) {
     if let Some(event) = event {
       if let Ok(mouse_click) = event.try_cast::<InputEventMouseButton>() {
@@ -97,8 +105,20 @@ impl Land {
 
             if let Some(surface_point) = surface_point {
               let bind = surface_point.bind();
-              let metadata = bind.get_surface_point_metadata();
-              godot_print!("Clicked at Land: {:?}", metadata);
+              let surface_point_metadata = bind.get_surface_point_metadata();
+
+              let territory_id = surface_point_metadata.territory_id
+                .clone()
+                .unwrap_or_else(|| "".to_string());
+
+              self.base_mut().emit_signal(
+                Land::LAND_RIGHT_CLICKED,
+                &[
+                    surface_point_metadata.cartesian.to_variant(),
+                    territory_id.to_variant(),
+                  ]
+              );
+
             } else {
               godot_error!("Err: clicked at {:?} and {:?} didn't find any surface point", territory, event_position);
             }
