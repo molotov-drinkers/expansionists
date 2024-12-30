@@ -141,6 +141,7 @@ impl VirtualPlanet {
     let mut mesh_instance = MeshInstance3D::new_alloc();
     mesh_instance.set_mesh(&mesh);
     mesh_instance.set_position(cartesian);
+    mesh_instance.look_at_from_position(cartesian, Vector3::ZERO);
     mesh_instance
   }
 
@@ -150,7 +151,7 @@ impl VirtualPlanet {
     shape.set_size(collider_size);
     collision_shape.set_shape(&shape);
     collision_shape.set_position(cartesian);
-
+    collision_shape.look_at_from_position(cartesian, Vector3::ZERO);
     collision_shape
   }
 
@@ -160,7 +161,6 @@ impl VirtualPlanet {
     for surface_point_node in self.base().get_children().iter_shared() {
       let mut surface_point = surface_point_node.cast::<SurfacePoint>();
       let bodies_overlapping_with_surface_point = &surface_point.get_overlapping_bodies();
-      
       // HACK: to avoid multiple calls to physics_process =(
       if bodies_overlapping_with_surface_point.len() > 0 {
         self.is_ready_for_physics = false;
@@ -177,7 +177,7 @@ impl VirtualPlanet {
             let possible_territory_colission = self.territories.get_mut(&territory_id);
             if possible_territory_colission.is_some() {
               let overlapped_territory = possible_territory_colission.unwrap();
-              // Self::_paint_surface_point(&surface_point, overlapped_territory);
+              // Self::paint_surface_point(&surface_point, overlapped_territory);
 
               surface_point.add_to_group(&territory_id);
               surface_point.add_to_group(&Surface::Land.to_string());
@@ -210,9 +210,10 @@ impl VirtualPlanet {
     self.are_surface_points_matched = true;
   }
 
+  #[allow(dead_code)]
   /// Paints the surface point with the continent/territory color
   /// useful for debugging
-  pub fn _paint_surface_point(surface_point: &Gd<SurfacePoint>, territory: &Territory) {
+  pub fn paint_surface_point(surface_point: &Gd<SurfacePoint>, territory: &Territory) {
     let color = Territory::get_territory_color(
       &territory.location.sub_continent,
       &territory.location.continent

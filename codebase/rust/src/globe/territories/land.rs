@@ -39,7 +39,7 @@ impl IStaticBody3D for Land {
       _normal: Vector3,
       _shape_idx: i32
     ) {
-    Self::catch_left_click(self, event, event_position);
+    Self::catch_clicks(self, event, event_position);
   }
 
   fn mouse_enter(&mut self) {
@@ -75,7 +75,7 @@ impl IStaticBody3D for Land {
 }
 
 impl Land {
-  fn catch_left_click(&mut self, event: Option<Gd<InputEvent>>, event_position: Vector3) {
+  fn catch_clicks(&mut self, event: Option<Gd<InputEvent>>, event_position: Vector3) {
     if let Some(event) = event {
       if let Ok(mouse_click) = event.try_cast::<InputEventMouseButton>() {
         let mouse_button = mouse_click.get_button_index();
@@ -87,8 +87,9 @@ impl Land {
             Territory::clicking_territory(territory);
           },
           (MouseButton::LEFT, false) => {
-
-            // TODO: Maybe it should be right click?
+            Territory::checking_territory(territory);
+          },
+          (MouseButton::RIGHT, false) => {
             let surface_point = SurfacePoint::get_surface_point(
               event_position,
               self.base().get_world_3d().expect("World to exist")
@@ -101,8 +102,6 @@ impl Land {
             } else {
               godot_error!("Err: clicked at {:?} and {:?} didn't find any surface point", territory, event_position);
             }
-
-            Territory::checking_territory(territory);
           }
           _ => {}
         }

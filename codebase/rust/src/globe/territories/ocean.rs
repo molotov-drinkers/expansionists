@@ -34,14 +34,13 @@ impl IStaticBody3D for Ocean {
       _normal: Vector3,
       _shape_idx: i32
     ) {
-    godot_print!("Ocean input_event: {:?}", event);
-    Self::catch_left_click(self, event, event_position);
+    Self::catch_right_unclick(self, event, event_position);
   }
 
 }
 
 impl Ocean {
-  fn catch_left_click(&mut self, event: Option<Gd<InputEvent>>, event_position: Vector3) {
+  fn catch_right_unclick(&mut self, event: Option<Gd<InputEvent>>, event_position: Vector3) {
     if let Some(event) = event {
       if let Ok(mouse_click) = event.try_cast::<InputEventMouseButton>() {
 
@@ -49,9 +48,8 @@ impl Ocean {
         let pressed = mouse_click.is_pressed();
         let territory = self.base().get_parent().expect("Parent to exist").cast::<MeshInstance3D>();
 
-        // TODO: Maybe it should be right click?
         match (mouse_button, pressed) {
-          (MouseButton::LEFT, false) => {
+          (MouseButton::RIGHT, false) => {
             let surface_point = SurfacePoint::get_surface_point(
               event_position,
               self.base().get_world_3d().expect("World to exist")

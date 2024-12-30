@@ -84,6 +84,14 @@ impl SurfacePoint {
       .get_direct_space_state()
       .expect("Expected to get direct space state");
 
+
+    // To decrease the odds of the ray not collinding with any surface_point
+    // we're pushing the target_position a bit further from the actual surface
+    // That problem was happening when the target_position was too close to the actual surface
+    let scale_factor = 1.3;
+    let direction = target_position.normalized();
+    let target_position = direction * (target_position.length() * scale_factor);
+
     let mut query = PhysicsRayQueryParameters3D::create(
       world_origin,
       target_position,
@@ -95,7 +103,10 @@ impl SurfacePoint {
     let collision_dict = space_state.intersect_ray(&query);
     let collider = collision_dict
       .get("collider")
-      .expect(&format!("'collider' key to exist in collision dictionary: {:?}", collision_dict));
+      .expect(&format!("Expected 'collider' key to exist in the ray from origin to {:?} collision dictionary: {:?}",
+        target_position,
+        collision_dict
+    ));
 
     // The collided area has to be a SurfacePoint
     let surface_point: Result<Gd<SurfacePoint>, ConvertError> = collider
