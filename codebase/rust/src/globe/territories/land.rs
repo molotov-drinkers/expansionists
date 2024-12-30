@@ -2,11 +2,10 @@
 use godot::{classes::{IStaticBody3D, InputEvent, InputEventMouseButton, MeshInstance3D, StaticBody3D}, global::MouseButton, prelude::*};
 use crate::{
   globe::{
-    coordinates_system::virtual_planet::VirtualPlanet,
+    coordinates_system::{surface_point::SurfacePoint, virtual_planet::VirtualPlanet},
     territories::territory::Territory
   },
   heads_up_display::territory_hud::TerritoryHUD,
-  // heads_up_display::temp_territory_hud::TerritoryHUD,
 };
 
 /// Every territory should be a MeshInstance3D with the 
@@ -36,11 +35,11 @@ impl IStaticBody3D for Land {
       &mut self,
       _camera: Option<Gd<Camera3D>>,
       event: Option<Gd<InputEvent>>,
-      _event_position: Vector3,
+      event_position: Vector3,
       _normal: Vector3,
       _shape_idx: i32
     ) {
-    Self::catch_left_click(self, event);
+    Self::catch_left_click(self, event, event_position);
   }
 
   fn mouse_enter(&mut self) {
@@ -76,7 +75,7 @@ impl IStaticBody3D for Land {
 }
 
 impl Land {
-  fn catch_left_click(&mut self, event: Option<Gd<InputEvent>>,) {
+  fn catch_left_click(&mut self, event: Option<Gd<InputEvent>>, event_position: Vector3) {
     if let Some(event) = event {
       if let Ok(mouse_click) = event.try_cast::<InputEventMouseButton>() {
         let mouse_button = mouse_click.get_button_index();
@@ -84,8 +83,27 @@ impl Land {
         let territory = self.base().get_parent().expect("Parent to exist").cast::<MeshInstance3D>();
 
         match (mouse_button, pressed) {
-          (MouseButton::LEFT, true) => Territory::clicking_territory(territory),
-          (MouseButton::LEFT, false) => Territory::checking_territory(territory),
+          (MouseButton::LEFT, true) =>{
+            Territory::clicking_territory(territory);
+          },
+          (MouseButton::LEFT, false) => {
+
+            // TODO: Maybe it should be right click?
+            let surface_point = SurfacePoint::get_surface_point(
+              event_position,
+              self.base().get_world_3d().expect("World to exist")
+            );
+
+            if let Some(surface_point) = surface_point {
+              let bind = surface_point.bind();
+              let metadata = bind.get_surface_point_metadata();
+              godot_print!("Clicked at Land: {:?}", metadata);
+            } else {
+              godot_error!("Err: clicked at {:?} and {:?} didn't find any surface point", territory, event_position);
+            }
+
+            Territory::checking_territory(territory);
+          }
           _ => {}
         }
       }
