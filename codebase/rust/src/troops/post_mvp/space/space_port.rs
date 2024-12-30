@@ -21,6 +21,10 @@ impl SpacePort {
       "Vandenberg Space Force Base", "USA  ->  West Coast launch site known for its diverse missions, including national security, commercial, and scientific launches."
     );
     Self::new(
+      "southern_north", "moonshot_hub",
+      "Cape Canaveral Space Force Station and Kennedy Space Center", "USA  ->  This is arguably the most iconic and historically significant spaceport in the United States. It has been the launch site for numerous historic missions, including the Apollo moon landings and the Space Shuttle program.."
+    );
+    Self::new(
       "amazon", "far_from_europe_base",
       "Guiana Space Centre", "EU / French Guiana  ->  European Space Agency's primary launch site, strategically located near the equator for efficient launches."
     );
