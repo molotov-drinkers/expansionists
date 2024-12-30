@@ -104,10 +104,6 @@ impl ICharacterBody3D for Troop {
     self.set_custom_collision();
   }
 
-  fn physics_process(&mut self, _delta: f64) {    
-    self.maybe_move_along_the_trajectory_and_set_orientation();
-  }
-
   fn process(&mut self, delta: f64) {
     // Sets orientation first, as we use default_mesh to get the global position
     // it's important to set the orientation before setting the surface troop
@@ -116,6 +112,7 @@ impl ICharacterBody3D for Troop {
     self.set_surface_troop();
     self.check_and_change_mesh();
     self.maybe_populate_trajectory_points();
+    self.maybe_move_along_the_trajectory_and_set_orientation();
     self.decrease_idle_timer(delta);
   }
 }
@@ -242,7 +239,7 @@ impl Troop {
         VirtualPlanet::get_planet_radius() as f32
       );
 
-      self.highlight_geodesic_trajectory(&geodesic_trajectory);
+      // self.highlight_geodesic_trajectory(&geodesic_trajectory);
       self.moving_trajectory_points = geodesic_trajectory;
       self.moving_trajectory_is_set = true;
       self.troop_activities.insert(TroopState::Moving);

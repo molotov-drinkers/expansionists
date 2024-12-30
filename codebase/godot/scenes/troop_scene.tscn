@@ -15,7 +15,7 @@
 [sub_resource type="BoxMesh" id="BoxMesh_g5trk"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_f4ec8"]
-albedo_color = Color(1, 0, 0.54902, 1)
+albedo_color = Color(1, 0.329412, 0.647059, 1)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_o6v62"]
 
@@ -381,6 +381,7 @@ floor_block_on_wall = false
 
 [node name="default_mesh" type="MeshInstance3D" parent="."]
 transform = Transform3D(0.02, 0, 0, 0, 0.02, 0, 0, 0, 0.02, 0, 0.113809, 0)
+visible = false
 mesh = SubResource("BoxMesh_g5trk")
 skeleton = NodePath("")
 surface_material_override/0 = SubResource("StandardMaterial3D_f4ec8")

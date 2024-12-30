@@ -24,7 +24,6 @@ impl INode3D for SelectionSystem {
   }
 }
 
-
 #[derive(GodotClass)]
 #[class(base=NinePatchRect)]
 pub struct UiDragBox {
