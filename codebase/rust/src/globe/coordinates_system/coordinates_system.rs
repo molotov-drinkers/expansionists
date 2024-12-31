@@ -17,6 +17,9 @@ pub type CoordinateMap = HashMap<Coordinates, CoordinateMetadata>;
 pub struct CoordinatesSystem {}
 
 impl CoordinatesSystem {
+
+  // TODO: Create a dynamic way to calculate the number of waypoints based on linear distance between origin and destination
+  // possibly using  (.distance_to)
   pub const NUM_OF_WAYPOINTS: usize = 10;
   
   /// Receives the origin and destination coordinates and 

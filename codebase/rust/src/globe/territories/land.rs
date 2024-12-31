@@ -100,7 +100,8 @@ impl Land {
           (MouseButton::RIGHT, false) => {
             let surface_point = SurfacePoint::get_surface_point(
               event_position,
-              self.base().get_world_3d().expect("World to exist")
+              self.base().get_world_3d().expect("World to exist"),
+              Some(1.3)
             );
 
             if let Some(surface_point) = surface_point {

@@ -58,7 +58,7 @@ impl SurfacePoint {
 
   /// Traces a ray from the origin of the world to the position of the troop
   /// Returns the SurfacePoint where the ray collides with the virtual planet
-  pub fn get_troop_surface_point(troop: &Troop) -> Gd<SurfacePoint> {
+  pub fn get_troop_surface_point(troop: &Troop) -> Option<Gd<SurfacePoint>> {
     // default_mesh is the child of the troop node that lives on top of the troop itself
     // it's used to be sure that the ray passed by a surface point
     let troop_position = troop.base()
@@ -72,23 +72,31 @@ impl SurfacePoint {
       .get_world_3d()
       .expect("World to exist");
 
-    Self::get_surface_point(troop_position, world)
-      .expect("Expected to get surface point")
+    Self::get_surface_point(
+      troop_position,
+      world,
+      None,
+    )
   }
 
   /// Traces a ray from the origin of the world to the target position
-  pub fn get_surface_point(target_position: Vector3, mut world: Gd<World3D>) -> Option<Gd<SurfacePoint>> {
+  /// 
+  /// # Arguments
+  /// * `scale_factor` - To decrease the odds of the ray not collinding with any surface_point
+  /// we're pushing the target_position a bit further from the actual surface
+  /// That problem was happening when the target_position was too close to the actual surface.
+  /// 
+  /// # Returns
+  /// * `Option<Gd<SurfacePoint>>` - The SurfacePoint where the ray collides with the virtual planet,
+  /// to avoid panicking it returns None if it doesn't find any
+  pub fn get_surface_point(target_position: Vector3, mut world: Gd<World3D>, scale_factor: Option<f32>) -> Option<Gd<SurfacePoint>> {
     let world_origin = Vector3::new(0.0, 0.0, 0.0);
-    
+    let scale_factor = scale_factor.unwrap_or(1.);
+
     let mut space_state = world
       .get_direct_space_state()
       .expect("Expected to get direct space state");
 
-
-    // To decrease the odds of the ray not collinding with any surface_point
-    // we're pushing the target_position a bit further from the actual surface
-    // That problem was happening when the target_position was too close to the actual surface
-    let scale_factor = 1.3;
     let direction = target_position.normalized();
     let target_position = direction * (target_position.length() * scale_factor);
 
@@ -102,12 +110,18 @@ impl SurfacePoint {
 
     let collision_dict = space_state.intersect_ray(&query);
     let collider = collision_dict
-      .get("collider")
-      .expect(&format!("Expected 'collider' key to exist in the ray from origin to {:?} collision dictionary: {:?}",
+      .get("collider");
+
+    if collider.is_none() {
+      // TODO: Check why it doesn't find any surface_point as collider on north and south poles
+      godot_error!("{}", format!("Expected 'collider' key to exist in the ray from origin to {:?} collision dictionary: {:?}",
         target_position,
         collision_dict
-    ));
+      ));
+      return None;
+    }
 
+    let collider = collider.unwrap();
     // The collided area has to be a SurfacePoint
     let surface_point: Result<Gd<SurfacePoint>, ConvertError> = collider
       .try_to::<Gd<SurfacePoint>>();

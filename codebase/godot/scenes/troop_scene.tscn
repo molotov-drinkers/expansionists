@@ -388,7 +388,6 @@ surface_material_override/0 = SubResource("StandardMaterial3D_f4ec8")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 transform = Transform3D(0.02, 0, 0, 0, 0.02, 0, 0, 0, 0.02, 0, 0.113809, 0)
-visible = false
 shape = SubResource("BoxShape3D_o6v62")
 disabled = true
 

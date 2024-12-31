@@ -137,6 +137,12 @@ impl Troop {
       self
     );
 
+    // if it doesn't find a surface point, it doesn't panic, just keep the previous surface
+    if surface_point.is_none() {
+      return;
+    }
+
+    let surface_point = surface_point.unwrap();
     if surface_point.is_in_group(&Surface::Land.to_string()) {
       self.surface = Surface::Land;
     } else {
@@ -298,7 +304,7 @@ impl Troop {
       (self.current_trajectory_point + buffer_checker) < self.moving_trajectory_points.len() -1 {
       let check_future_invasion = self.moving_trajectory_points[self.current_trajectory_point + buffer_checker];
       let world = self.base().get_world_3d().expect("World to exist");
-      let surface_point = SurfacePoint::get_surface_point(check_future_invasion, world)
+      let surface_point = SurfacePoint::get_surface_point(check_future_invasion, world ,None)
         .expect("Expected to get surface point");
       if surface_point.bind().get_surface_point_metadata().territory_id.clone()
         .is_some_and(|t| t != self.deployed_to_territory) {

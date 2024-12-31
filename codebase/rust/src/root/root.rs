@@ -34,12 +34,12 @@ impl INode3D for RootScene {
   }
 }
 
-const ORIGIN: &str = "atlantic_forest";
+const ORIGIN: &str = "everybodys_south";
 const ORIGIN_B: &str = "diomede_islands";
 
 impl RootScene {
   pub fn startup_troops_spawn(&mut self, virtual_planet: &VirtualPlanet) {
-    let max_troops = 5;
+    let max_troops = 20;
     while self.troops_spawn < max_troops {
       spawner_engine::troop_spawner(
         self,
