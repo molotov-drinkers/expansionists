@@ -63,7 +63,7 @@ impl VirtualPlanet {
   #[inline] pub fn get_planet_radius() -> f64 { 1.0795 * 3.0 }
   #[inline] pub fn get_num_of_latitudes() -> i16 { (90. * 2.5) as i16 }
   #[inline] pub fn get_num_of_longitudes() -> i16 { (180. * 2.5) as i16 }
-  #[inline] pub fn get_surface_mesh_and_collider_size() -> Vector3 { Vector3::new(0.06, 0.06, 0.08) }
+  #[inline] pub fn get_surface_mesh_and_collider_size() -> Vector3 { Vector3::new(0.07, 0.07, 0.08) }
 
   pub fn populate_surface_points_and_coordinate_map(&mut self) {
     let planet_radius = Self::get_planet_radius();

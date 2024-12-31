@@ -113,7 +113,6 @@ impl SurfacePoint {
       .get("collider");
 
     if collider.is_none() {
-      // TICKET: #72 Check why it doesn't find any surface_point as collider on north and south poles
       godot_error!("{}", format!("Expected 'collider' key to exist in the ray from origin to {:?} collision dictionary: {:?}",
         target_position,
         collision_dict
