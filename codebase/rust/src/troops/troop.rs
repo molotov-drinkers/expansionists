@@ -100,6 +100,7 @@ impl ICharacterBody3D for Troop {
 
   fn ready(&mut self) {
     self.base_mut().add_to_group(Self::TROOP_CLASS_NAME);
+    // self.base_mut().add_to_group(self.owner);
     self.set_custom_collision();
     self.set_selected_sprites_visibility(false);
   }
@@ -407,14 +408,14 @@ impl Troop {
     virtual_planet
   }
 
-  pub fn selecting_troop(&mut self) {
+  pub fn select_troop(&mut self) {
     // TICKET: #63 Put it on the HUD
     self.troop_activities.insert(TroopState::Selected);
 
     self.set_selected_sprites_visibility(true);
   }
 
-  pub fn deselecting_troop(&mut self) {
+  pub fn deselect_troop(&mut self) {
     self.troop_activities.remove(&TroopState::Selected);
 
     self.set_selected_sprites_visibility(false);

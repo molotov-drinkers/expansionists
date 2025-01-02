@@ -83,7 +83,7 @@ impl INinePatchRect for UiDragBox {
           self.positive_x = false;
           self.positive_y = true;
         },
-        _ =>{
+        (true, true) => {
           self.base_mut().set_scale(Vector2::new(1., 1.));
           self.positive_x = true;
           self.positive_y = true;
@@ -107,7 +107,7 @@ impl UiDragBox {
   fn cast_troop_selection(&mut self) {
     self.in_rect_troops.clear();
 
-    let top_left = match (self.positive_x, self.positive_y) {
+    let ui_drag_box_rect_position = match (self.positive_x, self.positive_y) {
       (true, true) => self.start_pos,
       (true, false) => self.base_mut().get_rect().abs().position,
       (false, false) => self.released_at,
@@ -120,7 +120,7 @@ impl UiDragBox {
     };
 
     let ui_drag_box_rect = Rect2::new(
-      top_left,
+      ui_drag_box_rect_position,
       self.base_mut().get_rect().abs().size
     );
     let mut player_camera = self.get_camera_from_ui_drag_box();
@@ -136,7 +136,7 @@ impl UiDragBox {
 
         if in_the_rect {
           let mut troop = troop.clone();
-          troop.bind_mut().selecting_troop();
+          troop.bind_mut().select_troop();
           self.in_rect_troops.push(troop);
         }
       });
@@ -147,7 +147,7 @@ impl UiDragBox {
       .iter()
       .for_each(|troop| {
         let mut troop = troop.clone();
-        troop.bind_mut().deselecting_troop();
+        troop.bind_mut().deselect_troop();
       });
     self.in_rect_troops.clear();
   }
