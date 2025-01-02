@@ -10,8 +10,7 @@ use crate::globe::{coordinates_system::{
   }, territories::territory::TerritoryId};
 
 use super::{
-  combat_engine::CombatStats,
-  surface::Surface
+  combat_engine::CombatStats, speed::SpeedType, surface::Surface
 };
 
 #[derive(Hash, Eq, PartialEq)]
@@ -57,10 +56,7 @@ pub struct Troop {
   _combat_stats: CombatStats,
 
   troop_activities: TroopActivities,
-
-  in_territory_moving_speed: f32,
-  fight_or_flight_speed: f32,
-  adopted_speed: f32,
+  adopted_speed: SpeedType,
 
   /// indicates the time the troop will wait before moving again while patrolling
   idle_timer: f32,
@@ -90,9 +86,7 @@ impl ICharacterBody3D for Troop {
         TroopState::Patrolling,
       ]),
 
-      in_territory_moving_speed: 0.05,
-      fight_or_flight_speed: 0.25,
-      adopted_speed: 0.05,
+      adopted_speed: SpeedType::Patrolling,
 
       idle_timer: Self::DEFAULT_IDLE_TIMER,
 
@@ -270,7 +264,7 @@ impl Troop {
 
     self.moving_trajectory_points = geodesic_trajectory;
     self.moving_trajectory_is_set = true;
-    self.adopted_speed = self.fight_or_flight_speed;
+    self.adopted_speed = SpeedType::FightOrFlight;
     self.deployed_to_territory = territory_id.clone();
   }
 
@@ -294,7 +288,7 @@ impl Troop {
       }
 
       let direction = direction.expect("Expected Troop direction to be a Vector3");
-      let velocity = direction * self.adopted_speed;
+      let velocity = direction * self.adopted_speed.get_speed();
       self.set_orientation(direction);
       self.base_mut().set_velocity(velocity);
       self.base_mut().move_and_slide();
@@ -345,7 +339,7 @@ impl Troop {
       self.troop_activities.insert(TroopState::Patrolling);
     }
 
-    self.adopted_speed = self.in_territory_moving_speed;
+    self.adopted_speed = SpeedType::Patrolling;
     self.current_trajectory_point = 0;
     self.moving_trajectory_points = [Vector3::ZERO; CoordinatesSystem::NUM_OF_WAYPOINTS];
     self.moving_trajectory_is_set = false;
