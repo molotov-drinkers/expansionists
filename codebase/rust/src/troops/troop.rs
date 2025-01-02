@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 use godot::{
-  classes::{BoxMesh, CharacterBody3D, ICharacterBody3D, MeshInstance3D, StandardMaterial3D}, prelude::*
+  classes::{BoxMesh, CharacterBody3D, ICharacterBody3D, MeshInstance3D, Sprite3D, StandardMaterial3D}, prelude::*
 };
 use crate::globe::{coordinates_system::{
     coordinates_system::CoordinatesSystem,
@@ -13,8 +13,6 @@ use super::{
   combat_engine::CombatStats,
   surface::Surface
 };
-
-const DEST: &str = "west_slavs";
 
 #[derive(Hash, Eq, PartialEq)]
 enum TroopState {
@@ -36,7 +34,7 @@ enum TroopState {
 
   /// Whenever the troop is being deployed to another territory
   /// other than the one it was before
-  // Deploying,
+  Deploying,
 
   /// Whenever the troop is in combat
   Combating,
@@ -61,6 +59,9 @@ pub struct Troop {
   troop_activities: TroopActivities,
 
   in_territory_moving_speed: f32,
+  fight_or_flight_speed: f32,
+  adopted_speed: f32,
+
   /// indicates the time the troop will wait before moving again while patrolling
   idle_timer: f32,
 
@@ -90,6 +91,9 @@ impl ICharacterBody3D for Troop {
       ]),
 
       in_territory_moving_speed: 0.05,
+      fight_or_flight_speed: 0.25,
+      adopted_speed: 0.05,
+
       idle_timer: Self::DEFAULT_IDLE_TIMER,
 
       moving_trajectory_points: [Vector3::ZERO; CoordinatesSystem::NUM_OF_WAYPOINTS],
@@ -101,7 +105,9 @@ impl ICharacterBody3D for Troop {
   }
 
   fn ready(&mut self) {
+    self.base_mut().add_to_group(Self::TROOP_CLASS_NAME);
     self.set_custom_collision();
+    self.set_selected_sprites_visibility(false);
   }
 
   fn process(&mut self, delta: f64) {
@@ -119,6 +125,9 @@ impl ICharacterBody3D for Troop {
 
 #[godot_api]
 impl Troop {
+
+  pub const TROOP_CLASS_NAME: &'static str = "troop";
+
   /// Defines the time the troop will wait before moving again while patrolling
   const DEFAULT_IDLE_TIMER: f32 = 0.7;
 
@@ -225,19 +234,14 @@ impl Troop {
 
   fn maybe_populate_trajectory_points(&mut self) {
     if !self.troop_activities.contains(&TroopState::Combating) &&
-      !self.troop_activities.contains(&TroopState::Moving) {
+      !self.troop_activities.contains(&TroopState::Moving) &&
+      self.troop_activities.contains(&TroopState::Patrolling) {
 
       let virtual_planet = self.get_virtual_planet_from_troop_scope();
       let virtual_planet = virtual_planet.bind();
 
-      let moving_to: Coordinates = match self.troop_activities.contains(&TroopState::Patrolling) {
-        true => virtual_planet
-          .get_an_random_territory_coordinate(&self.deployed_to_territory),
-        
-        // TICKET: #12 This will be an order to move to other territory
-        false => virtual_planet
-          .get_an_random_territory_coordinate(DEST.into()),
-      };
+      let moving_to: Coordinates = virtual_planet
+        .get_an_random_territory_coordinate(&self.deployed_to_territory);
 
       let geodesic_trajectory = CoordinatesSystem::get_geodesic_trajectory(
         self.touching_surface_point.cartesian,
@@ -252,10 +256,28 @@ impl Troop {
     }
   }
 
+  pub fn set_order_to_move_to(&mut self, destination: Vector3, territory_id: &TerritoryId) {
+    self.reset_trajectory(false);
+    self.troop_activities.insert(TroopState::Moving);
+    self.troop_activities.insert(TroopState::Deploying);
+    self.troop_activities.remove(&TroopState::Patrolling);
+
+    let geodesic_trajectory = CoordinatesSystem::get_geodesic_trajectory(
+      self.touching_surface_point.cartesian,
+      destination,
+      VirtualPlanet::get_planet_radius() as f32
+    );
+
+    self.moving_trajectory_points = geodesic_trajectory;
+    self.moving_trajectory_is_set = true;
+    self.adopted_speed = self.fight_or_flight_speed;
+    self.deployed_to_territory = territory_id.clone();
+  }
+
   fn maybe_move_along_the_trajectory_and_set_orientation(&mut self) {
     if self.moving_trajectory_is_set && !self.troop_activities.contains(&TroopState::Idle) {
       if self.have_future_invasion_in_the_trajectory() {
-        self.reset_trajectory();
+        self.reset_trajectory(true);
         return;
       }
 
@@ -272,7 +294,7 @@ impl Troop {
       }
 
       let direction = direction.expect("Expected Troop direction to be a Vector3");
-      let velocity = direction * self.in_territory_moving_speed;
+      let velocity = direction * self.adopted_speed;
       self.set_orientation(direction);
       self.base_mut().set_velocity(velocity);
       self.base_mut().move_and_slide();
@@ -287,7 +309,7 @@ impl Troop {
 
       // Finish the movement if the troop has reached the last waypoint
       if too_close_to_the_waypoint && on_the_last_waypoint {
-        self.reset_trajectory();
+        self.reset_trajectory(true);
       }
     }
   }
@@ -314,9 +336,16 @@ impl Troop {
     false
   }
 
-  fn reset_trajectory(&mut self) {
+  fn reset_trajectory(&mut self, gets_back_to_patrolling: bool) {
     self.troop_activities.remove(&TroopState::Moving);
+    self.troop_activities.remove(&TroopState::Deploying);
     self.troop_activities.insert(TroopState::Idle);
+
+    if gets_back_to_patrolling {
+      self.troop_activities.insert(TroopState::Patrolling);
+    }
+
+    self.adopted_speed = self.in_territory_moving_speed;
     self.current_trajectory_point = 0;
     self.moving_trajectory_points = [Vector3::ZERO; CoordinatesSystem::NUM_OF_WAYPOINTS];
     self.moving_trajectory_is_set = false;
@@ -384,44 +413,24 @@ impl Troop {
     virtual_planet
   }
 
-  #[allow(dead_code)]
-  fn selecting_troop(&mut self) {
+  pub fn selecting_troop(&mut self) {
     // TICKET: #63 Put it on the HUD
     self.troop_activities.insert(TroopState::Selected);
 
-
-    // TEMP CODE =======>
-      let mut default_node = self
-        .base_mut()
-        .find_child("default_mesh")
-        .expect("Expected to find default_mesh")
-        .cast::<MeshInstance3D>();
-
-      let player_color = Color::PURPLE;
-      let mut material = StandardMaterial3D::new_gd();
-      material.set_albedo(player_color);
-
-      default_node.set_surface_override_material(0, &material);
-    //=======> TEMP CODE 
+    self.set_selected_sprites_visibility(true);
   }
 
-  #[allow(dead_code)]
-  fn unselecting_troop(&mut self) {
-    self.troop_activities.remove(&TroopState::Moving);
+  pub fn deselecting_troop(&mut self) {
+    self.troop_activities.remove(&TroopState::Selected);
 
+    self.set_selected_sprites_visibility(false);
+  }
 
-    // TEMP CODE =======>
-      let mut default_node = self
-        .base_mut()
-        .find_child("default_mesh")
-        .expect("Expected to find default_mesh")
-        .cast::<MeshInstance3D>();
+  fn set_selected_sprites_visibility(&mut self, visible: bool) {
+    let mut land_selected_sprite = self.base_mut().get_node_as::<Sprite3D>("land/selected");
+    let mut sea_selected_sprite = self.base_mut().get_node_as::<Sprite3D>("sea/selected");
 
-      let player_color = Color::HOT_PINK;
-      let mut material = StandardMaterial3D::new_gd();
-      material.set_albedo(player_color);
-
-      default_node.set_surface_override_material(0, &material);
-    //=======> TEMP CODE 
+    land_selected_sprite.set_visible(visible);
+    sea_selected_sprite.set_visible(visible);
   }
 }

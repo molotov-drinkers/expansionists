@@ -34,8 +34,9 @@ impl INode3D for RootScene {
   }
 }
 
-const ORIGIN: &str = "everybodys_south";
+const ORIGIN: &str = "diomede_islands";
 const ORIGIN_B: &str = "everybodys_south";
+const ORIGIN_C: &str = "nordics";
 
 impl RootScene {
   pub fn startup_troops_spawn(&mut self, virtual_planet: &VirtualPlanet) {
@@ -54,6 +55,14 @@ impl RootScene {
         self.troops_spawn,
         ORIGIN_B.to_owned(),
       );
+
+      spawner_engine::troop_spawner(
+        self,
+        &virtual_planet,
+        self.troops_spawn,
+        ORIGIN_C.to_owned(),
+      );
+
       self.troops_spawn+=1;
     }
   }

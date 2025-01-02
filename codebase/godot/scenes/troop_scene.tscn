@@ -1,9 +1,10 @@
-[gd_scene load_steps=35 format=4 uid="uid://42q6iqdh5dd5"]
+[gd_scene load_steps=36 format=4 uid="uid://42q6iqdh5dd5"]
 
 [ext_resource type="PackedScene" uid="uid://b5dv4qdqxvrmc" path="res://assets/Pirate Low Poly Pack/Pirate Low Poly Pack/SquareSloop.fbx" id="1_mioln"]
 [ext_resource type="PackedScene" uid="uid://cf0pl6jdu5adv" path="res://assets/Pirate Low Poly Pack/Pirate Low Poly Pack/RowBoat.fbx" id="2_dlvr4"]
 [ext_resource type="PackedScene" uid="uid://c57yc2mudjv46" path="res://assets/Pirate Low Poly Pack/Pirate Low Poly Pack/Dhow.fbx" id="3_ftxcs"]
 [ext_resource type="PackedScene" uid="uid://box80ff57b0i5" path="res://assets/Pirate Low Poly Pack/Pirate Low Poly Pack/MizzenSailboat.fbx" id="5_0e80a"]
+[ext_resource type="Texture2D" uid="uid://dyvm86w6xfnv2" path="res://assets/selection_system/selectable_area.png" id="7_4t0r8"]
 [ext_resource type="PackedScene" uid="uid://b4avlgeb338jg" path="res://assets/Pirate Low Poly Pack/Pirate Low Poly Pack/Sloop.fbx" id="7_f63yb"]
 [ext_resource type="PackedScene" uid="uid://cftr2e88ejsju" path="res://scenes/troops/chinese_sailboat.tscn" id="7_j48ci"]
 [ext_resource type="PackedScene" uid="uid://cddi63ruvdsj4" path="res://scenes/troops/tonk.tscn" id="8_mihlq"]
@@ -427,8 +428,17 @@ visible = false
 transform = Transform3D(0.05, 0, 0, 0, 0.05, 0, 0, 0, 0.05, 0, 0, 0)
 visible = false
 
+[node name="selected" type="Sprite3D" parent="sea"]
+transform = Transform3D(0.0769231, 0, 0, 0, 0.0769231, 0, 0, 0, 0.0769231, 0, 0.0101187, 0)
+visible = false
+modulate = Color(0.372549, 1, 0.286275, 0.215686)
+pixel_size = 0.15
+axis = 1
+texture = ExtResource("7_4t0r8")
+
 [node name="land" type="Node3D" parent="."]
 transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, -0.000361934, 0)
+visible = false
 
 [node name="Tonk" parent="land" instance=ExtResource("8_mihlq")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.08461, 0)
@@ -459,6 +469,13 @@ surface_material_override/0 = SubResource("StandardMaterial3D_6qcsv")
 [node name="LPWarPack_ArmedVehicle" parent="land" instance=ExtResource("9_7fxgo")]
 transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, 0, 0, 0)
 visible = false
+
+[node name="selected" type="Sprite3D" parent="land"]
+visible = false
+modulate = Color(0.372549, 1, 0.286275, 0.215686)
+pixel_size = 0.15
+axis = 1
+texture = ExtResource("7_4t0r8")
 
 [node name="air" type="Node3D" parent="."]
 visible = false

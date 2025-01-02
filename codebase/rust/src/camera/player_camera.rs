@@ -117,4 +117,8 @@ impl PlayerCamera {
     self.base_mut().set_global_transform(transform);
     self.base_mut().look_at(vector_to_origin);
   }
+
+  pub fn get_vector_2_from_vector_3(&mut self, unproject_from_vector_3: Vector3) -> Vector2 {
+    self.base().unproject_position(unproject_from_vector_3)
+  }
 }
