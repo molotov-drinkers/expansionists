@@ -18,9 +18,11 @@ pub struct CoordinatesSystem {}
 
 impl CoordinatesSystem {
 
-  // TODO: Create a dynamic way to calculate the number of waypoints based on linear distance between origin and destination
-  // possibly using  (.distance_to)
-  pub const NUM_OF_WAYPOINTS: usize = 10;
+  // (TODO:)
+  // Create a dynamic way to calculate the number of waypoints based on linear distance between origin and destination
+  // possibly using (.distance_to)
+  // Then clamp it between 10 and 50, should be enough for most cases
+  pub const NUM_OF_WAYPOINTS: usize = 30;
   
   /// Receives the origin and destination coordinates and 
   /// returns a list of coordinates represented by the 

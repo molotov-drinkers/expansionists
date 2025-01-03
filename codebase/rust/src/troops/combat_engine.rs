@@ -27,8 +27,8 @@ impl CombatStats {
   pub fn new() -> CombatStats {
     CombatStats {
       _in_after_combat: false,
-      _damage: 0,
-      _hp: 0,
+      _damage: 11,
+      _hp: 100,
       _alive: false,
       _fighting_behavior: FighthingBehavior::Beligerent,
     }
