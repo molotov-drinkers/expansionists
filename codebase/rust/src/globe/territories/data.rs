@@ -30,6 +30,7 @@ impl Territory {
       territory_id: territory_id.to_string(),
       location: Location { continent, sub_continent },
 
+      // Fields below are filled on the fly
       coordinates: Vec::new(),
       size: Size::None,
       organic_max_troops: 0,
@@ -143,7 +144,6 @@ impl Territory {
       Self::get_base_territory("red_river", Continent::Asia, Some(SubContinent::SoutheastAsia)),
       Self::get_base_territory("irrawaddy_river", Continent::Asia, Some(SubContinent::SoutheastAsia)),
       Self::get_base_territory("east_new_guinea", Continent::Asia, Some(SubContinent::SoutheastAsia)),
-
 
       // Indian Subcontinent
       Self::get_base_territory("balimela_dam", Continent::Asia, Some(SubContinent::IndianSubcontinent)),

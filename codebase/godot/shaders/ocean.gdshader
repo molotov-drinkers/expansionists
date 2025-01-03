@@ -46,7 +46,7 @@ float fresnel(float amount, vec3 normal, vec3 view) {
 void fragment() {
 	vec2 uv = UV * uv_scale;
 	vec2 uv_movement = movement_direction * TIME * movement_strength;
-	
+
 	vec3 normalmap = texture(normalmap_a, uv + uv_movement).rgb * normalmap_a_strength;
 	normalmap += texture(normalmap_b, uv - uv_movement).rgb * normalmap_b_strength;
 
@@ -54,7 +54,7 @@ void fragment() {
 	vec3 ref_normalmap = normalmap * 2.0 - (normalmap_a_strength + normalmap_b_strength);
 	vec3 ref_normal = mix(NORMAL, TANGENT * ref_normalmap + BINORMAL * ref_normalmap + NORMAL * ref_normalmap, 1.0);
 	vec2 ref_ofs = SCREEN_UV - ref_normal.xy * refraction_strength;
-	
+
 	// Get Depth and Screen Textures
 	// float depth = textureLod(depth_texture, SCREEN_UV, 0.0).r;
 	// vec3 screen = textureLod(screen_texture, SCREEN_UV, 0.0).rgb;
@@ -65,7 +65,7 @@ void fragment() {
 	// Set depth color mix from depth blend and get final color mix using screen texture
 	vec3 depth_color = mix(secondary_color, primary_color, beers_law).rgb;
 	float basic_fresnel = fresnel(3.0, NORMAL, VIEW);
-	
+
 	vec3 refraction_texture = textureLod(screen_texture, ref_ofs, ROUGHNESS * 2.0).rgb;
 	vec3 final_color = mix(depth_color, refraction_texture, water_transparency * beers_law);
 	ALBEDO = final_color;
