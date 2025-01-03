@@ -107,43 +107,30 @@ impl UiDragBox {
   fn cast_troop_selection(&mut self) {
     self.in_rect_troops.clear();
 
-    let ui_drag_box_rect_position = match (self.positive_x, self.positive_y) {
-      (true, true) => self.start_pos,
-      (true, false) => self.base_mut().get_rect().abs().position,
-      (false, false) => self.released_at,
-      (false, true) => {
-        Vector2::new(
-          self.released_at.x,
-          self.base_mut().get_rect().position.y,
-        )
-      },
-    };
-
-    let ui_drag_box_rect = Rect2::new(
-      ui_drag_box_rect_position,
-      self.base_mut().get_rect().abs().size
-    );
     let mut player_camera = self.get_camera_from_ui_drag_box();
+    let ui_drag_box_rect = self.get_ui_drag_box_rect();
 
-    self.get_selectable_troops()
-      .iter()
-      .for_each(|troop| {
-        let troop_position = troop.get_global_position();
+    for troop in self.get_player_troops().iter() {
+      let troop_position = troop.get_global_position();
+      if !player_camera.bind_mut().is_body_visible_on_camera(troop_position) {
+        continue;
+      }
 
-        let in_the_rect = ui_drag_box_rect.has_point(
-          player_camera.bind_mut().get_vector_2_from_vector_3(troop_position)
-        );
+      let troop_2d_position = player_camera.bind_mut()
+        .get_vector_2_from_vector_3(troop_position);
+      let in_the_rect = ui_drag_box_rect.has_point(troop_2d_position);
 
-        if in_the_rect {
-          let mut troop = troop.clone();
-          troop.bind_mut().select_troop();
-          self.in_rect_troops.push(troop);
-        }
-      });
+      if in_the_rect {
+        let mut troop = troop.clone();
+        troop.bind_mut().select_troop();
+        self.in_rect_troops.push(troop);
+      }
+    }
+
   }
 
   fn deselect_troops(&mut self) {
-    self.get_selectable_troops()
+    self.get_player_troops()
       .iter()
       .for_each(|troop| {
         let mut troop = troop.clone();
@@ -152,13 +139,11 @@ impl UiDragBox {
     self.in_rect_troops.clear();
   }
 
-  fn get_selectable_troops(&mut self) -> Vec<Gd<Troop>> {
-    // TODO: checking all troops for now, but should optimize it by checking...
-    // TODO: ...only the player's troops themselves and visible on camera only
-
+  fn get_player_troops(&mut self) -> Vec<Gd<Troop>> {
     let all_troops = self.get_root_from_ui_drag_box()
       .get_tree()
       .expect("Expected tree to be found from root in UiDragBox::ready")
+      // TICKET: #75 Should filter by player's troops, not all the troops
       .get_nodes_in_group(Troop::TROOP_CLASS_NAME);
 
     let mut selectable_troops = Vec::new();
@@ -219,5 +204,23 @@ impl UiDragBox {
       .get_node_as::<PlayerCamera>("player_camera")
   }
 
+  fn get_ui_drag_box_rect(&mut self) -> Rect2 {
+    let ui_drag_box_rect_position = match (self.positive_x, self.positive_y) {
+      (true, true) => self.start_pos,
+      (true, false) => self.base_mut().get_rect().abs().position,
+      (false, false) => self.released_at,
+      (false, true) => {
+        Vector2::new(
+          self.released_at.x,
+          self.base_mut().get_rect().position.y,
+        )
+      },
+    };
+
+    Rect2::new(
+      ui_drag_box_rect_position,
+      self.base_mut().get_rect().abs().size
+    )
+  }
 }
 

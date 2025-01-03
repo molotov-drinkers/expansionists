@@ -1,4 +1,4 @@
-use godot::classes::{Camera3D, ICamera3D, InputEvent, InputEventMagnifyGesture, InputEventMouseButton};
+use godot::classes::{Camera3D, ICamera3D, InputEvent, InputEventMagnifyGesture, InputEventMouseButton, PhysicsRayQueryParameters3D};
 use godot::global::MouseButton;
 use godot::prelude::*;
 
@@ -120,5 +120,30 @@ impl PlayerCamera {
 
   pub fn get_vector_2_from_vector_3(&mut self, unproject_from_vector_3: Vector3) -> Vector2 {
     self.base().unproject_position(unproject_from_vector_3)
+  }
+
+  pub fn is_body_visible_on_camera(&mut self, position_to_be_checked: Vector3) -> bool {
+    let cam_position = self.base().get_global_position();
+
+    let mut world = self.base().get_world_3d().expect("World to exist");
+    let mut space_state = world
+      .get_direct_space_state()
+      .expect("Expected to get direct space state");
+
+    let mut query = PhysicsRayQueryParameters3D::create(
+      cam_position,
+      position_to_be_checked,
+    ).expect("Expected to create ray query");
+
+    query.set_collide_with_areas(false);
+    query.set_collide_with_bodies(true);
+
+    let collision_dict = space_state.intersect_ray(&query);
+
+    if !collision_dict.is_empty() {
+      return false;
+    }
+
+    true
   }
 }
