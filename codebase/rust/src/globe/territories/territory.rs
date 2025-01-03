@@ -36,7 +36,8 @@ pub enum SubContinent {
   MiddleEast,
   InteriorAsia,
   IndianSubcontinent,
-  PacificAndSoutheastAsia,
+  SoutheastAsia,
+  EastAsia,
   EuropeRelatedAsia,
 }
 
@@ -47,7 +48,8 @@ impl fmt::Display for SubContinent {
       SubContinent::MiddleEast => write!(f, "middle_east"),
       SubContinent::InteriorAsia => write!(f, "interior_asia"),
       SubContinent::IndianSubcontinent => write!(f, "indian_subcontinent"),
-      SubContinent::PacificAndSoutheastAsia => write!(f, "pacific_and_southeast_asia"),
+      SubContinent::SoutheastAsia => write!(f, "southeast_asia"),
+      SubContinent::EastAsia => write!(f, "east_asia"),
       SubContinent::EuropeRelatedAsia => write!(f, "europe_related_asia"),
     }
   }
@@ -126,11 +128,12 @@ impl Territory {
 
   pub fn get_territory_color(sub_continent: &Option<SubContinent>, continent: &Continent) -> Color {
     match sub_continent {
-      Some(SubContinent::MiddleEast) => Color::from_rgba(0., 0.3, 0., 1.) /* Color::WHITE_SMOKE */,
-      Some(SubContinent::InteriorAsia) => Color::from_rgba(0., 0.4, 0., 1.) /* Color::WHITE_SMOKE */,
-      Some(SubContinent::IndianSubcontinent) => Color::from_rgba(0., 0.5, 0., 1.) /* Color::WHITE_SMOKE */,
-      Some(SubContinent::PacificAndSoutheastAsia) => Color::from_rgba(0., 0.6, 0., 1.) /* Color::WHITE_SMOKE */,
-      Some(SubContinent::EuropeRelatedAsia) => Color::from_rgba(0., 0.7, 0., 1.) /* Color::WHITE_SMOKE */,
+      Some(SubContinent::MiddleEast) => Color::GREEN /* Color::WHITE_SMOKE */,
+      Some(SubContinent::InteriorAsia) => Color::WEB_GREEN /* Color::WHITE_SMOKE */,
+      Some(SubContinent::IndianSubcontinent) => Color::LAWN_GREEN /* Color::WHITE_SMOKE */,
+      Some(SubContinent::SoutheastAsia) => Color::LIME_GREEN /* Color::WHITE_SMOKE */,
+      Some(SubContinent::EastAsia) => Color::GREEN_YELLOW /* Color::WHITE_SMOKE */,
+      Some(SubContinent::EuropeRelatedAsia) => Color::LIGHT_GREEN /* Color::WHITE_SMOKE */,
       None => Self::continent_to_color(&continent)
     }
   }
