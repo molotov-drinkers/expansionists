@@ -38,13 +38,13 @@ impl TerritoryHUD {
     let shared_path = "territory_margin_container/PanelContainer/MarginContainer/VBoxContainer/";
 
     let mut name = self.base().get_node_as::<TextLabels>(
-      &(shared_path.to_owned() + "Label")
+      &(shared_path.to_owned() + "TextLabels")
     );
     let mut size_info = self.base().get_node_as::<TextLabels>(
-      &(shared_path.to_owned() + "size_info/Label")
+      &(shared_path.to_owned() + "size_info/TextLabels")
     );
     let mut continent = self.base().get_node_as::<TextLabels>(
-      &(shared_path.to_owned() + "continent/Label")
+      &(shared_path.to_owned() + "continent/TextLabels")
     );
 
     let formatted_size = territory.size.to_string().to_uppercase();

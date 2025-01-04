@@ -1,12 +1,11 @@
 use godot::{classes::{INinePatchRect, InputEvent, InputEventMouseButton, NinePatchRect}, global::MouseButton, prelude::*};
-use crate::{camera::player_camera::PlayerCamera, globe::territories::{land::Land, territory::TerritoryId}, troops::troop::Troop};
+use crate::{camera::player_camera::PlayerCamera, globe::territories::{land::Land, territory::TerritoryId}, heads_up_display::selection_hud::SelectionHUD, troops::troop::Troop};
 
 #[derive(GodotClass)]
 #[class(base=NinePatchRect)]
 pub struct UiDragBox {
   base: Base<NinePatchRect>,
   dragging: bool,
-  // TODO: could this be a HashSet instead of a Vec?
   in_rect_troops: Vec<Gd<Troop>>,
   start_pos: Vector2,
   released_at: Vector2,
@@ -124,6 +123,10 @@ impl UiDragBox {
         let mut troop = troop.clone();
         troop.bind_mut().select_troop();
         self.in_rect_troops.push(troop);
+        
+        let mut selection_hud = self.get_hud_from_ui_drag_box();
+        selection_hud.bind_mut().activate_hud();
+        selection_hud.bind_mut().set_text_with_num_of_troops(self.in_rect_troops.len());
       }
     }
 
@@ -137,6 +140,9 @@ impl UiDragBox {
         troop.bind_mut().deselect_troop();
       });
     self.in_rect_troops.clear();
+
+    let mut selection_hud = self.get_hud_from_ui_drag_box();
+    selection_hud.bind_mut().deactivate_hud();
   }
 
   fn get_player_troops(&mut self) -> Vec<Gd<Troop>> {
@@ -202,6 +208,13 @@ impl UiDragBox {
     self
       .get_root_from_ui_drag_box()
       .get_node_as::<PlayerCamera>("player_camera")
+  }
+
+  fn get_hud_from_ui_drag_box(&mut self) -> Gd<SelectionHUD> {
+    self
+      .get_root_from_ui_drag_box()
+      .try_get_node_as::<SelectionHUD>("ui/selection_hud")
+      .expect("Expected to find SelectionHUD from RootScene")
   }
 
   fn get_ui_drag_box_rect(&mut self) -> Rect2 {
