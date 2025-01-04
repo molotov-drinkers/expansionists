@@ -3,7 +3,7 @@ use std::fmt;
 
 use godot::{builtin::Color, classes::{MeshInstance3D, StandardMaterial3D}, prelude::*};
 
-use crate::{globe::coordinates_system::surface_point::Coordinates, troops::troop::Troop};
+use crate::{globe::coordinates_system::surface_point::Coordinates, player::player::Player, troops::troop::Troop};
 
 pub enum Continent {
   Africa,
@@ -103,74 +103,75 @@ pub struct Territory {
   /// (TODO:) uses all the surface points of the territory to calculate which troops are inside it
   pub current_troops: Vec<Troop>,
 
-  pub current_ruler: Option<String>, // That will be player_id
+  pub current_ruler: Option<Gd<Player>>,
 }
 
 pub enum ColorChange {
   Lighten,
   Darken,
+  SuperDarken,
   Exact,
 }
 
 impl Territory {
   fn continent_to_color(continent: &Continent) -> Color {
     match continent {
-      Continent::Africa => Color::LIGHT_SLATE_GRAY  /* Color::WHITE_SMOKE */,
-      Continent::Asia => Color::GREEN_YELLOW  /* Color::WHITE_SMOKE */,
-      Continent::Europe => Color::SKY_BLUE  /* Color::WHITE_SMOKE */,
-      Continent::NorthAmerica => Color::INDIAN_RED  /* Color::WHITE_SMOKE */,
-      Continent::Oceania => Color::BURLYWOOD  /* Color::WHITE_SMOKE */,
-      Continent::SouthAmerica => Color::TOMATO  /* Color::WHITE_SMOKE */,
-      Continent::Antarctica => Color::GRAY  /* Color::WHITE_SMOKE */,
-      Continent::Special => Color::GOLD  /* Color::WHITE_SMOKE */,
+      Continent::Africa => /* Color::LIGHT_SLATE_GRAY */  Color::ROSY_BROWN.lightened(0.7),
+      Continent::Asia => /* Color::GREEN_YELLOW */  Color::ROSY_BROWN.lightened(0.7),
+      Continent::Europe => /* Color::SKY_BLUE */  Color::ROSY_BROWN.lightened(0.7),
+      Continent::NorthAmerica => /* Color::INDIAN_RED */  Color::ROSY_BROWN.lightened(0.7),
+      Continent::Oceania => /* Color::BURLYWOOD */  Color::ROSY_BROWN.lightened(0.7),
+      Continent::SouthAmerica => /* Color::TOMATO */  Color::ROSY_BROWN.lightened(0.7),
+      Continent::Antarctica => /* Color::GRAY */  Color::ROSY_BROWN.lightened(0.7),
+      Continent::Special => /* Color::GOLD */  Color::ROSY_BROWN.lightened(0.7),
     }
   }
 
   pub fn get_territory_color(sub_continent: &Option<SubContinent>, continent: &Continent) -> Color {
     match sub_continent {
-      Some(SubContinent::MiddleEast) => Color::GREEN /* Color::WHITE_SMOKE */,
-      Some(SubContinent::InteriorAsia) => Color::WEB_GREEN /* Color::WHITE_SMOKE */,
-      Some(SubContinent::IndianSubcontinent) => Color::LAWN_GREEN /* Color::WHITE_SMOKE */,
-      Some(SubContinent::SoutheastAsia) => Color::LIME_GREEN /* Color::WHITE_SMOKE */,
-      Some(SubContinent::EastAsia) => Color::GREEN_YELLOW /* Color::WHITE_SMOKE */,
-      Some(SubContinent::EuropeRelatedAsia) => Color::LIGHT_GREEN /* Color::WHITE_SMOKE */,
+      Some(SubContinent::MiddleEast) => /* Color::GREEN */ Color::ROSY_BROWN.lightened(0.7),
+      Some(SubContinent::InteriorAsia) => /* Color::WEB_GREEN */ Color::ROSY_BROWN.lightened(0.7),
+      Some(SubContinent::IndianSubcontinent) => /* Color::LAWN_GREEN */ Color::ROSY_BROWN.lightened(0.7),
+      Some(SubContinent::SoutheastAsia) => /* Color::LIME_GREEN */ Color::ROSY_BROWN.lightened(0.7),
+      Some(SubContinent::EastAsia) => /* Color::GREEN_YELLOW */ Color::ROSY_BROWN.lightened(0.7),
+      Some(SubContinent::EuropeRelatedAsia) => /* Color::LIGHT_GREEN */ Color::ROSY_BROWN.lightened(0.7),
       None => Self::continent_to_color(&continent)
     }
   }
 
-  pub fn set_color_to_territory(mut territory_mesh: Gd<MeshInstance3D>, color_change: ColorChange) {
-    // (TODO:) Calling get_map from here is temporary, 
-    // should be removed after setting colors on land dinamically on game
-    let binding = Self::get_map();
-    let territory_id = territory_mesh.get_name().to_string();
-    let territory_metadata = binding.get(&territory_id).unwrap();
-
-    let color = Territory::get_territory_color(
-      &territory_metadata.location.sub_continent,
-      &territory_metadata.location.continent
-    );
-
+  pub fn set_shade_color_to_territory(territory_mesh: Gd<MeshInstance3D>, color_change: ColorChange) {
+    let base_color = territory_mesh.get_meta("current_base_color");
+    let base_color = base_color.to::<Color>();
+    
     let color = match color_change {
-      ColorChange::Lighten => color.lightened(0.5),
-      ColorChange::Darken => color.darkened(0.5),
-      ColorChange::Exact => color,
+      ColorChange::Lighten => base_color.lightened(0.5),
+      ColorChange::Darken => base_color.darkened(0.25),
+      ColorChange::SuperDarken => base_color.darkened(0.5),
+      ColorChange::Exact => base_color,
     };
 
-    let mut material = StandardMaterial3D::new_gd();
-    material.set_albedo(color);
-    territory_mesh.set_material_override(&material);
+    Self::set_color_to_active_material(&territory_mesh, color);
+  }
+
+  pub fn set_color_to_active_material(territory_mesh: &Gd<MeshInstance3D>, color: Color){
+    territory_mesh
+      .get_active_material(0)
+      .expect("Expected to have an active material")
+      .try_cast::<StandardMaterial3D>()
+      .expect("Expected mesh territory's material to be castable to StandardMaterial3D")
+      .set_albedo(color);
   }
 
   pub fn checking_territory(territory_mesh: Gd<MeshInstance3D>) {
-    Self::set_color_to_territory(territory_mesh, ColorChange::Lighten);
+    Self::set_shade_color_to_territory(territory_mesh, ColorChange::Darken);
   }
 
   pub fn unchecking_territory(territory_mesh: Gd<MeshInstance3D>) {
-    Self::set_color_to_territory(territory_mesh, ColorChange::Exact);
+    Self::set_shade_color_to_territory(territory_mesh, ColorChange::Exact);
   }
 
   pub fn clicking_territory(territory_mesh: Gd<MeshInstance3D>) {
-    Self::set_color_to_territory(territory_mesh, ColorChange::Darken);
+    Self::set_shade_color_to_territory(territory_mesh, ColorChange::SuperDarken);
   }
 
   /// Should be called when the coordinates of the territory are set

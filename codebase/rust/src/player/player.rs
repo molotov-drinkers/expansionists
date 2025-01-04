@@ -1,9 +1,9 @@
-// TODO: Remove this line once the file is implemented
-#![allow(dead_code)]
-
 use std::collections::{HashMap, HashSet};
 
+use godot::{classes::INode3D, prelude::*};
+
 use crate::globe::territories::territory::TerritoryId;
+use super::color::PlayerColor;
 
 /// Defines
 /// troop colors,
@@ -17,16 +17,6 @@ use crate::globe::territories::territory::TerritoryId;
 /// atck
 /// run away
 
-enum PlayerColor {
-  Red,
-  Blue,
-  Green,
-  Yellow,
-  Purple,
-  Orange,
-  Black,
-  White,
-}
 
 struct EnemyStats {
   /// The number of troops that were injured
@@ -37,12 +27,16 @@ struct EnemyStats {
   territories_taken_by_player: i32,
 }
 
-type PlayerId = i32;
+pub type PlayerId = i32;
 
-struct Player {
+#[derive(GodotClass)]
+#[class(base=Node3D)]
+pub struct Player {
+  base: Base<Node3D>,
   player_id: PlayerId,
-  color: PlayerColor,
-  initial_territory: TerritoryId,
+  pub user_name: String,
+  pub color: PlayerColor,
+  pub initial_territory: TerritoryId,
   troops_counter: i32,
   territory_counter: i32,
 
@@ -51,18 +45,20 @@ struct Player {
   in_combat_with: HashSet<Player>,
   allied_with: HashSet<Player>,
   enemies_stats: HashMap<PlayerId, EnemyStats>,
+
+  // TODO: add here mesh type for troops (land and sea)
 }
 
-impl Player {
-  fn new(
-    player_id: PlayerId,
-    color: PlayerColor,
-    initial_territory: TerritoryId
-  ) -> Self {
+#[godot_api]
+impl INode3D for Player {
+  fn init(base: Base<Node3D>) -> Player {
+
     Player {
-      player_id,
-      color,
-      initial_territory,
+      base: base,
+      player_id: 0,
+      user_name: "to_be_set".to_owned(),
+      color: PlayerColor::Black,
+      initial_territory: "to_be_set".to_owned(),
       troops_counter: 0,
       territory_counter: 0,
       alive: true,
@@ -70,5 +66,14 @@ impl Player {
       allied_with: HashSet::new(),
       enemies_stats: HashMap::new(),
     }
+  }
+}
+
+impl Player {
+  pub fn set_player(&mut self, player_id: PlayerId, user_name: String, color: PlayerColor, initial_territory: TerritoryId) {
+      self.player_id = player_id;
+      self.user_name = user_name;
+      self.color = color;
+      self.initial_territory = initial_territory;
   }
 }

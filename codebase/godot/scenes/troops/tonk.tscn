@@ -3,7 +3,7 @@
 [ext_resource type="PackedScene" uid="uid://cfxgxt8uup6ud" path="res://assets/War Low Poly Pack/War Low Poly Pack/LPWarPack_Tonk.fbx" id="1_w6ipk"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jstip"]
-albedo_color = Color(0, 0.396078, 0.823529, 1)
+albedo_color = Color(0, 0.505882, 0.0392157, 1)
 metallic = 1.0
 
 [node name="Tonk" instance=ExtResource("1_w6ipk")]

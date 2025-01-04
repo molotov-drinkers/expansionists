@@ -12,6 +12,11 @@ use crate::{
 
 use super::troop::Troop;
 
+// TODO maybe push this to territory or land?
+pub fn troop_spawner_1() {
+
+}
+
 /// Called from root.rs
 pub fn troop_spawner(root_scene: &mut RootScene, virtual_planet: &VirtualPlanet, troops_spawn: i32, territory_id: TerritoryId) {
   let coordinates: Coordinates = VirtualPlanet

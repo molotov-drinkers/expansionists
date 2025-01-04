@@ -44,6 +44,7 @@ impl INode3D for GlobeScene {
       let mut material = StandardMaterial3D::new_gd();
       material.set_albedo(color);
       territory.set_material_override(&material);
+      territory.set_meta("current_base_color", &color.to_variant());
     }
   }
 }

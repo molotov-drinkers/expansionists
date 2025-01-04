@@ -4,8 +4,7 @@ use godot::{classes::{BoxMesh, BoxShape3D, CollisionShape3D, MeshInstance3D, Sta
 use fastrand;
 
 use crate::{
-  globe::territories::{land::Land, territory::{Territories, Territory, TerritoryId}},
-  troops::surface::Surface
+  globe::territories::{land::Land, territory::{Territories, Territory, TerritoryId}}, player::{color::PlayerColor, player::Player}, troops::surface::Surface
 };
 use super::{
   coordinates_system::{CoordinateMap, CoordinateMetadata},
@@ -276,6 +275,24 @@ impl VirtualPlanet {
   pub fn get_cartesian_from_coordinates(&self, given_coordinates: &Coordinates) -> Vector3 {
     let coordinate_metadata = self.coordinate_map.get(&given_coordinates).expect("Expected coordinates to exist");
     coordinate_metadata.cartesian
+  }
+
+  pub fn set_new_territory_ruler(&mut self, player: Gd<Player>) {
+    let binding = player.bind();
+    let territory_id: &str = binding.initial_territory.as_str();
+    let territory = self.territories.get_mut(territory_id).expect("Expected territory to exist");
+    territory.current_ruler = Some(player.clone());
+
+    let color = PlayerColor::get_land_color(&binding.color);
+
+    let mut territory_mesh = self
+      .base_mut()
+      .get_parent()
+      .expect("Expected virtual_planet to have a parent")
+      .get_node_as::<MeshInstance3D>(&format!("globe_scene/territories/{territory_id}"));
+
+    territory_mesh.set_meta("current_base_color", &color.to_variant());
+    Territory::set_color_to_active_material(&territory_mesh, color);
   }
 
 }

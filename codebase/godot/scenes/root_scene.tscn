@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3 uid="uid://dum28ksb8lenw"]
+[gd_scene load_steps=15 format=3 uid="uid://dum28ksb8lenw"]
 
 [ext_resource type="PackedScene" uid="uid://bjycwupj85nvr" path="res://scenes/globe_scene.tscn" id="1_udvwj"]
 [ext_resource type="FontFile" uid="uid://bqwjn4oqslif5" path="res://assets/font/Quantico-Bold.ttf" id="2_8w76i"]
@@ -29,9 +29,6 @@ border_width_top = 4
 border_width_right = 4
 border_width_bottom = 4
 border_color = Color(0.575133, 0.302225, 0.126159, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_i3hfw"]
-bg_color = Color(0, 0.376471, 0.588235, 1)
 
 [node name="root_scene" type="RootScene"]
 
@@ -92,6 +89,8 @@ patch_margin_bottom = 4
 
 [node name="world_environment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_75xfn")
+
+[node name="players" type="Node3D" parent="."]
 
 [node name="ui" type="CanvasLayer" parent="."]
 
@@ -220,15 +219,25 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_modyv")
 
 [node name="MarginContainer" type="MarginContainer" parent="ui/territory_hud/ruler_margin_container/PanelContainer"]
 layout_mode = 2
-theme_override_constants/margin_left = 5
+theme_override_constants/margin_left = 50
 theme_override_constants/margin_top = 5
-theme_override_constants/margin_right = 5
+theme_override_constants/margin_right = 50
 theme_override_constants/margin_bottom = 5
 
 [node name="VBoxContainer" type="VBoxContainer" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer"]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+
+[node name="TextureRect" type="TextureRect" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+texture = ExtResource("5_jcixk")
+expand_mode = 2
+
+[node name="TextLabels" type="TextLabels" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/HBoxContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_fonts/font = ExtResource("2_8w76i")
@@ -238,31 +247,11 @@ horizontal_alignment = 1
 uppercase = true
 
 [node name="occupied" type="HBoxContainer" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer"]
-visible = false
 layout_mode = 2
+size_flags_vertical = 3
 
 [node name="VBoxContainer" type="VBoxContainer" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/occupied"]
 layout_mode = 2
-
-[node name="ruler_name" type="HBoxContainer" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/occupied/VBoxContainer"]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_constants/separation = -5
-
-[node name="TextureRect" type="TextureRect" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/occupied/VBoxContainer/ruler_name"]
-layout_mode = 2
-texture = ExtResource("5_jcixk")
-expand_mode = 2
-
-[node name="MarginContainer" type="MarginContainer" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/occupied/VBoxContainer/ruler_name"]
-layout_mode = 2
-theme_override_constants/margin_left = 16
-
-[node name="TextLabels" type="TextLabels" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/occupied/VBoxContainer/ruler_name"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_fonts/font = ExtResource("2_8w76i")
-text = "{{player_name}}  "
 
 [node name="troops" type="HBoxContainer" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/occupied/VBoxContainer"]
 layout_mode = 2
@@ -284,12 +273,16 @@ theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_fonts/font = ExtResource("2_8w76i")
 text = "{{num of troops}}  "
 
-[node name="ColorRect" type="PanelContainer" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/occupied"]
-custom_minimum_size = Vector2(10, 0)
+[node name="MarginContainer" type="MarginContainer" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/occupied"]
 layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_i3hfw")
+theme_override_constants/margin_left = 16
+
+[node name="banner" type="ColorRect" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/occupied"]
+layout_mode = 2
+size_flags_horizontal = 3
 
 [node name="unoccupied" type="HBoxContainer" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer"]
+visible = false
 layout_mode = 2
 alignment = 1
 
@@ -300,6 +293,7 @@ theme_override_fonts/font = ExtResource("2_8w76i")
 text = "Unoccupied Territory"
 
 [node name="selection_hud" type="SelectionHUD" parent="ui"]
+visible = false
 anchors_preset = 7
 anchor_left = 0.5
 anchor_top = 1.0
@@ -334,8 +328,10 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_modyv")
 
 [node name="MarginContainer" type="MarginContainer" parent="ui/selection_hud/MarginContainer/PanelContainer"]
 layout_mode = 2
-theme_override_constants/margin_top = 0
-theme_override_constants/margin_right = 0
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 4
 
 [node name="HBoxContainer" type="HBoxContainer" parent="ui/selection_hud/MarginContainer/PanelContainer/MarginContainer"]
 layout_mode = 2

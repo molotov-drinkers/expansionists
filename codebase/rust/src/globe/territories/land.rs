@@ -8,6 +8,16 @@ use crate::{
   heads_up_display::territory_hud::TerritoryHUD,
 };
 
+enum _LandState {
+  /// Should be used when the land is stable
+  /// and not being attacked
+  Stable,
+
+  /// Should be used when the land is being attacked
+  /// also, it should blink to indicate the conflict
+  OnConflict,
+}
+
 /// Every territory should be a MeshInstance3D with the 
 /// following "Land StaticBody3D" as a child
 /// |-territory
@@ -72,6 +82,18 @@ impl IStaticBody3D for Land {
     territory_hud.bind_mut().clean_hud();
 
     Territory::unchecking_territory(territory);
+  }
+
+  fn process(&mut self, _delta: f64) {
+    let virtual_planet = self.get_virtual_planet_from_land();
+    
+    let territories = &virtual_planet.bind().territories;
+    let territories_with_rules = territories.iter()
+      .filter(|(_, territory)| territory.current_ruler.is_some());
+
+    for (_, _territory) in territories_with_rules {
+      // TODO: Call Troop Spawner engine based on territory numbers and spawn rules
+    }
   }
 }
 
