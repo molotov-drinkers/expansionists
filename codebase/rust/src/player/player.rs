@@ -34,9 +34,9 @@ pub type PlayerId = i32;
 pub struct Player {
   base: Base<Node3D>,
   player_id: PlayerId,
-  pub user_name: String,
-  pub color: PlayerColor,
-  pub initial_territory: TerritoryId,
+  user_name: String,
+  color: PlayerColor,
+  initial_territory: TerritoryId,
   troops_counter: i32,
   territory_counter: i32,
 
@@ -47,6 +47,14 @@ pub struct Player {
   enemies_stats: HashMap<PlayerId, EnemyStats>,
 
   // TODO: add here mesh type for troops (land and sea)
+}
+
+#[derive(Debug, Clone)]
+pub struct PlayerStaticInfo {
+  pub player_id: PlayerId,
+  pub user_name: String,
+  pub color: PlayerColor,
+  pub initial_territory: TerritoryId,
 }
 
 #[godot_api]
@@ -75,5 +83,23 @@ impl Player {
       self.user_name = user_name;
       self.color = color;
       self.initial_territory = initial_territory;
+  }
+
+  pub fn get_static_info(&self) -> PlayerStaticInfo {
+    PlayerStaticInfo {
+      player_id: self.player_id,
+      user_name: self.user_name.clone(),
+      color: self.color.clone(),
+      initial_territory: self.initial_territory.clone(),
+    }
+  }
+
+  pub fn get_blank_static_info() -> PlayerStaticInfo {
+    PlayerStaticInfo {
+      player_id: 0,
+      user_name: "to_be_set".to_owned(),
+      color: PlayerColor::Black,
+      initial_territory: "to_be_set".to_owned(),
+    }
   }
 }

@@ -1,5 +1,6 @@
 use godot::builtin::Color;
 
+#[derive(Debug, Clone)]
 pub enum PlayerColor {
   Red,
   Blue,

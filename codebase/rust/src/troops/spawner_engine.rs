@@ -6,8 +6,7 @@ use crate::{
   globe::{coordinates_system::{
     surface_point::Coordinates,
     virtual_planet::VirtualPlanet,
-  }, territories::territory::TerritoryId},
-  root::root::RootScene,
+  }, territories::territory::TerritoryId}, player::player::PlayerStaticInfo, root::root::RootScene
 };
 
 use super::troop::Troop;
@@ -18,9 +17,14 @@ pub fn troop_spawner_1() {
 }
 
 /// Called from root.rs
-pub fn troop_spawner(root_scene: &mut RootScene, virtual_planet: &VirtualPlanet, troops_spawn: i32, territory_id: TerritoryId) {
+pub fn troop_spawner(root_scene: &mut RootScene,
+  virtual_planet: &VirtualPlanet,
+  troops_spawn: i32,
+  territory_id: &TerritoryId,
+  player: &PlayerStaticInfo
+) {
   let coordinates: Coordinates = VirtualPlanet
-    ::get_spawner_territory_coordinate(&virtual_planet, &territory_id);
+    ::get_spawner_territory_coordinate(&virtual_planet, territory_id);
 
   let cartesian = virtual_planet
     .coordinate_map
@@ -33,6 +37,7 @@ pub fn troop_spawner(root_scene: &mut RootScene, virtual_planet: &VirtualPlanet,
   material.set_albedo(player_color);
   let new_troop: Gd<PackedScene> = load("res://scenes/troop_scene.tscn");
   let mut new_troop = new_troop.instantiate_as::<Troop>();
+  new_troop.bind_mut().set_ownership(player);
 
   // TICKET: #39 generate a troop ID base on: territory_id + player_id + timestamp
   let troop_id = format!("troop ... {:}-{:}", troops_spawn, territory_id);

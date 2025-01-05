@@ -4,7 +4,7 @@ use godot::{classes::{BoxMesh, BoxShape3D, CollisionShape3D, MeshInstance3D, Sta
 use fastrand;
 
 use crate::{
-  globe::territories::{land::Land, territory::{Territories, Territory, TerritoryId}}, player::{color::PlayerColor, player::Player}, troops::surface::Surface
+  globe::territories::{land::Land, territory::{Territories, Territory, TerritoryId}}, player::{color::PlayerColor, player::PlayerStaticInfo}, troops::surface::Surface
 };
 use super::{
   coordinates_system::{CoordinateMap, CoordinateMetadata},
@@ -277,13 +277,10 @@ impl VirtualPlanet {
     coordinate_metadata.cartesian
   }
 
-  pub fn set_new_territory_ruler(&mut self, player: Gd<Player>) {
-    let binding = player.bind();
-    let territory_id: &str = binding.initial_territory.as_str();
+  pub fn set_new_territory_ruler(&mut self, player: PlayerStaticInfo, territory_id: &TerritoryId) {
     let territory = self.territories.get_mut(territory_id).expect("Expected territory to exist");
+    let color = PlayerColor::get_land_color(&player.color);
     territory.current_ruler = Some(player.clone());
-
-    let color = PlayerColor::get_land_color(&binding.color);
 
     let mut territory_mesh = self
       .base_mut()

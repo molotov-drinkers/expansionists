@@ -10,7 +10,6 @@ use crate::troops::spawner_engine;
 #[class(base=Node3D)]
 pub struct RootScene {
   base: Base<Node3D>,
-  troops_spawn: i32,
   hack_bool: bool,
 }
 
@@ -20,7 +19,6 @@ impl INode3D for RootScene {
 
     RootScene {
       base: base,
-      troops_spawn: 0,
       hack_bool: false,
     }
   }
@@ -94,44 +92,29 @@ impl RootScene {
   pub fn startup_troops_spawn(&mut self, virtual_planet: &mut VirtualPlanet) {
     // TODO: this hack bool should go away
     if self.hack_bool == false {
-      for player in self.hardcoded_players() {
-        virtual_planet.set_new_territory_ruler(player);
+      for mut player in self.hardcoded_players() {
+        let territory_id = &player.bind_mut().get_static_info().initial_territory;
+        virtual_planet.set_new_territory_ruler(
+          player.bind_mut().get_static_info(),
+          territory_id
+        );
+
+        let mut troops_spawn = 0;
+        let max_troops = 5;
+        while troops_spawn < max_troops {
+          spawner_engine::troop_spawner(
+            self,
+            &virtual_planet,
+            troops_spawn,
+            territory_id,
+            &player.bind_mut().get_static_info()
+          );
+          troops_spawn+=1;
+        }
+
       }
       self.hack_bool = true;
     }
 
-    // TODO: this spanwer should be done differently
-    let max_troops = 5;
-    while self.troops_spawn < max_troops {
-      spawner_engine::troop_spawner(
-        self,
-        &virtual_planet,
-        self.troops_spawn,
-        ORIGIN_A.to_owned(),
-      );
-
-      spawner_engine::troop_spawner(
-        self,
-        &virtual_planet,
-        self.troops_spawn,
-        ORIGIN_B.to_owned(),
-      );
-
-      spawner_engine::troop_spawner(
-        self,
-        &virtual_planet,
-        self.troops_spawn,
-        ORIGIN_C.to_owned(),
-      );
-
-      spawner_engine::troop_spawner(
-        self,
-        &virtual_planet,
-        self.troops_spawn,
-        ORIGIN_D.to_owned(),
-      );
-
-      self.troops_spawn+=1;
-    }
   }
 }

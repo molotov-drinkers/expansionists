@@ -87,7 +87,6 @@ impl TerritoryHUD {
       unoccupied.set_visible(false);
 
       let ruler = territory.current_ruler.as_ref().unwrap();
-      let ruler = &ruler.bind();
       let ruler_color = PlayerColor::get_banner_player_color(&ruler.color);
       let mut ruler_banner = occupied.get_node_as::<ColorRect>("banner");
       

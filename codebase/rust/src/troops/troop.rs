@@ -3,11 +3,11 @@ use std::collections::HashSet;
 use godot::{
   classes::{BoxMesh, CharacterBody3D, ICharacterBody3D, MeshInstance3D, Sprite3D, StandardMaterial3D}, prelude::*
 };
-use crate::globe::{coordinates_system::{
+use crate::{globe::{coordinates_system::{
     coordinates_system::CoordinatesSystem,
     surface_point::{Coordinates, SurfacePoint, SurfacePointMetadata},
     virtual_planet::VirtualPlanet,
-  }, territories::territory::TerritoryId};
+  }, territories::territory::TerritoryId}, player::player::{Player, PlayerStaticInfo}};
 
 use super::{
   combat_engine::CombatStats, speed::SpeedType, surface::Surface
@@ -52,7 +52,7 @@ pub struct Troop {
   // location_situation: LocationSituation,
   surface: Surface,
 
-  // owner: String,
+  owner: PlayerStaticInfo,
   _combat_stats: CombatStats,
 
   troop_activities: TroopActivities,
@@ -79,6 +79,7 @@ impl ICharacterBody3D for Troop {
       deployed_to_territory: "".to_string(),
       surface: Surface::Land,
 
+      owner: Player::get_blank_static_info(),
       _combat_stats: CombatStats::new(),
 
       troop_activities: HashSet::from([
@@ -125,6 +126,10 @@ impl Troop {
 
   /// Defines the time the troop will wait before moving again while patrolling
   const DEFAULT_IDLE_TIMER: f32 = 0.7;
+
+  pub fn set_ownership(&mut self, player: &PlayerStaticInfo) {
+    self.owner = player.clone();
+  }
 
   /// Sets troop collision layer and mask are set to be separate.
   /// To avoid misbehaviors on geodesic movement
@@ -409,7 +414,6 @@ impl Troop {
   }
 
   pub fn select_troop(&mut self) {
-    // TICKET: #63 Put it on the HUD
     self.troop_activities.insert(TroopState::Selected);
 
     self.set_selected_sprites_visibility(true);

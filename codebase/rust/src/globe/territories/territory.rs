@@ -3,7 +3,7 @@ use std::fmt;
 
 use godot::{builtin::Color, classes::{MeshInstance3D, StandardMaterial3D}, prelude::*};
 
-use crate::{globe::coordinates_system::surface_point::Coordinates, player::player::Player, troops::troop::Troop};
+use crate::{globe::coordinates_system::surface_point::Coordinates, player::player::PlayerStaticInfo, troops::troop::Troop};
 
 pub enum Continent {
   Africa,
@@ -103,7 +103,7 @@ pub struct Territory {
   /// (TODO:) uses all the surface points of the territory to calculate which troops are inside it
   pub current_troops: Vec<Troop>,
 
-  pub current_ruler: Option<Gd<Player>>,
+  pub current_ruler: Option<PlayerStaticInfo>,
 }
 
 pub enum ColorChange {
