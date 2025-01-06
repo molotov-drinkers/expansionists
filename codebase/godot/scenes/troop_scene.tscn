@@ -1,16 +1,7 @@
-[gd_scene load_steps=27 format=4 uid="uid://42q6iqdh5dd5"]
+[gd_scene load_steps=18 format=4 uid="uid://42q6iqdh5dd5"]
 
-[ext_resource type="PackedScene" uid="uid://b5dv4qdqxvrmc" path="res://assets/Pirate Low Poly Pack/Pirate Low Poly Pack/SquareSloop.fbx" id="1_mioln"]
-[ext_resource type="PackedScene" uid="uid://wtwkos7kbp20" path="res://scenes/troops/sea/boat_2.tscn" id="2_f5o2f"]
-[ext_resource type="PackedScene" uid="uid://c57yc2mudjv46" path="res://assets/Pirate Low Poly Pack/Pirate Low Poly Pack/Dhow.fbx" id="3_ftxcs"]
-[ext_resource type="PackedScene" uid="uid://box80ff57b0i5" path="res://assets/Pirate Low Poly Pack/Pirate Low Poly Pack/MizzenSailboat.fbx" id="5_0e80a"]
 [ext_resource type="PackedScene" uid="uid://3kdt2sqilvw4" path="res://scenes/troops/sea/galleon.tscn" id="5_y1erk"]
 [ext_resource type="Texture2D" uid="uid://dyvm86w6xfnv2" path="res://assets/selection_system/selectable_area.png" id="7_4t0r8"]
-[ext_resource type="PackedScene" uid="uid://b4avlgeb338jg" path="res://assets/Pirate Low Poly Pack/Pirate Low Poly Pack/Sloop.fbx" id="7_f63yb"]
-[ext_resource type="PackedScene" uid="uid://cftr2e88ejsju" path="res://scenes/troops/sea/boat_6.tscn" id="7_j48ci"]
-[ext_resource type="PackedScene" uid="uid://cddi63ruvdsj4" path="res://scenes/troops/land/tonk.tscn" id="8_mihlq"]
-[ext_resource type="PackedScene" uid="uid://ddxi6ijesuo5h" path="res://scenes/troops/land/cannon.tscn" id="9_5lh6o"]
-[ext_resource type="PackedScene" uid="uid://bg2gox3fr3lnx" path="res://scenes/troops/land/truck_1.tscn" id="9_unmc4"]
 [ext_resource type="PackedScene" uid="uid://6ygmrrx3ylgh" path="res://scenes/troops/land/tank_1.tscn" id="10_i6vjw"]
 [ext_resource type="PackedScene" uid="uid://dbu7njffesr8v" path="res://assets/War Low Poly Pack/War Low Poly Pack/LPWarPack_PineTree.fbx" id="12_r8ela"]
 
@@ -259,29 +250,7 @@ disabled = true
 [node name="sea" type="Node3D" parent="."]
 transform = Transform3D(1.3, 0, 0, 0, 1.3, 0, 0, 0, 1.3, 0, -0.168036, 0)
 
-[node name="SquareSloop" parent="sea" instance=ExtResource("1_mioln")]
-transform = Transform3D(0.05, 0, 0, 0, 0.05, 0, 0, 0, 0.05, 0, 0, 0)
-visible = false
-
-[node name="RowBoat" parent="sea" instance=ExtResource("2_f5o2f")]
-visible = false
-
-[node name="Dhow" parent="sea" instance=ExtResource("3_ftxcs")]
-transform = Transform3D(0.05, 0, 0, 0, 0.05, 0, 0, 0, 0.05, 0, 0, 0)
-visible = false
-
-[node name="MizzenSailboat" parent="sea" instance=ExtResource("5_0e80a")]
-transform = Transform3D(0.05, 0, 0, 0, 0.05, 0, 0, 0, 0.05, 0, 0, 0)
-visible = false
-
-[node name="Galleon" parent="sea" instance=ExtResource("5_y1erk")]
-visible = false
-
-[node name="Sloop" parent="sea" instance=ExtResource("7_f63yb")]
-transform = Transform3D(0.02, 0, 0, 0, 0.02, 0, 0, 0, 0.02, 0, 0, 0)
-
-[node name="ChineseSailboat" parent="sea" instance=ExtResource("7_j48ci")]
-transform = Transform3D(0.05, 0, 0, 0, 0.05, 0, 0, 0, 0.05, 0, 0, 0)
+[node name="galleon_1" parent="sea" instance=ExtResource("5_y1erk")]
 visible = false
 
 [node name="selected" type="Sprite3D" parent="sea"]
@@ -294,21 +263,10 @@ texture = ExtResource("7_4t0r8")
 [node name="land" type="Node3D" parent="."]
 transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, -0.000361934, 0)
 
-[node name="Tonk" parent="land" instance=ExtResource("8_mihlq")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.08461, 0)
-visible = false
-
-[node name="Cannon" parent="land" instance=ExtResource("9_5lh6o")]
-visible = false
-
-[node name="Truck2" parent="land" instance=ExtResource("9_unmc4")]
-visible = false
-
-[node name="LPWarPack_FuturisticTank" parent="land" instance=ExtResource("10_i6vjw")]
+[node name="tank_1" parent="land" instance=ExtResource("10_i6vjw")]
 visible = false
 
 [node name="selected" type="Sprite3D" parent="land"]
-visible = false
 modulate = Color(0.372549, 1, 0.286275, 0.215686)
 pixel_size = 0.15
 axis = 1

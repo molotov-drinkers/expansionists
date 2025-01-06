@@ -21,17 +21,12 @@ pub enum MeshId {
 pub struct TroopMesh {
   pub scene_name: String,
   pub surface: Surface,
-  pub surface_to_be_colored: usize,
+  pub surface_to_be_colored: i32,
 }
 
 type MeshMap = HashMap<MeshId, TroopMesh>;
 
 impl TroopMesh {
-  fn get_meshes() -> MeshMap {
-    let mut meshes = Self::get_land_meshes();
-    meshes.extend(Self::get_sea_meshes());
-    meshes
-  }
 
   pub fn get_land_meshes() -> MeshMap {
     let mut meshes = MeshMap::new();

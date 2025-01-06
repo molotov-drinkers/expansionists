@@ -17,7 +17,7 @@ impl PlayerColor {
     match color {
       PlayerColor::Red => Color::RED,
       PlayerColor::Blue => Color::BLUE,
-      PlayerColor::Green => Color::GREEN,
+      PlayerColor::Green => Color::DARK_GREEN,
       PlayerColor::Yellow => Color::YELLOW,
       PlayerColor::Purple => Color::PURPLE,
       PlayerColor::Orange => Color::ORANGE,
@@ -43,6 +43,14 @@ impl PlayerColor {
   pub fn get_land_color(color: &PlayerColor) -> Color {
     let color = Self::get_player_color(color);
     let color = color.lightened(0.5);
+
+    color
+  }
+
+  pub fn get_troop_selected_color(color: &PlayerColor) -> Color {
+    let color = Self::get_player_color(color);
+    let mut color = color.lightened(0.5);
+    color.set_a8(55);
 
     color
   }

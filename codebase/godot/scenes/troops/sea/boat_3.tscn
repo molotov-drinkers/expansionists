@@ -3,3 +3,4 @@
 [ext_resource type="PackedScene" uid="uid://c57yc2mudjv46" path="res://assets/Pirate Low Poly Pack/Pirate Low Poly Pack/Dhow.fbx" id="1_ykuav"]
 
 [node name="Dhow" instance=ExtResource("1_ykuav")]
+transform = Transform3D(0.04, 0, 0, 0, 0.04, 0, 0, 0, 0.04, 0, 0, 0)

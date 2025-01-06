@@ -1,12 +1,12 @@
 
 use godot::{
-  classes::StandardMaterial3D, prelude::*
+  classes::{MeshInstance3D, Sprite3D, StandardMaterial3D}, prelude::*
 };
 use crate::{
   globe::{coordinates_system::{
     surface_point::Coordinates,
     virtual_planet::VirtualPlanet,
-  }, territories::territory::TerritoryId}, player::player::{PlayerStaticInfo, TroopMeshes}, root::root::RootScene
+  }, territories::territory::TerritoryId}, player::{color::PlayerColor, player::PlayerStaticInfo}, root::root::RootScene
 };
 
 use super::{mesh_map::TroopMesh, troop::Troop};
@@ -36,9 +36,25 @@ pub fn troop_spawner(root_scene: &mut RootScene,
   let mut new_troop = new_troop.instantiate_as::<Troop>();
   new_troop.bind_mut().set_ownership(player);
 
-  let (land_troop, sea_troop) = get_troop_scenes(&player.troop_meshes);
+  let mut land_node = new_troop
+    .find_child("land")
+    .expect("Expected land to exist");
+    
+  let mut sea_node = new_troop
+    .find_child("sea")
+    .expect("Expected sea to exist");
 
-  // TODO: Add troops to main troop_scene and paint the selected sprite3d too
+  let (land_troop, sea_troop) = get_colored_troop_scenes(&player);
+  land_node.add_child(&land_troop);
+  sea_node.add_child(&sea_troop);
+
+  land_node
+    .get_node_as::<Sprite3D>("selected")
+    .set_modulate(PlayerColor::get_troop_selected_color(&player.color));
+  sea_node
+    .get_node_as::<Sprite3D>("selected")
+    .set_modulate(PlayerColor::get_troop_selected_color(&player.color));
+
 
   // TICKET: #39 generate a troop ID base on: territory_id + player_id + timestamp
   let troop_id = format!("troop ... {:}-{:}", troops_spawn, territory_id);
@@ -54,31 +70,42 @@ pub fn troop_spawner(root_scene: &mut RootScene,
   new_troop.set_position(cartesian);
   new_troop.bind_mut().deployed_to_territory = territory_id.to_string();
 
-  // TICKET: #46, Get player color and set it for sea and land troops
-  // let troop_node = new_troop.find_child("default_mesh").expect("MeshInstance3D to exist");
-  // let mut troop_mesh = troop_node.cast::<MeshInstance3D>();
-  // troop_mesh.set_surface_override_material(0, &material);
-
 }
 
-fn get_troop_scenes(troop_meshes: &TroopMeshes, ) -> (Gd<Node3D>, Gd<Node3D>) {
+fn get_colored_troop_scenes(player: &PlayerStaticInfo) -> (Gd<Node3D>, Gd<Node3D>) {
+  let troop_meshes = &player.troop_meshes;
   let lands = TroopMesh::get_land_meshes();
   let seas = TroopMesh::get_sea_meshes();
   
-  let land = lands.get(&troop_meshes.land)
-    .expect("Expected land mesh to exist");
-  let sea = seas.get(&troop_meshes.sea)
-    .expect("Expected sea mesh to exist");
+  let land_troop = lands.get(&troop_meshes.land)
+    .expect(&format!("Expected {:?} land mesh to exist", &troop_meshes.land));
+  let sea_troop = seas.get(&troop_meshes.sea)
+    .expect(&format!("Expected {:?} sea mesh to exist", &troop_meshes.sea));
 
-  let land_scene_name = &land.scene_name;
-  let sea_scene_name = &sea.scene_name;
+  let land_scene_name = &land_troop.scene_name;
+  let sea_scene_name = &sea_troop.scene_name;
 
   let land_mesh: Gd<PackedScene> = load(&format!("res://scenes/troops/land/{land_scene_name}.tscn"));
   let sea_mesh: Gd<PackedScene> = load(&format!("res://scenes/troops/sea/{sea_scene_name}.tscn"));
   let land_mesh = land_mesh.instantiate_as::<Node3D>();
   let sea_mesh = sea_mesh.instantiate_as::<Node3D>();
 
-  // TODO: set colors
+  let mut material = StandardMaterial3D::new_gd();
+  material.set_albedo(PlayerColor::get_troop_player_color(&player.color));
+  
+  land_mesh
+    .get_child(0)
+    .expect("Expected land mesh to exist")
+    .try_cast::<MeshInstance3D>()
+    .expect("Expected land child to be a MeshInstance3D")
+    .set_surface_override_material(land_troop.surface_to_be_colored, &material);
+
+  sea_mesh
+    .get_child(0)
+    .expect("Expected sea mesh to exist")
+    .try_cast::<MeshInstance3D>()
+    .expect("Expected sea child to be a MeshInstance3D")
+    .set_surface_override_material(sea_troop.surface_to_be_colored, &material);
 
   (land_mesh, sea_mesh)
 }
