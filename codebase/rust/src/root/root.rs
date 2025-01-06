@@ -37,11 +37,6 @@ impl INode3D for RootScene {
   }
 }
 
-const ORIGIN_A: &str = "baffin_bay";
-const ORIGIN_B: &str = "unclaimed_area";
-const ORIGIN_C: &str = "east_savanna";
-const ORIGIN_D: &str = "korean_peninsula";
-
 impl RootScene {
 
   pub fn hardcoded_players(&mut self) -> Vec<Gd<Player>> {
@@ -55,7 +50,7 @@ impl RootScene {
       1,
       "Player 1".to_owned(),
       PlayerColor::Red,
-      ORIGIN_A.to_owned(),
+      "baffin_bay".to_owned(),
       TroopMeshes {
         land: MeshId::Tank1,
         sea: MeshId::Galleon,
@@ -67,7 +62,7 @@ impl RootScene {
       2,
       "Hawk".to_owned(),
       PlayerColor::Blue,
-      ORIGIN_B.to_owned(),
+      "unclaimed_area".to_owned(),
       TroopMeshes {
         land: MeshId::Truck1,
         sea: MeshId::Boat2,
@@ -79,7 +74,7 @@ impl RootScene {
       3,
       "Eagle".to_owned(),
       PlayerColor::Yellow,
-      ORIGIN_C.to_owned(),
+      "east_savanna".to_owned(),
       TroopMeshes {
         land: MeshId::Tonk,
         sea: MeshId::Boat6,
@@ -91,7 +86,7 @@ impl RootScene {
       4,
       "Tiger".to_owned(),
       PlayerColor::Green,
-      ORIGIN_D.to_owned(),
+      "korean_peninsula".to_owned(),
       TroopMeshes {
         land: MeshId::Cannon,
         sea: MeshId::Boat5,
@@ -110,9 +105,10 @@ impl RootScene {
     // TODO: this hack bool should go away
     if self.hack_bool == false {
       for mut player in self.hardcoded_players() {
-        let territory_id = &player.bind_mut().get_static_info().initial_territory;
+        let static_info = &player.bind_mut().static_info;
+        let territory_id = &static_info.initial_territory;
         virtual_planet.set_new_territory_ruler(
-          player.bind_mut().get_static_info(),
+          static_info,
           territory_id
         );
 
@@ -124,7 +120,7 @@ impl RootScene {
             &virtual_planet,
             troops_spawn,
             territory_id,
-            &player.bind_mut().get_static_info()
+            static_info,
           );
           troops_spawn+=1;
         }

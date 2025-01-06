@@ -11,10 +11,6 @@ use crate::{
 
 use super::{mesh_map::TroopMesh, troop::Troop};
 
-// TODO maybe push this to territory or land?
-pub fn troop_spawner_1() {
-
-}
 
 /// Called from root.rs
 pub fn troop_spawner(root_scene: &mut RootScene,
@@ -23,8 +19,7 @@ pub fn troop_spawner(root_scene: &mut RootScene,
   territory_id: &TerritoryId,
   player: &PlayerStaticInfo
 ) {
-  let coordinates: Coordinates = VirtualPlanet
-    ::get_spawner_territory_coordinate(&virtual_planet, territory_id);
+  let coordinates: Coordinates = virtual_planet.get_spawner_territory_coordinate(territory_id);
 
   let cartesian = virtual_planet
     .coordinate_map

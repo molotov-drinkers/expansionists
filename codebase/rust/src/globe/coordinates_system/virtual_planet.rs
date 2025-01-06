@@ -259,17 +259,17 @@ impl VirtualPlanet {
 
   /// Receives a territory_id and returns a random coordinate from the territory
   pub fn get_spawner_territory_coordinate(&self, territory_id: &str) -> Coordinates {
-      let territory = self.territories.get(territory_id).expect("Expected territory to exist");
-      let territory_coordinates = &territory.coordinates;
-      if territory_coordinates.len() == 0 {
-        panic!("Expected territory_coordinates to have at least one element");
-      }
-  
-      // TICKET: #50 this divided by 4 is a hack to get a coordinate in the territory not close to the border
-      // Sometime it does not work, but it's good enough for now
-      let territory_point = territory_coordinates.len() / 1/4;
-      territory_coordinates[territory_point]
+    let territory = self.territories.get(territory_id).expect("Expected territory to exist");
+    let territory_coordinates = &territory.coordinates;
+    if territory_coordinates.len() == 0 {
+      panic!("Expected territory_coordinates to have at least one element");
     }
+
+    // TICKET: #50 this "divided by 4" is a hack to get a coordinate in the territory not close to the border
+    // Sometime it does not work, but it's good enough for now
+    let territory_point = territory_coordinates.len() / 1/4;
+    territory_coordinates[territory_point]
+  }
 
   /// Receives a latitude and longitude and returns the cartesian coordinates
   pub fn get_cartesian_from_coordinates(&self, given_coordinates: &Coordinates) -> Vector3 {
@@ -277,7 +277,7 @@ impl VirtualPlanet {
     coordinate_metadata.cartesian
   }
 
-  pub fn set_new_territory_ruler(&mut self, player: PlayerStaticInfo, territory_id: &TerritoryId) {
+  pub fn set_new_territory_ruler(&mut self, player: &PlayerStaticInfo, territory_id: &TerritoryId) {
     let territory = self.territories.get_mut(territory_id).expect("Expected territory to exist");
     let color = PlayerColor::get_land_color(&player.color);
     territory.current_ruler = Some(player.clone());

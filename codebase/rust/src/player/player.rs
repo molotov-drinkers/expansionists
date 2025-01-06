@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet};
 
 use godot::{classes::INode3D, prelude::*};
 
-use crate::{globe::territories::territory::TerritoryId, troops::{mesh_map::MeshId, troop}};
+use crate::{globe::territories::territory::TerritoryId, troops::mesh_map::MeshId};
 use super::color::PlayerColor;
 
 /// Defines
@@ -16,7 +16,6 @@ use super::color::PlayerColor;
 /// move troops
 /// atck
 /// run away
-
 
 struct EnemyStats {
   /// The number of troops that were injured
@@ -39,10 +38,7 @@ pub type PlayerId = i32;
 #[class(base=Node3D)]
 pub struct Player {
   base: Base<Node3D>,
-  player_id: PlayerId,
-  user_name: String,
-  color: PlayerColor,
-  initial_territory: TerritoryId,
+  pub static_info: PlayerStaticInfo,
   troops_counter: i32,
   territory_counter: i32,
 
@@ -51,8 +47,6 @@ pub struct Player {
   in_combat_with: HashSet<Player>,
   allied_with: HashSet<Player>,
   enemies_stats: HashMap<PlayerId, EnemyStats>,
-
-  troop_meshes: TroopMeshes,
 }
 
 #[derive(Debug, Clone)]
@@ -70,47 +64,31 @@ impl INode3D for Player {
 
     Player {
       base: base,
-      player_id: 0,
-      user_name: "to_be_set".to_owned(),
-      color: PlayerColor::Black,
-      initial_territory: "to_be_set".to_owned(),
+      static_info: Self::get_blank_static_info(),
       troops_counter: 0,
       territory_counter: 0,
-      alive: true,
+      alive: true, 
       in_combat_with: HashSet::new(),
       allied_with: HashSet::new(),
       enemies_stats: HashMap::new(),
-      troop_meshes: TroopMeshes {
-        land: MeshId::Tank1,
-        sea: MeshId::Boat1,
-      },
     }
   }
 }
 
 impl Player {
-  pub fn set_player(&mut self,
+  pub fn set_player(
+    &mut self,
     player_id: PlayerId,
     user_name: String,
     color: PlayerColor,
     initial_territory: TerritoryId,
     troop_meshes: TroopMeshes,
   ) {
-    self.player_id = player_id;
-    self.user_name = user_name;
-    self.color = color;
-    self.initial_territory = initial_territory;
-    self.troop_meshes = troop_meshes;
-  }
-
-  pub fn get_static_info(&self) -> PlayerStaticInfo {
-    PlayerStaticInfo {
-      player_id: self.player_id,
-      user_name: self.user_name.clone(),
-      color: self.color.clone(),
-      initial_territory: self.initial_territory.clone(),
-      troop_meshes: self.troop_meshes.clone(),
-    }
+    self.static_info.player_id = player_id;
+    self.static_info.user_name = user_name;
+    self.static_info.color = color;
+    self.static_info.initial_territory = initial_territory;
+    self.static_info.troop_meshes = troop_meshes;
   }
 
   pub fn get_blank_static_info() -> PlayerStaticInfo {
