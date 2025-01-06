@@ -1,4 +1,6 @@
-[gd_scene load_steps=9 format=4 uid="uid://bg2gox3fr3lnx"]
+[gd_scene load_steps=10 format=4 uid="uid://bg2gox3fr3lnx"]
+
+[ext_resource type="Texture2D" uid="uid://dibbfbpk5lepg" path="res://assets/troop_shadow.png" id="1_lnvyt"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_suc3x"]
 resource_name = "Metal1"
@@ -163,3 +165,7 @@ transform = Transform3D(100, 0, 0, 0, -1.19209e-05, 100, 0, -100, -1.19209e-05, 
 mesh = SubResource("ArrayMesh_fhke3")
 skeleton = NodePath("")
 surface_material_override/4 = SubResource("StandardMaterial3D_d30v3")
+
+[node name="shadow" type="Sprite3D" parent="Truck"]
+transform = Transform3D(0.4, 0, 0, 0, 0.4, 0, 0, 0, 0.4, 0, 0, 0)
+texture = ExtResource("1_lnvyt")

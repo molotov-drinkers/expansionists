@@ -1,6 +1,7 @@
-[gd_scene load_steps=3 format=3 uid="uid://cddi63ruvdsj4"]
+[gd_scene load_steps=4 format=3 uid="uid://cddi63ruvdsj4"]
 
 [ext_resource type="PackedScene" uid="uid://cfxgxt8uup6ud" path="res://assets/War Low Poly Pack/War Low Poly Pack/LPWarPack_Tonk.fbx" id="1_w6ipk"]
+[ext_resource type="Texture2D" uid="uid://dibbfbpk5lepg" path="res://assets/troop_shadow.png" id="2_xewe7"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jstip"]
 albedo_color = Color(0, 0.505882, 0.0392157, 1)
@@ -10,3 +11,7 @@ metallic = 1.0
 
 [node name="Tonk" parent="." index="0"]
 surface_material_override/0 = SubResource("StandardMaterial3D_jstip")
+
+[node name="shadow" type="Sprite3D" parent="Tonk" index="0"]
+transform = Transform3D(0.12, 0, 0, 0, 0.12, 0, 0, 0, 0.12, 0, 0, 0)
+texture = ExtResource("2_xewe7")

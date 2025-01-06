@@ -1,6 +1,11 @@
-[gd_scene load_steps=2 format=3 uid="uid://3ib6qfiex2c6"]
+[gd_scene load_steps=3 format=3 uid="uid://3ib6qfiex2c6"]
 
 [ext_resource type="PackedScene" uid="uid://c57yc2mudjv46" path="res://assets/Pirate Low Poly Pack/Pirate Low Poly Pack/Dhow.fbx" id="1_ykuav"]
+[ext_resource type="Texture2D" uid="uid://dibbfbpk5lepg" path="res://assets/troop_shadow.png" id="2_1ycfo"]
 
 [node name="Dhow" instance=ExtResource("1_ykuav")]
 transform = Transform3D(0.04, 0, 0, 0, 0.04, 0, 0, 0, 0.04, 0, 0, 0)
+
+[node name="shadow" type="Sprite3D" parent="Dhow" index="0"]
+transform = Transform3D(0.17, 0, 0, 0, 0.17, -5.32907e-15, 0, 5.32907e-15, 0.17, 4.0859e-05, -0.00265783, -7.7166e-05)
+texture = ExtResource("2_1ycfo")

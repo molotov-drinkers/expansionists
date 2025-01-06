@@ -1,4 +1,6 @@
-[gd_scene load_steps=6 format=4 uid="uid://6ygmrrx3ylgh"]
+[gd_scene load_steps=7 format=4 uid="uid://6ygmrrx3ylgh"]
+
+[ext_resource type="Texture2D" uid="uid://dibbfbpk5lepg" path="res://assets/troop_shadow.png" id="1_8cvqb"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_37sag"]
 resource_name = "MilllitaryGreen2"
@@ -80,3 +82,7 @@ transform = Transform3D(100, 0, 0, 0, -1.19209e-05, 100, 0, -100, -1.19209e-05, 
 mesh = SubResource("ArrayMesh_y1ep2")
 skeleton = NodePath("")
 surface_material_override/0 = SubResource("StandardMaterial3D_6qcsv")
+
+[node name="shadow" type="Sprite3D" parent="FuturisticTank"]
+transform = Transform3D(0.42, 0, 0, 0, 0.42, 0, 0, 0, 0.42, 0, 0, 0)
+texture = ExtResource("1_8cvqb")

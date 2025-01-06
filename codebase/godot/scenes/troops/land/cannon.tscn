@@ -1,4 +1,6 @@
-[gd_scene load_steps=7 format=4 uid="uid://ddxi6ijesuo5h"]
+[gd_scene load_steps=8 format=4 uid="uid://ddxi6ijesuo5h"]
+
+[ext_resource type="Texture2D" uid="uid://dibbfbpk5lepg" path="res://assets/troop_shadow.png" id="1_lwr0b"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_2kyfc"]
 resource_name = "Wood2"
@@ -108,3 +110,7 @@ transform = Transform3D(100, 0, 0, 0, -4.37114e-06, 100, 0, -100, -4.37114e-06, 
 mesh = SubResource("ArrayMesh_wfpfx")
 skeleton = NodePath("")
 surface_material_override/1 = SubResource("StandardMaterial3D_56dwi")
+
+[node name="shadow" type="Sprite3D" parent="Cannon"]
+transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, 0, 0, 0)
+texture = ExtResource("1_lwr0b")

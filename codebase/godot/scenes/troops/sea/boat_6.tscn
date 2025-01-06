@@ -1,19 +1,10 @@
-[gd_scene load_steps=5 format=3 uid="uid://cftr2e88ejsju"]
+[gd_scene load_steps=4 format=3 uid="uid://cftr2e88ejsju"]
 
 [ext_resource type="PackedScene" uid="uid://cf1e1cqvthimj" path="res://assets/Pirate Low Poly Pack/Pirate Low Poly Pack/ChineseSailboat.fbx" id="1_jjydb"]
+[ext_resource type="Texture2D" uid="uid://dibbfbpk5lepg" path="res://assets/troop_shadow.png" id="2_jpfp7"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jttc1"]
 albedo_color = Color(0, 0.564706, 0.266667, 1)
-
-[sub_resource type="PlaneMesh" id="PlaneMesh_er8xg"]
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_kyiob"]
-transparency = 2
-alpha_scissor_threshold = 0.77
-alpha_antialiasing_mode = 0
-blend_mode = 1
-albedo_color = Color(0, 0, 0, 1)
-refraction_enabled = true
 
 [node name="ChineseSailboat" instance=ExtResource("1_jjydb")]
 transform = Transform3D(0.04, 0, 0, 0, 0.04, 0, 0, 0, 0.04, 0, 0, 0)
@@ -22,10 +13,6 @@ transform = Transform3D(0.04, 0, 0, 0, 0.04, 0, 0, 0, 0.04, 0, 0, 0)
 transform = Transform3D(100, 0, 0, 0, -4.37114e-06, 100, 0, -100, -4.37114e-06, 0, 0, 0)
 surface_material_override/2 = SubResource("StandardMaterial3D_jttc1")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="ChineseSailboat" index="0"]
-transform = Transform3D(0.015, 0, 0, 0, -6.55671e-10, -0.015, 0, 0.015, -6.55671e-10, 0, 0, 0)
-visible = false
-transparency = 1.0
-mesh = SubResource("PlaneMesh_er8xg")
-skeleton = NodePath("../..")
-surface_material_override/0 = SubResource("StandardMaterial3D_kyiob")
+[node name="shadow" type="Sprite3D" parent="ChineseSailboat" index="0"]
+transform = Transform3D(0.25, 0, 0, 0, 0.25, 0, 0, 0, 0.25, 0, 0, 0)
+texture = ExtResource("2_jpfp7")

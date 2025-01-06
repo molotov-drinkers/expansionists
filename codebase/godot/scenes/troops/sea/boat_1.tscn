@@ -1,6 +1,11 @@
-[gd_scene load_steps=2 format=3 uid="uid://twxl3dj2u7xk"]
+[gd_scene load_steps=3 format=3 uid="uid://twxl3dj2u7xk"]
 
 [ext_resource type="PackedScene" uid="uid://b5dv4qdqxvrmc" path="res://assets/Pirate Low Poly Pack/Pirate Low Poly Pack/SquareSloop.fbx" id="1_cn6fg"]
+[ext_resource type="Texture2D" uid="uid://dibbfbpk5lepg" path="res://assets/troop_shadow.png" id="2_hh0c8"]
 
 [node name="SquareSloop" instance=ExtResource("1_cn6fg")]
 transform = Transform3D(0.04, 0, 0, 0, 0.04, 0, 0, 0, 0.04, 0, 0, 0)
+
+[node name="shadow" type="Sprite3D" parent="SquareSloop" index="0"]
+transform = Transform3D(0.2, 0, 0, 0, 0.2, 0, 0, 0, 0.2, 0, 0, 0)
+texture = ExtResource("2_hh0c8")

@@ -1,6 +1,11 @@
-[gd_scene load_steps=2 format=3 uid="uid://cmc0y0me1o4bs"]
+[gd_scene load_steps=3 format=3 uid="uid://cmc0y0me1o4bs"]
 
 [ext_resource type="PackedScene" uid="uid://box80ff57b0i5" path="res://assets/Pirate Low Poly Pack/Pirate Low Poly Pack/MizzenSailboat.fbx" id="1_nebc8"]
+[ext_resource type="Texture2D" uid="uid://dibbfbpk5lepg" path="res://assets/troop_shadow.png" id="2_sjfff"]
 
 [node name="MizzenSailboat" instance=ExtResource("1_nebc8")]
 transform = Transform3D(0.04, 0, 0, 0, 0.04, 0, 0, 0, 0.04, 0, 0, 0)
+
+[node name="shadow" type="Sprite3D" parent="MizzenSailboat" index="0"]
+transform = Transform3D(0.2, 0, 0, 0, 0.2, 0, 0, 0, 0.2, 0, 0, 0)
+texture = ExtResource("2_sjfff")
