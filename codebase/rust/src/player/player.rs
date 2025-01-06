@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet};
 
 use godot::{classes::INode3D, prelude::*};
 
-use crate::globe::territories::territory::TerritoryId;
+use crate::{globe::territories::territory::TerritoryId, troops::{mesh_map::MeshId, troop}};
 use super::color::PlayerColor;
 
 /// Defines
@@ -27,6 +27,12 @@ struct EnemyStats {
   territories_taken_by_player: i32,
 }
 
+#[derive(Debug, Clone)]
+pub struct TroopMeshes {
+  pub land: MeshId,
+  pub sea: MeshId,
+}
+
 pub type PlayerId = i32;
 
 #[derive(GodotClass)]
@@ -46,7 +52,7 @@ pub struct Player {
   allied_with: HashSet<Player>,
   enemies_stats: HashMap<PlayerId, EnemyStats>,
 
-  // TODO: add here mesh type for troops (land and sea)
+  troop_meshes: TroopMeshes,
 }
 
 #[derive(Debug, Clone)]
@@ -55,6 +61,7 @@ pub struct PlayerStaticInfo {
   pub user_name: String,
   pub color: PlayerColor,
   pub initial_territory: TerritoryId,
+  pub troop_meshes: TroopMeshes,
 }
 
 #[godot_api]
@@ -73,16 +80,27 @@ impl INode3D for Player {
       in_combat_with: HashSet::new(),
       allied_with: HashSet::new(),
       enemies_stats: HashMap::new(),
+      troop_meshes: TroopMeshes {
+        land: MeshId::Tank1,
+        sea: MeshId::Boat1,
+      },
     }
   }
 }
 
 impl Player {
-  pub fn set_player(&mut self, player_id: PlayerId, user_name: String, color: PlayerColor, initial_territory: TerritoryId) {
-      self.player_id = player_id;
-      self.user_name = user_name;
-      self.color = color;
-      self.initial_territory = initial_territory;
+  pub fn set_player(&mut self,
+    player_id: PlayerId,
+    user_name: String,
+    color: PlayerColor,
+    initial_territory: TerritoryId,
+    troop_meshes: TroopMeshes,
+  ) {
+    self.player_id = player_id;
+    self.user_name = user_name;
+    self.color = color;
+    self.initial_territory = initial_territory;
+    self.troop_meshes = troop_meshes;
   }
 
   pub fn get_static_info(&self) -> PlayerStaticInfo {
@@ -91,6 +109,7 @@ impl Player {
       user_name: self.user_name.clone(),
       color: self.color.clone(),
       initial_territory: self.initial_territory.clone(),
+      troop_meshes: self.troop_meshes.clone(),
     }
   }
 
@@ -100,6 +119,10 @@ impl Player {
       user_name: "to_be_set".to_owned(),
       color: PlayerColor::Black,
       initial_territory: "to_be_set".to_owned(),
+      troop_meshes: TroopMeshes {
+        land: MeshId::Tank1,
+        sea: MeshId::Boat1,
+      }
     }
   }
 }

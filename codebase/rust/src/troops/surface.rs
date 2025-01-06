@@ -3,7 +3,7 @@ use std::fmt;
 #[derive(PartialEq, Debug)]
 pub enum Surface {
   Land,
-  Water,
+  Sea,
 
   // future_version:
   // Air, // (Planes)
@@ -15,7 +15,7 @@ impl fmt::Display for Surface {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     match self {
       Surface::Land => write!(f, "land"),
-      Surface::Water =>  write!(f, "water"),
+      Surface::Sea =>  write!(f, "sea"),
     }
   }
 }

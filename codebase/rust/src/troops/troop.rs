@@ -155,7 +155,7 @@ impl Troop {
     if surface_point.is_in_group(&Surface::Land.to_string()) {
       self.surface = Surface::Land;
     } else {
-      self.surface = Surface::Water;
+      self.surface = Surface::Sea;
     }
 
     self.touching_surface_point = surface_point.bind().surface_point_metadata.clone();

@@ -6,10 +6,10 @@ use crate::{
   globe::{coordinates_system::{
     surface_point::Coordinates,
     virtual_planet::VirtualPlanet,
-  }, territories::territory::TerritoryId}, player::player::PlayerStaticInfo, root::root::RootScene
+  }, territories::territory::TerritoryId}, player::player::{PlayerStaticInfo, TroopMeshes}, root::root::RootScene
 };
 
-use super::troop::Troop;
+use super::{mesh_map::TroopMesh, troop::Troop};
 
 // TODO maybe push this to territory or land?
 pub fn troop_spawner_1() {
@@ -32,12 +32,11 @@ pub fn troop_spawner(root_scene: &mut RootScene,
     .expect("Coordinate expected to exist")
     .cartesian;
 
-  let player_color = Color::FLORAL_WHITE;
-  let mut material = StandardMaterial3D::new_gd();
-  material.set_albedo(player_color);
   let new_troop: Gd<PackedScene> = load("res://scenes/troop_scene.tscn");
   let mut new_troop = new_troop.instantiate_as::<Troop>();
   new_troop.bind_mut().set_ownership(player);
+
+  let (land_troop, sea_troop) = get_troop_scenes(&player.troop_meshes);
 
   // TICKET: #39 generate a troop ID base on: territory_id + player_id + timestamp
   let troop_id = format!("troop ... {:}-{:}", troops_spawn, territory_id);
@@ -58,4 +57,26 @@ pub fn troop_spawner(root_scene: &mut RootScene,
   // let mut troop_mesh = troop_node.cast::<MeshInstance3D>();
   // troop_mesh.set_surface_override_material(0, &material);
 
+}
+
+fn get_troop_scenes(troop_meshes: &TroopMeshes, ) -> (Gd<Node3D>, Gd<Node3D>) {
+  let lands = TroopMesh::get_land_meshes();
+  let seas = TroopMesh::get_sea_meshes();
+  
+  let land = lands.get(&troop_meshes.land)
+    .expect("Expected land mesh to exist");
+  let sea = seas.get(&troop_meshes.sea)
+    .expect("Expected sea mesh to exist");
+
+  let land_scene_name = &land.scene_name;
+  let sea_scene_name = &sea.scene_name;
+
+  let land_mesh: Gd<PackedScene> = load(&format!("res://scenes/troops/land/{land_scene_name}.tscn"));
+  let sea_mesh: Gd<PackedScene> = load(&format!("res://scenes/troops/sea/{sea_scene_name}.tscn"));
+  let land_mesh = land_mesh.instantiate_as::<Node3D>();
+  let sea_mesh = sea_mesh.instantiate_as::<Node3D>();
+
+  // TODO: set colors
+
+  (land_mesh, sea_mesh)
 }

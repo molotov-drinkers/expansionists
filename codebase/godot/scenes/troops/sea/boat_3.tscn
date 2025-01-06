@@ -1,0 +1,5 @@
+[gd_scene load_steps=2 format=3 uid="uid://3ib6qfiex2c6"]
+
+[ext_resource type="PackedScene" uid="uid://c57yc2mudjv46" path="res://assets/Pirate Low Poly Pack/Pirate Low Poly Pack/Dhow.fbx" id="1_ykuav"]
+
+[node name="Dhow" instance=ExtResource("1_ykuav")]

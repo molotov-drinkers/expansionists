@@ -3,7 +3,8 @@ use godot::prelude::*;
 
 use crate::globe::coordinates_system::virtual_planet::VirtualPlanet;
 use crate::player::color::PlayerColor;
-use crate::player::player::Player;
+use crate::player::player::{Player, TroopMeshes};
+use crate::troops::mesh_map::MeshId;
 use crate::troops::spawner_engine;
 
 #[derive(GodotClass)]
@@ -54,7 +55,11 @@ impl RootScene {
       1,
       "Player 1".to_owned(),
       PlayerColor::Red,
-      ORIGIN_A.to_owned()
+      ORIGIN_A.to_owned(),
+      TroopMeshes {
+        land: MeshId::Tank1,
+        sea: MeshId::Galleon,
+      },      
     );
 
     let mut cpu_2 = Player::new_alloc();
@@ -62,7 +67,11 @@ impl RootScene {
       2,
       "Hawk".to_owned(),
       PlayerColor::Blue,
-      ORIGIN_B.to_owned()
+      ORIGIN_B.to_owned(),
+      TroopMeshes {
+        land: MeshId::Truck1,
+        sea: MeshId::Boat2,
+      },      
     );
 
     let mut cpu_3 = Player::new_alloc();
@@ -70,7 +79,11 @@ impl RootScene {
       3,
       "Eagle".to_owned(),
       PlayerColor::Yellow,
-      ORIGIN_C.to_owned()
+      ORIGIN_C.to_owned(),
+      TroopMeshes {
+        land: MeshId::Tonk,
+        sea: MeshId::Boat6,
+      },      
     );
 
     let mut cpu_4 = Player::new_alloc();
@@ -78,7 +91,11 @@ impl RootScene {
       4,
       "Tiger".to_owned(),
       PlayerColor::Green,
-      ORIGIN_D.to_owned()
+      ORIGIN_D.to_owned(),
+      TroopMeshes {
+        land: MeshId::Cannon,
+        sea: MeshId::Boat5,
+      },      
     );
 
     players_node.add_child(&player_1);

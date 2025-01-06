@@ -1,0 +1,5 @@
+[gd_scene load_steps=2 format=3 uid="uid://wpu5asdnwg1f"]
+
+[ext_resource type="PackedScene" uid="uid://b4avlgeb338jg" path="res://assets/Pirate Low Poly Pack/Pirate Low Poly Pack/Sloop.fbx" id="1_73ojt"]
+
+[node name="Sloop" instance=ExtResource("1_73ojt")]
