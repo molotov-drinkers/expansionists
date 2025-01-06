@@ -38,6 +38,8 @@ pub fn troop_spawner(root_scene: &mut RootScene,
 
   let (land_troop, sea_troop) = get_troop_scenes(&player.troop_meshes);
 
+  // TODO: Add troops to main troop_scene and paint the selected sprite3d too
+
   // TICKET: #39 generate a troop ID base on: territory_id + player_id + timestamp
   let troop_id = format!("troop ... {:}-{:}", troops_spawn, territory_id);
   new_troop.set_name(&troop_id.to_godot());
