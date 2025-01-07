@@ -131,7 +131,7 @@ impl UiDragBox {
     let all_troops = self.get_root_from_ui_drag_box()
       .get_tree()
       .expect("Expected tree to be found from root in UiDragBox::ready")
-      .get_nodes_in_group(Troop::ACTUAL_PLAYER_TROOPS);
+      .get_nodes_in_group(Troop::MAIN_PLAYER_TROOPS);
 
     let mut selectable_troops = Vec::new();
     for troop in all_troops.iter_shared() {

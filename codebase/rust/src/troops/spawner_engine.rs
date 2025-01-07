@@ -6,7 +6,7 @@ use crate::{
   globe::{coordinates_system::{
     surface_point::Coordinates,
     virtual_planet::VirtualPlanet,
-  }, territories::territory::TerritoryId}, player::{color::PlayerColor, player::PlayerStaticInfo}, root::root::RootScene
+  }, territories::territory::TerritoryId}, player::{color::PlayerColor, player::{PlayerStaticInfo, PlayerType}}, root::root::RootScene
 };
 
 use super::{mesh_map::TroopMesh, troop::Troop};
@@ -55,8 +55,11 @@ pub fn troop_spawner(
   let troop_id = format!("troop ... {:}-{:}", &player.user_name, territory_id);
   new_troop.set_name(&troop_id.to_godot());
   new_troop.add_to_group(&player.player_id.to_string());
-  if player.actual_player {
-    new_troop.add_to_group(Troop::ACTUAL_PLAYER_TROOPS);
+
+  match player.player_type {
+    PlayerType::MainPlayer => new_troop.add_to_group(Troop::MAIN_PLAYER_TROOPS),
+    PlayerType::Bot => new_troop.add_to_group(Troop::BOT_TROOPS),
+    _ => (),
   }
 
   // For organization matter, new_troops are spawn under /root_scene/troops

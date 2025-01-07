@@ -3,7 +3,7 @@ use godot::prelude::*;
 
 use crate::globe::coordinates_system::virtual_planet::VirtualPlanet;
 use crate::player::color::PlayerColor;
-use crate::player::player::{Player, TroopMeshes};
+use crate::player::player::{Player, PlayerType, TroopMeshes};
 use crate::troops::mesh_map::MeshId;
 use crate::troops::spawner_engine;
 
@@ -51,7 +51,7 @@ impl RootScene {
       "Player 1".to_owned(),
       PlayerColor::Red,
       "baffin_bay".to_owned(),
-      true,
+      PlayerType::MainPlayer,
       TroopMeshes {
         land: MeshId::Tank1,
         sea: MeshId::Galleon,
@@ -64,7 +64,7 @@ impl RootScene {
       "Hawk".to_owned(),
       PlayerColor::Blue,
       "unclaimed_area".to_owned(),
-      false,
+      PlayerType::Bot,
       TroopMeshes {
         land: MeshId::Truck1,
         sea: MeshId::Boat2,
@@ -77,7 +77,7 @@ impl RootScene {
       "Eagle".to_owned(),
       PlayerColor::Yellow,
       "east_savanna".to_owned(),
-      false,
+      PlayerType::Bot,
       TroopMeshes {
         land: MeshId::Tonk,
         sea: MeshId::Boat6,
@@ -90,7 +90,7 @@ impl RootScene {
       "Tiger".to_owned(),
       PlayerColor::Green,
       "korean_peninsula".to_owned(),
-      false,
+      PlayerType::Bot,
       TroopMeshes {
         land: MeshId::Cannon,
         sea: MeshId::Boat5,

@@ -49,13 +49,20 @@ pub struct Player {
   enemies_stats: HashMap<PlayerId, EnemyStats>,
 }
 
+#[derive(PartialEq, Debug, Clone)]
+pub enum PlayerType {
+  MainPlayer,
+  OtherPlayers,
+  Bot,
+}
+
 #[derive(Debug, Clone)]
 pub struct PlayerStaticInfo {
   pub player_id: PlayerId,
   pub user_name: String,
   pub color: PlayerColor,
   pub initial_territory: TerritoryId,
-  pub actual_player: bool,
+  pub player_type: PlayerType,
   pub troop_meshes: TroopMeshes,
 }
 
@@ -83,14 +90,14 @@ impl Player {
     user_name: String,
     color: PlayerColor,
     initial_territory: TerritoryId,
-    actual_player: bool,
+    player_type: PlayerType,
     troop_meshes: TroopMeshes,
   ) {
     self.static_info.player_id = player_id;
     self.static_info.user_name = user_name;
     self.static_info.color = color;
     self.static_info.initial_territory = initial_territory;
-    self.static_info.actual_player = actual_player;
+    self.static_info.player_type = player_type;
     self.static_info.troop_meshes = troop_meshes;
   }
 
@@ -100,7 +107,7 @@ impl Player {
       user_name: "to_be_set".to_owned(),
       color: PlayerColor::Black,
       initial_territory: "to_be_set".to_owned(),
-      actual_player: false,
+      player_type: PlayerType::Bot,
       troop_meshes: TroopMeshes {
         land: MeshId::Tank1,
         sea: MeshId::Boat1,
