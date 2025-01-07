@@ -68,7 +68,7 @@ impl INinePatchRect for UiDragBox {
       self.positive_y = size.y > 0.;
 
       let x_scale = if self.positive_x { 1. } else { -1. };
-      let y_scale = if self.positive_x { 1. } else { -1. };
+      let y_scale = if self.positive_y { 1. } else { -1. };
       self.base_mut().set_scale(Vector2::new(x_scale, y_scale));
 
       // The size of the drag box is the absolute value of the size
@@ -131,8 +131,7 @@ impl UiDragBox {
     let all_troops = self.get_root_from_ui_drag_box()
       .get_tree()
       .expect("Expected tree to be found from root in UiDragBox::ready")
-      // TICKET: #75 Should filter by player's troops, not all the troops
-      .get_nodes_in_group(Troop::TROOP_CLASS_NAME);
+      .get_nodes_in_group(Troop::ACTUAL_PLAYER_TROOPS);
 
     let mut selectable_troops = Vec::new();
     for troop in all_troops.iter_shared() {

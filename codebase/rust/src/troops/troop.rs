@@ -124,6 +124,10 @@ impl Troop {
 
   pub const TROOP_CLASS_NAME: &'static str = "troop";
 
+  /// Used to add represent the troop belongs to the player itself and
+  /// it's not some other player's troop
+  pub const ACTUAL_PLAYER_TROOPS: &'static str = "actual_player_troops";
+
   /// Defines the time the troop will wait before moving again while patrolling
   const DEFAULT_IDLE_TIMER: f32 = 0.7;
 

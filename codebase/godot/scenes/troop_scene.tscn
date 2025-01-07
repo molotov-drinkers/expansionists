@@ -276,7 +276,7 @@ texture = ExtResource("7_4t0r8")
 visible = false
 
 [node name="helicopter" type="Node3D" parent="air"]
-transform = Transform3D(0.03, 0, 0, 0, 0.03, 0, 0, 0, 0.03, 0, 0.276998, 0)
+transform = Transform3D(0.03, 0, 0, 0, 0.03, 0, 0, 0, 0.03, 0, 0.213501, 0)
 
 [node name="Helicopter" type="MeshInstance3D" parent="air/helicopter"]
 transform = Transform3D(100, 0, 0, 0, -1.19209e-05, 100, 0, -100, -1.19209e-05, 0, 0, 0)

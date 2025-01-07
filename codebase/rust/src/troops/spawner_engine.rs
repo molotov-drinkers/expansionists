@@ -13,9 +13,9 @@ use super::{mesh_map::TroopMesh, troop::Troop};
 
 
 /// Called from root.rs
-pub fn troop_spawner(root_scene: &mut RootScene,
+pub fn troop_spawner(
+  root_scene: &mut RootScene,
   virtual_planet: &VirtualPlanet,
-  troops_spawn: i32,
   territory_id: &TerritoryId,
   player: &PlayerStaticInfo
 ) {
@@ -52,9 +52,12 @@ pub fn troop_spawner(root_scene: &mut RootScene,
 
 
   // TICKET: #39 generate a troop ID base on: territory_id + player_id + timestamp
-  let troop_id = format!("troop ... {:}-{:}", troops_spawn, territory_id);
+  let troop_id = format!("troop ... {:}-{:}", &player.user_name, territory_id);
   new_troop.set_name(&troop_id.to_godot());
-  // new_troop.bind_mut().located_at = coordinate;
+  new_troop.add_to_group(&player.player_id.to_string());
+  if player.actual_player {
+    new_troop.add_to_group(Troop::ACTUAL_PLAYER_TROOPS);
+  }
 
   // For organization matter, new_troops are spawn under /root_scene/troops
   root_scene.base()

@@ -80,17 +80,18 @@ impl VirtualPlanet {
 
         let lat_long = (lat, long);
         let cartesian = Vector3::new(x, y, z);
-        let blank_territory_id: Option<TerritoryId> = None;
 
         self.coordinate_map.insert(lat_long, CoordinateMetadata {
-          territory_id: blank_territory_id.clone(),
           cartesian,
+          // territory_id is set at self.match_surface_points_and_territories()
+          territory_id: None,
         });
 
         self.surface_points_metadata.push(SurfacePointMetadata {
           cartesian,
           lat_long,
-          territory_id: blank_territory_id,
+          // territory_id is set at self.match_surface_points_and_territories()
+          territory_id: None,
         });
       }
     }

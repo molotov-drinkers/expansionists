@@ -51,6 +51,7 @@ impl RootScene {
       "Player 1".to_owned(),
       PlayerColor::Red,
       "baffin_bay".to_owned(),
+      true,
       TroopMeshes {
         land: MeshId::Tank1,
         sea: MeshId::Galleon,
@@ -63,6 +64,7 @@ impl RootScene {
       "Hawk".to_owned(),
       PlayerColor::Blue,
       "unclaimed_area".to_owned(),
+      false,
       TroopMeshes {
         land: MeshId::Truck1,
         sea: MeshId::Boat2,
@@ -75,6 +77,7 @@ impl RootScene {
       "Eagle".to_owned(),
       PlayerColor::Yellow,
       "east_savanna".to_owned(),
+      false,
       TroopMeshes {
         land: MeshId::Tonk,
         sea: MeshId::Boat6,
@@ -87,6 +90,7 @@ impl RootScene {
       "Tiger".to_owned(),
       PlayerColor::Green,
       "korean_peninsula".to_owned(),
+      false,
       TroopMeshes {
         land: MeshId::Cannon,
         sea: MeshId::Boat5,
@@ -118,7 +122,6 @@ impl RootScene {
           spawner_engine::troop_spawner(
             self,
             &virtual_planet,
-            troops_spawn,
             territory_id,
             static_info,
           );
