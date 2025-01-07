@@ -66,12 +66,9 @@ impl INinePatchRect for UiDragBox {
       // if size is negative if needed
       self.positive_x = size.x > 0.;
       self.positive_y = size.y > 0.;
-      let (x_scale, y_scale) = match (self.positive_x, self.positive_y) {
-        (true, false) => (1., -1.),
-        (false, false) => (-1., -1.),
-        (false, true) => (-1., 1.),
-        (true, true) => (1., 1.),
-      };
+
+      let x_scale = if self.positive_x { 1. } else { -1. };
+      let y_scale = if self.positive_x { 1. } else { -1. };
       self.base_mut().set_scale(Vector2::new(x_scale, y_scale));
 
       // The size of the drag box is the absolute value of the size
