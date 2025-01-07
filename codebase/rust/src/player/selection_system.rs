@@ -64,30 +64,15 @@ impl INinePatchRect for UiDragBox {
 
       // NinePatchRect doesn't take negative size, so we need to flip the scale
       // if size is negative if needed
-      let positive_x = size.x > 0.;
-      let positive_y = size.y > 0.;
-      match (positive_x, positive_y) {
-        (true, false) => {
-          self.base_mut().set_scale(Vector2::new(1., -1.));
-          self.positive_x = true;
-          self.positive_y = false;
-        },
-        (false, false) => {
-          self.base_mut().set_scale(Vector2::new(-1., -1.));
-          self.positive_x = false;
-          self.positive_y = false;
-        },
-        (false, true) => {
-          self.base_mut().set_scale(Vector2::new(-1., 1.));
-          self.positive_x = false;
-          self.positive_y = true;
-        },
-        (true, true) => {
-          self.base_mut().set_scale(Vector2::new(1., 1.));
-          self.positive_x = true;
-          self.positive_y = true;
-        },
-      }
+      self.positive_x = size.x > 0.;
+      self.positive_y = size.y > 0.;
+      let (x_scale, y_scale) = match (self.positive_x, self.positive_y) {
+        (true, false) => (1., -1.),
+        (false, false) => (-1., -1.),
+        (false, true) => (-1., 1.),
+        (true, true) => (1., 1.),
+      };
+      self.base_mut().set_scale(Vector2::new(x_scale, y_scale));
 
       // The size of the drag box is the absolute value of the size
       self.base_mut().set_size(size.abs());
