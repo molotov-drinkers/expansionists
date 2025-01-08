@@ -302,7 +302,6 @@ impl VirtualPlanet {
     territory_mesh.set_meta("current_base_color", &color.to_variant());
     Territory::set_color_to_active_material(&territory_mesh, color);
 
-    // emit signal
     self.base_mut().emit_signal(
       Self::EVENT_TERRITORY_CONQUEST,
       &[
@@ -313,7 +312,6 @@ impl VirtualPlanet {
   }
 
   pub fn set_territory_lost(&mut self, player_static_info: &PlayerStaticInfo, _territory_id: &TerritoryId) {
-    // emit signal
     self.base_mut().emit_signal(
       Self::EVENT_TERRITORY_LOST,
       &[

@@ -106,7 +106,16 @@ impl Player {
     self.static_info.player_type = player_type;
     self.static_info.troop_meshes = troop_meshes;
 
-    self.base_mut().add_to_group(&player_id.to_string());
+    let player_group_id = &self.get_player_godot_identifier(player_id);
+    self.base_mut().add_to_group(player_group_id);
+    self.base_mut().set_name(player_group_id);
+  }
+
+  /// Returns the player id used in Godot set on the nodes' name and as group
+  /// it couldn't use the PlayerId beucase it's just a i32 and
+  /// it could clash with other nodes and group names
+  pub fn get_player_godot_identifier(&mut self, player_id: PlayerId) -> String {
+    format!("player_{}", player_id)
   }
 
   pub fn get_blank_static_info() -> PlayerStaticInfo {
@@ -123,7 +132,6 @@ impl Player {
     }
   }
 
-
   fn set_virtual_planet_event_receptions(&mut self) {
     let mut virtual_planet = self.get_virtual_planet_from_player();
     let callable = self.base_mut().callable("register_territory_conquest");
@@ -139,36 +147,34 @@ impl Player {
   }
 
   #[func]
-  fn register_troop_spawning(&mut self, _player_id: PlayerId, player_type: PlayerType) {
-    if player_type == PlayerType::MainPlayer {
-      self.troops_counter += 1;
+  fn register_troop_spawning(&mut self, player_id: PlayerId, _: PlayerType) {
+    let mut player = self.get_player_by_id(player_id);
+    player.bind_mut().troops_counter += 1;
+  }
+
+  #[func]
+  fn register_troop_fatality(&mut self, player_id: PlayerId, _: PlayerType) {
+    let mut player = self.get_player_by_id(player_id);
+    player.bind_mut().troops_counter -= 1;
+
+    if player.bind_mut().troops_counter <= 0 {
+      player.bind_mut().troops_counter = 0;
     }
   }
 
   #[func]
-  fn register_troop_fatality(&mut self) {
-    self.troops_counter -= 1;
-
-    if self.troops_counter <= 0 {
-      self.troops_counter = 0;
-    }
+  fn register_territory_conquest(&mut self, player_id: PlayerId, _: PlayerType) {
+    let mut player = self.get_player_by_id(player_id);
+    player.bind_mut().territory_counter += 1;
   }
 
   #[func]
-  fn register_territory_conquest(&mut self, _player_id: PlayerId, player_type: PlayerType) {
-    if player_type == PlayerType::MainPlayer {
-      self.territory_counter += 1;
-    }
-  }
+  fn register_territory_loss(&mut self, player_id: PlayerId, _: PlayerType) {
+    let mut player = self.get_player_by_id(player_id);
+    player.bind_mut().territory_counter -= 1;
 
-  #[func]
-  fn register_territory_loss(&mut self, _player_id: PlayerId, player_type: PlayerType) {
-    if player_type == PlayerType::MainPlayer {
-      self.territory_counter -= 1;
-
-      if self.territory_counter <= 0 {
-        self.territory_counter = 0;
-      }
+    if player.bind_mut().territory_counter <= 0 {
+      player.bind_mut().territory_counter = 0;
     }
   }
 
@@ -192,5 +198,15 @@ impl Player {
       .expect("Expected to find VirtualPlanet from RootScene");
 
     virtual_planet
+  }
+
+  fn get_player_by_id(&mut self, player_id: PlayerId) -> Gd<Player> {
+    let player_node_name = &self.get_player_godot_identifier(player_id);
+    let player = self.base_mut()
+      .get_parent()
+      .expect("Expected 'player' to have a 'players' as parent")
+      .get_node_as::<Player>(player_node_name);
+
+    player
   }
 }
