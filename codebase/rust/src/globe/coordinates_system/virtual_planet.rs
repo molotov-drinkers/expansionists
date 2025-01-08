@@ -288,10 +288,10 @@ impl VirtualPlanet {
   #[signal]
   fn territory_lost(&self) {}
 
-  pub fn set_new_territory_ruler(&mut self, player: &PlayerStaticInfo, territory_id: &TerritoryId) {
+  pub fn set_new_territory_ruler(&mut self, player_static_info: &PlayerStaticInfo, territory_id: &TerritoryId) {
     let territory = self.territories.get_mut(territory_id).expect("Expected territory to exist");
-    let color = PlayerColor::get_land_color(&player.color);
-    territory.current_ruler = Some(player.clone());
+    let color = PlayerColor::get_land_color(&player_static_info.color);
+    territory.current_ruler = Some(player_static_info.clone());
 
     let mut territory_mesh = self
       .base_mut()
@@ -306,19 +306,19 @@ impl VirtualPlanet {
     self.base_mut().emit_signal(
       Self::EVENT_TERRITORY_CONQUEST,
       &[
-        // todo: send signal data
-        player.player_id.to_variant(),
+        player_static_info.player_id.to_variant(),
+        player_static_info.player_type.to_variant(),
       ]
     );
   }
 
-  pub fn set_territory_lost(&mut self, player: &PlayerStaticInfo, _territory_id: &TerritoryId) {
+  pub fn set_territory_lost(&mut self, player_static_info: &PlayerStaticInfo, _territory_id: &TerritoryId) {
     // emit signal
     self.base_mut().emit_signal(
       Self::EVENT_TERRITORY_LOST,
       &[
-        // todo: send signal data
-        player.player_id.to_variant(),
+        player_static_info.player_id.to_variant(),
+        player_static_info.player_type.to_variant(),
       ]
     );
 

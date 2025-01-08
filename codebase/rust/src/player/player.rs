@@ -129,7 +129,7 @@ impl Player {
     let callable = self.base_mut().callable("register_territory_conquest");
     virtual_planet.connect(VirtualPlanet::EVENT_TERRITORY_CONQUEST, &callable);
 
-    let callable = self.base_mut().callable("register_territory_loss");
+    let callable = self.base_mut().callable("register_troop_fatality");
     virtual_planet.connect(VirtualPlanet::EVENT_TERRITORY_LOST, &callable);
   }
 
@@ -146,7 +146,7 @@ impl Player {
   }
 
   #[func]
-  fn register_troop_casualty(&mut self) {
+  fn register_troop_fatality(&mut self) {
     self.troops_counter -= 1;
 
     if self.troops_counter <= 0 {
@@ -155,16 +155,20 @@ impl Player {
   }
 
   #[func]
-  fn register_territory_conquest(&mut self) {
-    self.territory_counter += 1;
+  fn register_territory_conquest(&mut self, _player_id: PlayerId, player_type: PlayerType) {
+    if player_type == PlayerType::MainPlayer {
+      self.territory_counter += 1;
+    }
   }
 
   #[func]
-  fn register_territory_loss(&mut self) {
-    self.territory_counter -= 1;
+  fn register_territory_loss(&mut self, _player_id: PlayerId, player_type: PlayerType) {
+    if player_type == PlayerType::MainPlayer {
+      self.territory_counter -= 1;
 
-    if self.territory_counter <= 0 {
-      self.territory_counter = 0;
+      if self.territory_counter <= 0 {
+        self.territory_counter = 0;
+      }
     }
   }
 
