@@ -63,6 +63,16 @@ pub fn troop_spawner(
     _ => (),
   }
 
+  let player_type = &player_static_info.player_type;
+  let player_id = &player_static_info.player_id;
+  new_troop.emit_signal(
+    Troop::EVENT_TROOP_SPAWNED,
+    &[
+      player_id.to_variant(),
+      player_type.to_variant(),
+    ]
+  );
+
   player.bind_mut().set_troop_spawn_event_receptions(&mut new_troop);
 
   // For organization matter, new_troops are spawn under /root_scene/troops

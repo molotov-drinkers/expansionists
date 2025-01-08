@@ -134,17 +134,6 @@ impl Player {
   }
 
   pub fn set_troop_spawn_event_receptions(&mut self, new_troop: &mut Gd<Troop>) {
-    let player_type = &self.static_info.player_type;
-    let player_id = &self.static_info.player_id;
-    new_troop.emit_signal(
-      Troop::EVENT_TROOP_SPAWNED,
-      &[
-        // todo: send signal data
-        player_id.to_variant(),
-        player_type.to_variant(),
-      ]
-    );
-
     let callable = self.base_mut().callable("register_troop_spawning");
     new_troop.connect(Troop::EVENT_TROOP_SPAWNED, &callable);
   }
