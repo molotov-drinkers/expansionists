@@ -302,11 +302,19 @@ impl VirtualPlanet {
     territory_mesh.set_meta("current_base_color", &color.to_variant());
     Territory::set_color_to_active_material(&territory_mesh, color);
 
+    // TODO: PROBLEM HERE, THE SIGNAL IS BEING EMITTED FOR ALL THE PLAYERS =( FIX IT ?
+    // MAYBE SHOULDNT BE A SIGNAL, BUT A SIMPLE FUNCTION CALL
+    // IT MAY BE OKAY TO FIRE A SIGNAL EMISSION FOR ALL THE PLAYERS, BUT THEM I HAVE A PROBLEM HAVING TWO MUTABLES PLAYERS 
+    // RUST DOES NOT ALLOW TWO MUTABLES REFERENCES AT THE SAME TIME
+    // get_player_by_id SHOULD BE HELPFUL HERE AVOIDING THIS PROBLEM
+    // THEM COULD STILL USE A SIGNAL, BUT SHOULDNT RECEIVE IT ON THE PLAYER NODE,
+    // IN THE FUTURE< FOR INSTANCE, FOR THE TIMELINE HUD, THAT COULD BE A GOOD FIT
     self.base_mut().emit_signal(
       Self::EVENT_TERRITORY_CONQUEST,
       &[
         player_static_info.player_id.to_variant(),
         player_static_info.player_type.to_variant(),
+        territory_id.to_variant(),
       ]
     );
   }

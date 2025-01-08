@@ -1,9 +1,9 @@
 use godot::classes::{INode3D, Node3D};
 use godot::prelude::*;
 
-use crate::globe::coordinates_system::virtual_planet::VirtualPlanet;
+use crate::globe::coordinates_system::virtual_planet::{self, VirtualPlanet};
 use crate::player::color::PlayerColor;
-use crate::player::player::{Player, PlayerType, TroopMeshes};
+use crate::player::player::{Player, PlayerStaticInfo, PlayerType, TroopMeshes};
 use crate::troops::mesh_map::MeshId;
 use crate::troops::spawner_engine;
 
@@ -25,21 +25,20 @@ impl INode3D for RootScene {
   }
 
   fn process(&mut self, _delta: f64) {
-    let mut virtual_planet = self.base_mut()
+    let virtual_planet = self.base()
       .find_child("virtual_planet")
       .expect("Expected to find virtual_planet")
       .cast::<VirtualPlanet>();
-    let mut virtual_planet = virtual_planet.bind_mut();
 
-    if virtual_planet.are_surface_points_matched && self.base().is_node_ready() {
-      self.startup_troops_spawn(&mut virtual_planet);
+    if virtual_planet.bind().are_surface_points_matched && self.base().is_node_ready() {
+      self.startup_troops_spawn();
     }
   }
 }
 
 impl RootScene {
 
-  pub fn hardcoded_players(&mut self) -> Vec<Gd<Player>> {
+  pub fn hardcoded_players(&mut self) -> Vec<PlayerStaticInfo> {
     let mut players_node = self
       .base_mut()
       .find_child("players")
@@ -102,19 +101,40 @@ impl RootScene {
     players_node.add_child(&cpu_3);
     players_node.add_child(&cpu_4);
 
-    [player_1, cpu_2, cpu_3, cpu_4].to_vec()
+    // self.set_virtual_planet_event_receptions();
+
+    let mut players = [player_1, cpu_2, cpu_3, cpu_4].to_vec();
+    for player in players.iter_mut() {
+      player.bind_mut().set_virtual_planet_event_receptions();
+    }
+
+    let static_player_list = players
+    .iter()
+    .map(|player| player.bind().static_info.clone())
+    .collect();
+
+    static_player_list
   }
 
-  pub fn startup_troops_spawn(&mut self, virtual_planet: &mut VirtualPlanet) {
+  pub fn startup_troops_spawn(&mut self) {
     // TODO: this hack bool should go away
     if self.hack_bool == false {
-      for mut player in self.hardcoded_players() {
-        let mut player_binding = player.clone();
-        let static_info = &player_binding.bind_mut().static_info;
-        let territory_id = &static_info.initial_territory;
+      self.hack_bool = true;
+      
+      let hardcoded_players = self.hardcoded_players();
+
+      let mut virtual_planet = self.base()
+        .find_child("virtual_planet")
+        .expect("Expected to find virtual_planet")
+        .cast::<VirtualPlanet>();
+      let mut virtual_planet = virtual_planet.bind_mut();
+
+      for player_static_info in &hardcoded_players {
+        // let player_binding = player.clone();
+        let territory_id = &player_static_info.initial_territory;
         virtual_planet.set_new_territory_ruler(
-          static_info,
-          territory_id
+          &player_static_info,
+          &territory_id
         );
 
         let mut troops_spawn = 0;
@@ -123,15 +143,14 @@ impl RootScene {
           spawner_engine::troop_spawner(
             self,
             &virtual_planet,
-            territory_id,
-            static_info,
-            &mut player
+            &territory_id,
+            &player_static_info,
+            // &mut player
           );
           troops_spawn+=1;
         }
 
       }
-      self.hack_bool = true;
     }
 
   }

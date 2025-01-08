@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet};
 
 use godot::{classes::INode3D, prelude::*};
 
-use crate::{globe::{coordinates_system::virtual_planet::VirtualPlanet, territories::territory::TerritoryId}, troops::{mesh_map::MeshId, troop::Troop}};
+use crate::{globe::{coordinates_system::virtual_planet::VirtualPlanet, territories::territory::{self, TerritoryId}}, troops::{mesh_map::MeshId, troop::Troop}};
 use super::color::PlayerColor;
 
 /// Defines
@@ -83,9 +83,9 @@ impl INode3D for Player {
     }
   }
 
-  fn ready(&mut self) {
-    self.set_virtual_planet_event_receptions();
-  }
+  // fn ready(&mut self) {
+  //   self.set_virtual_planet_event_receptions();
+  // }
 }
 
 #[godot_api]
@@ -132,13 +132,13 @@ impl Player {
     }
   }
 
-  fn set_virtual_planet_event_receptions(&mut self) {
+  pub fn set_virtual_planet_event_receptions(&mut self) {
     let mut virtual_planet = self.get_virtual_planet_from_player();
-    let callable = self.base_mut().callable("register_territory_conquest");
-    virtual_planet.connect(VirtualPlanet::EVENT_TERRITORY_CONQUEST, &callable);
+    let occupying_callable = self.base().callable("register_territory_occupation");
+    virtual_planet.connect(VirtualPlanet::EVENT_TERRITORY_CONQUEST, &occupying_callable);
 
-    let callable = self.base_mut().callable("register_troop_fatality");
-    virtual_planet.connect(VirtualPlanet::EVENT_TERRITORY_LOST, &callable);
+    let losing_callable = self.base().callable("register_territory_loss");
+    virtual_planet.connect(VirtualPlanet::EVENT_TERRITORY_LOST, &losing_callable);
   }
 
   pub fn set_troop_spawn_event_receptions(&mut self, new_troop: &mut Gd<Troop>) {
@@ -163,9 +163,18 @@ impl Player {
   }
 
   #[func]
-  fn register_territory_conquest(&mut self, player_id: PlayerId, _: PlayerType) {
-    let mut player = self.get_player_by_id(player_id);
-    player.bind_mut().territory_counter += 1;
+  fn register_territory_occupation(&mut self, player_id: PlayerId, _: PlayerType, territory_id: TerritoryId) {
+    // let mut player = self.get_player_by_id(player_id);
+    // godot_print!("Player {:?} occupied a territory", player_id);
+    // player.bind_mut().territory_counter += 1;
+    self.territory_counter += 1;
+
+    godot_print!(
+      "Player {:?} occupied a territory: {:?}. Territory counter: {:?}",
+      player_id,
+      territory_id,
+      self.territory_counter
+    );
   }
 
   #[func]
@@ -202,7 +211,7 @@ impl Player {
 
   fn get_player_by_id(&mut self, player_id: PlayerId) -> Gd<Player> {
     let player_node_name = &self.get_player_godot_identifier(player_id);
-    let player = self.base_mut()
+    let player = self.base()
       .get_parent()
       .expect("Expected 'player' to have a 'players' as parent")
       .get_node_as::<Player>(player_node_name);
