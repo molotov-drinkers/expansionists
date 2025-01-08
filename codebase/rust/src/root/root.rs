@@ -109,7 +109,8 @@ impl RootScene {
     // TODO: this hack bool should go away
     if self.hack_bool == false {
       for mut player in self.hardcoded_players() {
-        let static_info = &player.bind_mut().static_info;
+        let mut player_binding = player.clone();
+        let static_info = &player_binding.bind_mut().static_info;
         let territory_id = &static_info.initial_territory;
         virtual_planet.set_new_territory_ruler(
           static_info,
@@ -124,6 +125,7 @@ impl RootScene {
             &virtual_planet,
             territory_id,
             static_info,
+            &mut player
           );
           troops_spawn+=1;
         }

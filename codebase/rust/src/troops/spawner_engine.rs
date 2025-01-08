@@ -6,7 +6,7 @@ use crate::{
   globe::{coordinates_system::{
     surface_point::Coordinates,
     virtual_planet::VirtualPlanet,
-  }, territories::territory::TerritoryId}, player::{color::PlayerColor, player::{PlayerStaticInfo, PlayerType}}, root::root::RootScene
+  }, territories::territory::TerritoryId}, player::{color::PlayerColor, player::{Player, PlayerStaticInfo, PlayerType}}, root::root::RootScene
 };
 
 use super::{mesh_map::TroopMesh, troop::Troop};
@@ -17,7 +17,8 @@ pub fn troop_spawner(
   root_scene: &mut RootScene,
   virtual_planet: &VirtualPlanet,
   territory_id: &TerritoryId,
-  player: &PlayerStaticInfo
+  player_static_info: &PlayerStaticInfo,
+  player: &mut Gd<Player>,
 ) {
   let coordinates: Coordinates = virtual_planet.get_spawner_territory_coordinate(territory_id);
 
@@ -29,7 +30,7 @@ pub fn troop_spawner(
 
   let new_troop: Gd<PackedScene> = load("res://scenes/troop_scene.tscn");
   let mut new_troop = new_troop.instantiate_as::<Troop>();
-  new_troop.bind_mut().set_ownership(player);
+  new_troop.bind_mut().set_ownership(&player_static_info);
 
   let mut land_node = new_troop
     .find_child("land")
@@ -39,28 +40,30 @@ pub fn troop_spawner(
     .find_child("sea")
     .expect("Expected sea to exist");
 
-  let (land_troop, sea_troop) = get_colored_troop_scenes(&player);
+  let (land_troop, sea_troop) = get_colored_troop_scenes(&player_static_info);
   land_node.add_child(&land_troop);
   sea_node.add_child(&sea_troop);
 
   land_node
     .get_node_as::<Sprite3D>("selected")
-    .set_modulate(PlayerColor::get_troop_selected_color(&player.color));
+    .set_modulate(PlayerColor::get_troop_selected_color(&player_static_info.color));
   sea_node
     .get_node_as::<Sprite3D>("selected")
-    .set_modulate(PlayerColor::get_troop_selected_color(&player.color));
+    .set_modulate(PlayerColor::get_troop_selected_color(&player_static_info.color));
 
 
   // TICKET: #39 generate a troop ID base on: territory_id + player_id + timestamp
-  let troop_id = format!("troop ... {:}-{:}", &player.user_name, territory_id);
+  let troop_id = format!("troop ... {:}-{:}", &player_static_info.user_name, territory_id);
   new_troop.set_name(&troop_id.to_godot());
-  new_troop.add_to_group(&player.player_id.to_string());
+  new_troop.add_to_group(&player_static_info.player_id.to_string());
 
-  match player.player_type {
+  match player_static_info.player_type {
     PlayerType::MainPlayer => new_troop.add_to_group(Troop::MAIN_PLAYER_TROOPS),
     PlayerType::Bot => new_troop.add_to_group(Troop::BOT_TROOPS),
     _ => (),
   }
+
+  player.bind_mut().set_troop_spawn_event_receptions(&mut new_troop);
 
   // For organization matter, new_troops are spawn under /root_scene/troops
   root_scene.base()

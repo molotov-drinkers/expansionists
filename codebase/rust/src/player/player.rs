@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet};
 
 use godot::{classes::INode3D, prelude::*};
 
-use crate::{globe::territories::territory::TerritoryId, troops::mesh_map::MeshId};
+use crate::{globe::{coordinates_system::virtual_planet::VirtualPlanet, territories::territory::TerritoryId}, troops::{mesh_map::MeshId, troop::Troop}};
 use super::color::PlayerColor;
 
 /// Defines
@@ -49,7 +49,8 @@ pub struct Player {
   enemies_stats: HashMap<PlayerId, EnemyStats>,
 }
 
-#[derive(PartialEq, Debug, Clone)]
+#[derive(PartialEq, Debug, Clone, GodotConvert)]
+#[godot(via = i64)]
 pub enum PlayerType {
   MainPlayer,
   OtherPlayers,
@@ -81,8 +82,13 @@ impl INode3D for Player {
       enemies_stats: HashMap::new(),
     }
   }
+
+  fn ready(&mut self) {
+    self.set_virtual_planet_event_receptions();
+  }
 }
 
+#[godot_api]
 impl Player {
   pub fn set_player(
     &mut self,
@@ -99,6 +105,8 @@ impl Player {
     self.static_info.initial_territory = initial_territory;
     self.static_info.player_type = player_type;
     self.static_info.troop_meshes = troop_meshes;
+
+    self.base_mut().add_to_group(&player_id.to_string());
   }
 
   pub fn get_blank_static_info() -> PlayerStaticInfo {
@@ -113,5 +121,83 @@ impl Player {
         sea: MeshId::Boat1,
       }
     }
+  }
+
+
+  fn set_virtual_planet_event_receptions(&mut self) {
+    let mut virtual_planet = self.get_virtual_planet_from_player();
+    let callable = self.base_mut().callable("register_territory_conquest");
+    virtual_planet.connect(VirtualPlanet::EVENT_TERRITORY_CONQUEST, &callable);
+
+    let callable = self.base_mut().callable("register_territory_loss");
+    virtual_planet.connect(VirtualPlanet::EVENT_TERRITORY_LOST, &callable);
+  }
+
+  pub fn set_troop_spawn_event_receptions(&mut self, new_troop: &mut Gd<Troop>) {
+    let player_type = &self.static_info.player_type;
+    let player_id = &self.static_info.player_id;
+    new_troop.emit_signal(
+      Troop::EVENT_TROOP_SPAWNED,
+      &[
+        // todo: send signal data
+        player_id.to_variant(),
+        player_type.to_variant(),
+      ]
+    );
+
+    let callable = self.base_mut().callable("register_troop_spawning");
+    new_troop.connect(Troop::EVENT_TROOP_SPAWNED, &callable);
+  }
+
+  #[func]
+  fn register_troop_spawning(&mut self, _player_id: PlayerId, player_type: PlayerType) {
+    if player_type == PlayerType::MainPlayer {
+      self.troops_counter += 1;
+    }
+  }
+
+  #[func]
+  fn register_troop_casualty(&mut self) {
+    self.troops_counter -= 1;
+
+    if self.troops_counter <= 0 {
+      self.troops_counter = 0;
+    }
+  }
+
+  #[func]
+  fn register_territory_conquest(&mut self) {
+    self.territory_counter += 1;
+  }
+
+  #[func]
+  fn register_territory_loss(&mut self) {
+    self.territory_counter -= 1;
+
+    if self.territory_counter <= 0 {
+      self.territory_counter = 0;
+    }
+  }
+
+  /// expects the following hierarchy:
+  /// ```
+  /// root_scene
+  /// |-players
+  /// ||-player
+  /// ```
+  fn get_root_from_player(&mut self) -> Gd<Node> {
+    self
+      .base()
+      .get_parent().expect("Expected player to have players as parent")
+      .get_parent().expect("Expected players to have root as parent")
+  }
+
+  fn get_virtual_planet_from_player(&mut self) -> Gd<VirtualPlanet> {
+    let virtual_planet = self
+      .get_root_from_player()
+      .try_get_node_as::<VirtualPlanet>("virtual_planet")
+      .expect("Expected to find VirtualPlanet from RootScene");
+
+    virtual_planet
   }
 }

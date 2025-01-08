@@ -135,7 +135,7 @@ impl Land {
                 .unwrap_or_else(|| "".to_string());
 
               self.base_mut().emit_signal(
-                Land::LAND_RIGHT_CLICKED,
+                Self::LAND_RIGHT_CLICKED,
                 &[
                     surface_point_metadata.cartesian.to_variant(),
                     territory_id.to_variant(),

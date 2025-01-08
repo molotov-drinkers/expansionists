@@ -132,6 +132,15 @@ impl Troop {
   /// Defines the time the troop will wait before moving again while patrolling
   const DEFAULT_IDLE_TIMER: f32 = 0.7;
 
+  pub const EVENT_TROOP_SPAWNED: &'static str = "troop_spawned";
+  pub const EVENT_TROOP_DOWN: &'static str = "troop_down";
+
+  #[signal]
+  fn troop_spawned(&self) {}
+
+  #[signal]
+  fn troop_down(&self) {}
+
   pub fn set_ownership(&mut self, player: &PlayerStaticInfo) {
     self.owner = player.clone();
   }

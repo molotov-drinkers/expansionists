@@ -56,6 +56,7 @@ impl INode3D for VirtualPlanet {
   }
 }
 
+#[godot_api]
 impl VirtualPlanet {
   /// Following inline functions have pseudo-arbitrary numbers defined after checking the globe mesh size
   /// that's the reason they all seem to be magic numbers
@@ -63,7 +64,7 @@ impl VirtualPlanet {
   #[inline] pub fn get_num_of_latitudes() -> i16 { (90. * 2.5) as i16 }
   #[inline] pub fn get_num_of_longitudes() -> i16 { (180. * 2.5) as i16 }
   #[inline] pub fn get_surface_mesh_and_collider_size() -> Vector3 { Vector3::new(0.07, 0.07, 0.08) }
-
+  
   pub fn populate_surface_points_and_coordinate_map(&mut self) {
     let planet_radius = Self::get_planet_radius();
     let num_latitudes = Self::get_num_of_latitudes();
@@ -278,6 +279,15 @@ impl VirtualPlanet {
     coordinate_metadata.cartesian
   }
 
+  pub const EVENT_TERRITORY_CONQUEST: &'static str = "territory_conquest";
+  pub const EVENT_TERRITORY_LOST: &'static str = "territory_lost";
+
+  #[signal]
+  fn territory_conquest(&self) {}
+
+  #[signal]
+  fn territory_lost(&self) {}
+
   pub fn set_new_territory_ruler(&mut self, player: &PlayerStaticInfo, territory_id: &TerritoryId) {
     let territory = self.territories.get_mut(territory_id).expect("Expected territory to exist");
     let color = PlayerColor::get_land_color(&player.color);
@@ -291,6 +301,28 @@ impl VirtualPlanet {
 
     territory_mesh.set_meta("current_base_color", &color.to_variant());
     Territory::set_color_to_active_material(&territory_mesh, color);
+
+    // emit signal
+    self.base_mut().emit_signal(
+      Self::EVENT_TERRITORY_CONQUEST,
+      &[
+        // todo: send signal data
+        player.player_id.to_variant(),
+      ]
+    );
+  }
+
+  pub fn set_territory_lost(&mut self, player: &PlayerStaticInfo, _territory_id: &TerritoryId) {
+    // emit signal
+    self.base_mut().emit_signal(
+      Self::EVENT_TERRITORY_LOST,
+      &[
+        // todo: send signal data
+        player.player_id.to_variant(),
+      ]
+    );
+
+    todo!("set_territory_lost");
   }
 
 }
