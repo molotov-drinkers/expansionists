@@ -1,9 +1,9 @@
 use godot::classes::{INode3D, Node3D};
 use godot::prelude::*;
 
-use crate::globe::coordinates_system::virtual_planet::{self, VirtualPlanet};
+use crate::globe::coordinates_system::virtual_planet::VirtualPlanet;
 use crate::player::color::PlayerColor;
-use crate::player::player::{Player, PlayerStaticInfo, PlayerType, TroopMeshes};
+use crate::player::player::{Player, PlayerType, TroopMeshes};
 use crate::troops::mesh_map::MeshId;
 use crate::troops::spawner_engine;
 
@@ -38,7 +38,7 @@ impl INode3D for RootScene {
 
 impl RootScene {
 
-  pub fn hardcoded_players(&mut self) -> Vec<PlayerStaticInfo> {
+  pub fn hardcoded_players(&mut self) -> Vec<Gd<Player>> {
     let mut players_node = self
       .base_mut()
       .find_child("players")
@@ -101,19 +101,8 @@ impl RootScene {
     players_node.add_child(&cpu_3);
     players_node.add_child(&cpu_4);
 
-    // self.set_virtual_planet_event_receptions();
-
-    let mut players = [player_1, cpu_2, cpu_3, cpu_4].to_vec();
-    for player in players.iter_mut() {
-      player.bind_mut().set_virtual_planet_event_receptions();
-    }
-
-    let static_player_list = players
-    .iter()
-    .map(|player| player.bind().static_info.clone())
-    .collect();
-
-    static_player_list
+    let players = [player_1, cpu_2, cpu_3, cpu_4].to_vec();
+    players
   }
 
   pub fn startup_troops_spawn(&mut self) {
@@ -129,11 +118,15 @@ impl RootScene {
         .cast::<VirtualPlanet>();
       let mut virtual_planet = virtual_planet.bind_mut();
 
-      for player_static_info in &hardcoded_players {
-        // let player_binding = player.clone();
+      for mut player in hardcoded_players {
+        let player_static_info = {
+          let player_binding = player.bind();
+          player_binding.static_info.clone()
+        };
+
         let territory_id = &player_static_info.initial_territory;
         virtual_planet.set_new_territory_ruler(
-          &player_static_info,
+          &mut player,
           &territory_id
         );
 
@@ -144,8 +137,7 @@ impl RootScene {
             self,
             &virtual_planet,
             &territory_id,
-            &player_static_info,
-            // &mut player
+            &mut player
           );
           troops_spawn+=1;
         }

@@ -6,7 +6,7 @@ use crate::{
   globe::{coordinates_system::{
     surface_point::Coordinates,
     virtual_planet::VirtualPlanet,
-  }, territories::territory::TerritoryId}, player::{color::PlayerColor, player::{PlayerStaticInfo, PlayerType}}, root::root::RootScene
+  }, territories::territory::TerritoryId}, player::{color::PlayerColor, player::{Player, PlayerStaticInfo, PlayerType}}, root::root::RootScene
 };
 
 use super::{mesh_map::TroopMesh, troop::Troop};
@@ -17,9 +17,11 @@ pub fn troop_spawner(
   root_scene: &mut RootScene,
   virtual_planet: &VirtualPlanet,
   territory_id: &TerritoryId,
-  player_static_info: &PlayerStaticInfo,
-  // player: &mut Gd<Player>,
+  player: &mut Gd<Player>,
 ) {
+  let mut player_bind = player.bind_mut();
+  let player_static_info = player_bind.static_info.clone();
+
   let coordinates: Coordinates = virtual_planet.get_spawner_territory_coordinate(territory_id);
 
   let cartesian = virtual_planet
@@ -63,23 +65,20 @@ pub fn troop_spawner(
     _ => (),
   }
 
-  let player_type = &player_static_info.player_type;
-  let player_id = &player_static_info.player_id;
+  // Not listening to the signal anywhere yet, wil be used for UI (HUD timeline)
   new_troop.emit_signal(
     Troop::EVENT_TROOP_SPAWNED,
     &[
-      player_id.to_variant(),
-      player_type.to_variant(),
     ]
   );
-
-  // player.bind_mut().set_troop_spawn_event_receptions(&mut new_troop);
 
   // For organization matter, new_troops are spawn under /root_scene/troops
   root_scene.base()
     .find_child("troops") 
     .expect("troops to exist")
     .add_child(&new_troop);
+
+  player_bind.register_troop_spawning();
 
   new_troop.set_position(cartesian);
   new_troop.bind_mut().deployed_to_territory = territory_id.to_string();

@@ -4,7 +4,7 @@ use godot::{classes::{BoxMesh, BoxShape3D, CollisionShape3D, MeshInstance3D, Sta
 use fastrand;
 
 use crate::{
-  globe::territories::{land::Land, territory::{Territories, Territory, TerritoryId}}, player::{color::PlayerColor, player::PlayerStaticInfo}, troops::surface::Surface
+  globe::territories::{land::Land, territory::{Territories, Territory, TerritoryId}}, player::{color::PlayerColor, player::Player}, troops::surface::Surface
 };
 use super::{
   coordinates_system::{CoordinateMap, CoordinateMetadata},
@@ -279,16 +279,11 @@ impl VirtualPlanet {
     coordinate_metadata.cartesian
   }
 
-  pub const EVENT_TERRITORY_CONQUEST: &'static str = "territory_conquest";
-  pub const EVENT_TERRITORY_LOST: &'static str = "territory_lost";
+  pub fn set_new_territory_ruler(&mut self, player: &mut Gd<Player>, territory_id: &TerritoryId) {
+    let mut player_bind = player.bind_mut();
+    player_bind.register_territory_occupation(territory_id.clone());
+    let player_static_info = &player_bind.static_info;
 
-  #[signal]
-  fn territory_conquest(&self) {}
-
-  #[signal]
-  fn territory_lost(&self) {}
-
-  pub fn set_new_territory_ruler(&mut self, player_static_info: &PlayerStaticInfo, territory_id: &TerritoryId) {
     let territory = self.territories.get_mut(territory_id).expect("Expected territory to exist");
     let color = PlayerColor::get_land_color(&player_static_info.color);
     territory.current_ruler = Some(player_static_info.clone());
@@ -301,36 +296,6 @@ impl VirtualPlanet {
 
     territory_mesh.set_meta("current_base_color", &color.to_variant());
     Territory::set_color_to_active_material(&territory_mesh, color);
-
-    // TODO: PROBLEM HERE, THE SIGNAL IS BEING EMITTED FOR ALL THE PLAYERS =( FIX IT ?
-    // MAYBE SHOULDNT BE A SIGNAL, BUT A SIMPLE FUNCTION CALL
-    // IT MAY BE OKAY TO FIRE A SIGNAL EMISSION FOR ALL THE PLAYERS, BUT THEM I HAVE A PROBLEM HAVING TWO MUTABLES PLAYERS 
-    // RUST DOES NOT ALLOW TWO MUTABLES REFERENCES AT THE SAME TIME
-    // get_player_by_id SHOULD BE HELPFUL HERE AVOIDING THIS PROBLEM
-    // THEM COULD STILL USE A SIGNAL, BUT SHOULDNT RECEIVE IT ON THE PLAYER NODE,
-    // IN THE FUTURE< FOR INSTANCE, FOR THE TIMELINE HUD, THAT COULD BE A GOOD FIT
-    // ANOTHER WAY TO SOLVE IT W SIGNALS IS TO CATCH THIS SIGNAL ON THE PLAYERS NODE, PARENT OF PLAYER
-    // FROM THE SEMANTICS POV, MAY BE EVEN BETTER
-    self.base_mut().emit_signal(
-      Self::EVENT_TERRITORY_CONQUEST,
-      &[
-        player_static_info.player_id.to_variant(),
-        player_static_info.player_type.to_variant(),
-        territory_id.to_variant(),
-      ]
-    );
-  }
-
-  pub fn set_territory_lost(&mut self, player_static_info: &PlayerStaticInfo, _territory_id: &TerritoryId) {
-    self.base_mut().emit_signal(
-      Self::EVENT_TERRITORY_LOST,
-      &[
-        player_static_info.player_id.to_variant(),
-        player_static_info.player_type.to_variant(),
-      ]
-    );
-
-    todo!("set_territory_lost");
   }
 
 }
