@@ -118,6 +118,9 @@ pub enum ColorChange {
 }
 
 impl Territory {
+
+  /// It's a factor helping controlling the speed of the troops spawning
+  /// the lower the value, the faster the troops spawn
   const BASE_SECONDS_FOR_A_TROOP_TO_SPAWN: f64 = 2.;
 
   pub fn get_base_territory(territory_id: &str, continent: Continent, sub_continent: Option<SubContinent>) -> Territory {
