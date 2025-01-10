@@ -21,6 +21,7 @@ pub struct VirtualPlanet {
   pub is_ready_for_physics: bool,
   /// turns true when all surface points are matched with territories
   pub are_surface_points_matched: bool,
+  pub has_surface_points_matching_started: bool,
   pub territories: Territories,
   pub surface_points_metadata: Vec<SurfacePointMetadata>,
   pub coordinate_map: CoordinateMap,
@@ -34,6 +35,7 @@ impl INode3D for VirtualPlanet {
       base: base,
       is_ready_for_physics: false,
       are_surface_points_matched: false,
+      has_surface_points_matching_started: false,
       territories: Territory::get_map(),
       surface_points_metadata: vec![],
       coordinate_map: HashMap::new(),
@@ -49,9 +51,10 @@ impl INode3D for VirtualPlanet {
     self.is_ready_for_physics = true;
   }
 
-  fn physics_process(&mut self, _delta: f64) {
+  fn process(&mut self, delta: f64) {
     if self.is_ready_for_physics == true {
       self.match_surface_points_and_territories();
+      self.spawner_troop_engine_checker(delta);
     }
   }
 }
@@ -159,56 +162,60 @@ impl VirtualPlanet {
   /// Matches surface points with territories and
   /// sets the territory_id into SurfacePointMetadata, CoordinateMetadata, and Territory.coordinates
   pub fn match_surface_points_and_territories(&mut self) {
-    for surface_point_node in self.base().get_children().iter_shared() {
-      let mut surface_point = surface_point_node.cast::<SurfacePoint>();
-      let bodies_overlapping_with_surface_point = &surface_point.get_overlapping_bodies();
-      // HACK: to avoid multiple calls to physics_process =(
-      if bodies_overlapping_with_surface_point.len() > 0 {
-        self.is_ready_for_physics = false;
+    if self.has_surface_points_matching_started == false {
+      for surface_point_node in self.base().get_children().iter_shared() {
+        let mut surface_point = surface_point_node.cast::<SurfacePoint>();
+        let bodies_overlapping_with_surface_point = &surface_point.get_overlapping_bodies();
+        
+        // HACK: to avoid multiple calls to physics_process =(
+        if bodies_overlapping_with_surface_point.len() > 0 {
 
-        for body_overlapping_with_surface_point in bodies_overlapping_with_surface_point.iter_shared() {
-          if let Ok(collided_land) = body_overlapping_with_surface_point.try_cast::<Land>() {
+          self.has_surface_points_matching_started = true;
 
-            let territory_id = collided_land
-              .get_parent()
-              .expect("Expected 'Land' to have a parent")
-              .get_name()
-              .to_string();
+          for body_overlapping_with_surface_point in bodies_overlapping_with_surface_point.iter_shared() {
+            if let Ok(collided_land) = body_overlapping_with_surface_point.try_cast::<Land>() {
 
-            let possible_territory_colission = self.territories.get_mut(&territory_id);
-            if possible_territory_colission.is_some() {
-              let overlapped_territory = possible_territory_colission.unwrap();
-              // Self::paint_surface_point(&surface_point, overlapped_territory);
+              let territory_id = collided_land
+                .get_parent()
+                .expect("Expected 'Land' to have a parent")
+                .get_name()
+                .to_string();
 
-              surface_point.add_to_group(&territory_id);
-              surface_point.add_to_group(&Surface::Land.to_string());
-              let mut surface_point_bind = surface_point.bind_mut();
-              let surface_point_metadata = surface_point_bind.get_surface_point_metadata_mut();
+              let possible_territory_colission = self.territories.get_mut(&territory_id);
+              if possible_territory_colission.is_some() {
+                let overlapped_territory = possible_territory_colission.unwrap();
+                // Self::paint_surface_point(&surface_point, overlapped_territory);
 
-              overlapped_territory.coordinates.push(surface_point_metadata.lat_long);
+                surface_point.add_to_group(&territory_id);
+                surface_point.add_to_group(&Surface::Land.to_string());
+                let mut surface_point_bind = surface_point.bind_mut();
+                let surface_point_metadata = surface_point_bind.get_surface_point_metadata_mut();
 
-              self.coordinate_map.insert(
-                surface_point_metadata.lat_long,
-                CoordinateMetadata {
-                  territory_id: Some(territory_id.clone()),
-                  cartesian: surface_point_metadata.cartesian,
-                }
-              );
+                overlapped_territory.coordinates.push(surface_point_metadata.lat_long);
 
-              surface_point_metadata.territory_id = Some(territory_id);
+                self.coordinate_map.insert(
+                  surface_point_metadata.lat_long,
+                  CoordinateMetadata {
+                    territory_id: Some(territory_id.clone()),
+                    cartesian: surface_point_metadata.cartesian,
+                  }
+                );
+
+                surface_point_metadata.territory_id = Some(territory_id);
+              }
             }
           }
+
+          self.territories.iter_mut().for_each(|(_, territory)| {
+            territory.set_territory_size();
+            territory.set_troops_growth_velocity_and_secs_to_spawn();
+            territory.set_organic_max_troops();
+          });
+
         }
-
-        self.territories.iter_mut().for_each(|(_, territory)| {
-          territory.set_territory_size();
-          territory.set_troops_growth_velocity();
-          territory.set_organic_max_troops();
-        });
-
       }
+      self.are_surface_points_matched = true;
     }
-    self.are_surface_points_matched = true;
   }
 
   #[allow(dead_code)]
@@ -296,6 +303,37 @@ impl VirtualPlanet {
 
     territory_mesh.set_meta("current_base_color", &color.to_variant());
     Territory::set_color_to_active_material(&territory_mesh, color);
+  }
+
+  fn spawner_troop_engine_checker(&mut self, delta: f64) {
+    for (territory_id, territory) in self.get_territories_with_ruler() {
+      territory.seconds_elasped_since_last_troop += delta;
+
+      if territory.next_troop_progress >= 100. {
+        godot_print!("Spawning troop at territory: {:?}. seconds_elasped_since_last_troop: {:.2}",
+          territory_id,
+          territory.seconds_elasped_since_last_troop
+        );
+
+        territory.next_troop_progress = 0.;
+        territory.seconds_elasped_since_last_troop = 0.;
+
+        // TODO: Call spawn, just one caveat:
+        // TODO: Before this should also check territory.current_troops.len() < territory.organic_max_troops
+        // TODO: (Needs to populate current_troops properly though)
+      } else {
+        // Should represent how many seconds should take for a troop to be spawned at the territory
+        territory.next_troop_progress = 100. * territory.seconds_elasped_since_last_troop / territory.seconds_to_spawn_troop;
+      }
+    }
+  }
+
+  fn get_territories_with_ruler(&mut self) -> Vec<(&TerritoryId, &mut Territory)> {
+    self
+      .territories
+      .iter_mut()
+      .filter(|(_, territory)| territory.current_ruler.is_some())
+      .collect()
   }
 
 }

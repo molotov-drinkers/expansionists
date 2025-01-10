@@ -101,7 +101,12 @@ impl RootScene {
     players_node.add_child(&cpu_3);
     players_node.add_child(&cpu_4);
 
-    let players = [player_1, cpu_2, cpu_3, cpu_4].to_vec();
+    let players = [
+      player_1,
+      cpu_2,
+      cpu_3,
+      cpu_4,
+    ].to_vec();
     players
   }
 

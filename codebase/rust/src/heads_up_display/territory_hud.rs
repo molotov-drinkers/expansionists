@@ -49,7 +49,7 @@ impl TerritoryHUD {
     );
 
     let formatted_size = territory.size.to_string().to_uppercase();
-    let formatted_growth = &territory.troops_growth_velocity;
+    let formatted_secs_to_troop = &territory.seconds_to_spawn_troop;
     let max_troops = &territory.organic_max_troops;
 
     let formatted_continent = territory.location.continent.to_string().to_uppercase().replace("_", " ");
@@ -63,7 +63,7 @@ impl TerritoryHUD {
     name.set_text(&territory.territory_id.clone().to_uppercase().replace("_", " "));
     name.bind_mut().set_font_size(32);
 
-    size_info.set_text(&format!("{formatted_size} [{formatted_growth:.2} -> {max_troops}]"));
+    size_info.set_text(&format!("{formatted_size} [{formatted_secs_to_troop:.1} SECS -> {max_troops}]"));
     continent.set_text(&format!("{formatted_continent}{formatted_sub_continent}"));
   }
 

@@ -11,7 +11,6 @@ use crate::{
 
 use super::{mesh_map::TroopMesh, troop::Troop};
 
-
 /// Called from root.rs
 pub fn troop_spawner(
   root_scene: &mut RootScene,

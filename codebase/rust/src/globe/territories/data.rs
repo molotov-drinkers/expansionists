@@ -1,4 +1,4 @@
-use super::territory::{Continent, Location, SubContinent, Size, Territories, Territory};
+use super::territory::{Continent, SubContinent, Territories, Territory};
 
 impl Territory {
   /// returns a map of territories
@@ -23,22 +23,6 @@ impl Territory {
     territories.extend(Territory::list_south_america());
     territories.extend(Territory::list_special());
     territories
-  }
-
-  fn get_base_territory(territory_id: &str, continent: Continent, sub_continent: Option<SubContinent>) -> Territory {
-    Territory {
-      territory_id: territory_id.to_string(),
-      location: Location { continent, sub_continent },
-
-      // Fields below are filled on the fly
-      coordinates: Vec::new(),
-      size: Size::None,
-      organic_max_troops: 0,
-      troops_growth_velocity: 0.1,
-
-      current_ruler: None,
-      current_troops: Vec::new(),
-    }
   }
 
   fn list_africa() -> [Territory; 13] {

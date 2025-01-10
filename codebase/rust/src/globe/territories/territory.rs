@@ -98,12 +98,16 @@ pub struct Territory {
   pub size: Size,
 
   pub organic_max_troops: i32,
-  pub troops_growth_velocity: f32,
+  troops_growth_velocity: f32,
+  pub seconds_to_spawn_troop: f64,
 
   /// (TODO:) uses all the surface points of the territory to calculate which troops are inside it
   pub current_troops: Vec<Troop>,
 
   pub current_ruler: Option<PlayerStaticInfo>,
+
+  pub next_troop_progress: f64,
+  pub seconds_elasped_since_last_troop: f64,
 }
 
 pub enum ColorChange {
@@ -114,6 +118,28 @@ pub enum ColorChange {
 }
 
 impl Territory {
+  const BASE_SECONDS_FOR_A_TROOP_TO_SPAWN: f64 = 2.;
+
+  pub fn get_base_territory(territory_id: &str, continent: Continent, sub_continent: Option<SubContinent>) -> Territory {
+    Territory {
+      territory_id: territory_id.to_string(),
+      location: Location { continent, sub_continent },
+
+      // Fields below are filled on the fly
+      coordinates: Vec::new(),
+      size: Size::None,
+      organic_max_troops: 0,
+      troops_growth_velocity: 0.1,
+      seconds_to_spawn_troop: 10.,
+
+      current_troops: Vec::new(),
+      current_ruler: None,
+
+      next_troop_progress: 0.,
+      seconds_elasped_since_last_troop: 0.,
+    }
+  }
+
   fn continent_to_color(continent: &Continent) -> Color {
     match continent {
       Continent::Africa => /* Color::LIGHT_SLATE_GRAY */  Color::ROSY_BROWN.lightened(0.7),
@@ -191,12 +217,14 @@ impl Territory {
   }
   
   /// Should be called when the coordinates of the territory are set
-  pub fn set_troops_growth_velocity(&mut self) {
+  pub fn set_troops_growth_velocity_and_secs_to_spawn(&mut self) {
     let base_factor: f32 = 0.001;
     let num_of_coordinates = self.coordinates.len();
 
     self.troops_growth_velocity = (base_factor * num_of_coordinates as f32)
       .clamp(0.01, 3.);
+
+    self.seconds_to_spawn_troop = Self::BASE_SECONDS_FOR_A_TROOP_TO_SPAWN / self.troops_growth_velocity as f64;
   }
 
   /// Should be called when the coordinates of the territory are set
