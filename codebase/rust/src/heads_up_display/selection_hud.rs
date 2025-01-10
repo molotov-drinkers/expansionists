@@ -29,7 +29,10 @@ impl SelectionHUD {
   }
 
   pub fn set_text_with_num_of_troops(&mut self, num_of_troops: usize) {
-    let mut text_label = self.base_mut().get_node_as::<TextLabels>("MarginContainer/PanelContainer/MarginContainer/HBoxContainer/TextLabels");
+    let path: &str = "MarginContainer/PanelContainer/MarginContainer/HBoxContainer/TextLabels";
+    let mut text_label = self
+      .base_mut()
+      .get_node_as::<TextLabels>(path);
     text_label.set_text(
       &format!(" {num_of_troops}x Troops Selected")
     );
