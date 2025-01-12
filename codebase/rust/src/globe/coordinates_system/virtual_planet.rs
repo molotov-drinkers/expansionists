@@ -306,21 +306,17 @@ impl VirtualPlanet {
   }
 
   fn spawner_troop_engine_checker(&mut self, delta: f64) {
-    for (territory_id, territory) in self.get_territories_with_ruler() {
+    for (_territory_id, territory) in self.get_territories_with_ruler() {
       territory.seconds_elasped_since_last_troop += delta;
 
       if territory.next_troop_progress >= 100. {
-        godot_print!("Spawning troop at territory: {:?}. seconds_elasped_since_last_troop: {:.2}",
-          territory_id,
-          territory.seconds_elasped_since_last_troop
-        );
 
         territory.next_troop_progress = 0.;
         territory.seconds_elasped_since_last_troop = 0.;
 
         // TODO: Call spawn, just one caveat:
-        // TODO: Before this should also check territory.current_troops.len() < territory.organic_max_troops
-        // TODO: (Needs to populate current_troops properly though)
+        // TODO: Before this should also check territory.all_troops_in.len() < territory.organic_max_troops
+        // TODO: (Needs to populate all_troops_in properly though)
       } else {
         // Should represent how many seconds should take for a troop to be spawned at the territory
         territory.next_troop_progress = 100. * territory.seconds_elasped_since_last_troop / territory.seconds_to_spawn_troop;
@@ -334,6 +330,14 @@ impl VirtualPlanet {
       .iter_mut()
       .filter(|(_, territory)| territory.current_ruler.is_some())
       .collect()
+  }
+
+  pub fn get_mut_territory_from_virtual_planet(&mut self, territory_id: &TerritoryId) -> &mut Territory {
+    self.territories
+      .get_mut(territory_id)
+      .expect(
+        &format!("Expected territory {territory_id} to exist: {:?}", territory_id)
+      )
   }
 
 }

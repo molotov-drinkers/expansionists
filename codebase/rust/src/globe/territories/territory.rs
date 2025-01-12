@@ -1,9 +1,10 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fmt;
 
 use godot::{builtin::Color, classes::{MeshInstance3D, StandardMaterial3D}, prelude::*};
 
-use crate::{globe::coordinates_system::surface_point::Coordinates, player::player::PlayerStaticInfo, troops::troop::Troop};
+use crate::player::player::PlayerId;
+use crate::{globe::coordinates_system::surface_point::Coordinates, player::player::PlayerStaticInfo};
 
 pub enum Continent {
   Africa,
@@ -88,6 +89,9 @@ impl fmt::Display for Size {
 pub type TerritoryId = String;
 pub type Territories = HashMap<TerritoryId, Territory>;
 
+/// TroopId is a string name, is the base().get_name().to_string() of a troop
+pub type TroopId = String;
+
 /// Not a Godot class, look at `land.rs`, `surface_point.rs` and
 /// `virtual_planet.rs` for the Godot classes related to territories
 pub struct Territory {
@@ -102,7 +106,8 @@ pub struct Territory {
   pub seconds_to_spawn_troop: f64,
 
   /// (TODO:) uses all the surface points of the territory to calculate which troops are inside it
-  pub current_troops: Vec<Troop>,
+  pub all_troops_in: HashSet<TroopId>,
+  pub all_troops_in_by_player: HashMap<PlayerId, HashSet<TroopId>>,
 
   pub current_ruler: Option<PlayerStaticInfo>,
 
@@ -135,7 +140,8 @@ impl Territory {
       troops_growth_velocity: 0.1,
       seconds_to_spawn_troop: 10.,
 
-      current_troops: Vec::new(),
+      all_troops_in: HashSet::new(),
+      all_troops_in_by_player: HashMap::new(),
       current_ruler: None,
 
       next_troop_progress: 0.,
@@ -237,5 +243,29 @@ impl Territory {
 
     self.organic_max_troops = ((base_factor * num_of_coordinates as f32) as i32)
       .clamp(1, 40);
+  }
+
+  pub fn add_territory_deployment(&mut self, troop_id: &TroopId, player_id: PlayerId) {
+    self.all_troops_in.insert(troop_id.clone());
+
+    self.all_troops_in_by_player
+      .entry(player_id)
+      .or_insert(HashSet::new())
+      .insert(troop_id.to_string());
+  }
+
+  pub fn inform_territory_departure(&mut self, troop_id: &TroopId, player_id: PlayerId) {
+    match self.all_troops_in.remove(troop_id) {
+      true => (),
+      false => godot_error!("At Territory::inform_territory_departure(), Troop {:?} not found in territory {:?}",
+        troop_id,
+        self.territory_id
+      ),
+    }
+
+    self.all_troops_in_by_player
+      .get_mut(&player_id)
+      .expect(&format!("Expected player {player_id} to have troops in territory {}", self.territory_id))
+      .remove(troop_id);
   }
 }

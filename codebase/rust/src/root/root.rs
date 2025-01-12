@@ -140,7 +140,7 @@ impl RootScene {
         while troops_spawn < max_troops {
           spawner_engine::troop_spawner(
             self,
-            &virtual_planet,
+            &mut virtual_planet,
             &territory_id,
             &mut player
           );

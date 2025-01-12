@@ -14,7 +14,7 @@ use super::{mesh_map::TroopMesh, troop::Troop};
 /// Called from root.rs
 pub fn troop_spawner(
   root_scene: &mut RootScene,
-  virtual_planet: &VirtualPlanet,
+  virtual_planet: &mut VirtualPlanet,
   territory_id: &TerritoryId,
   player: &mut Gd<Player>,
 ) {
@@ -54,8 +54,6 @@ pub fn troop_spawner(
 
 
   // TICKET: #39 generate a troop ID base on: territory_id + player_id + timestamp
-  let troop_id = format!("troop ... {:}-{:}", &player_static_info.user_name, territory_id);
-  new_troop.set_name(&troop_id.to_godot());
   new_troop.add_to_group(&player_static_info.player_id.to_string());
 
   match player_static_info.player_type {
@@ -81,6 +79,12 @@ pub fn troop_spawner(
 
   new_troop.set_position(cartesian);
   new_troop.bind_mut().deployed_to_territory = territory_id.to_string();
+
+  let territory = virtual_planet.get_mut_territory_from_virtual_planet(territory_id);
+  territory.add_territory_deployment(
+    &new_troop.get_name().to_string(),
+    player_static_info.player_id
+  );
 
 }
 

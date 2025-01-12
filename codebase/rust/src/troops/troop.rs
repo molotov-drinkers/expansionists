@@ -7,7 +7,7 @@ use crate::{globe::{coordinates_system::{
     coordinates_system::CoordinatesSystem,
     surface_point::{Coordinates, SurfacePoint, SurfacePointMetadata},
     virtual_planet::VirtualPlanet,
-  }, territories::territory::TerritoryId}, player::player::{Player, PlayerStaticInfo}};
+  }, territories::territory::{Territory, TerritoryId}}, player::player::{Player, PlayerStaticInfo}};
 
 use super::{
   combat_engine::CombatStats, speed::SpeedType, surface::Surface
@@ -282,10 +282,37 @@ impl Troop {
       VirtualPlanet::get_planet_radius() as f32
     );
 
+    let mut virtual_planet = self.get_virtual_planet_from_troop_scope();
+    let mut virtual_planet = &mut virtual_planet.bind_mut();
+
+    let origin_territory = self.get_territory(
+      self.deployed_to_territory.clone(), &mut virtual_planet
+    );
+
+    origin_territory.inform_territory_departure(
+      &self.base().get_name().to_string(),
+      self.owner.player_id.clone()
+    );
+
     self.moving_trajectory_points = geodesic_trajectory;
     self.moving_trajectory_is_set = true;
     self.adopted_speed = SpeedType::FightOrFlight;
     self.deployed_to_territory = territory_id.clone();
+
+    let destination_territory = self.get_territory(
+      self.deployed_to_territory.clone(), &mut virtual_planet
+    );
+    destination_territory.add_territory_deployment(
+      &self.base().get_name().to_string(),
+      self.owner.player_id.clone()
+    );
+  }
+
+  fn get_territory<'a>(&mut self, territory_id: TerritoryId, virtual_planet: &'a mut GdMut<'_, VirtualPlanet>) -> &'a mut Territory {
+    let territory = virtual_planet
+      .get_mut_territory_from_virtual_planet(&territory_id);
+
+    territory
   }
 
   fn maybe_move_along_the_trajectory_and_set_orientation(&mut self) {

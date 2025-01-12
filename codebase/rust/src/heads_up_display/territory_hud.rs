@@ -93,8 +93,9 @@ impl TerritoryHUD {
       ruler_banner.set_color(ruler_color);
       ruler_label.set_text(&ruler.user_name);
 
+      let num_of_troops = territory.all_troops_in.len();
       occupied.get_node_as::<TextLabels>("VBoxContainer/troops/TextLabels")
-        .set_text("0x");
+        .set_text(&format!("{:?}x", num_of_troops));
 
       return
     }
