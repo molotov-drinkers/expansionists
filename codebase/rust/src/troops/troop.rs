@@ -506,20 +506,23 @@ impl Troop {
           .current_ruler
           .as_ref();
 
-        if territory.territory_states.contains(&TerritoryState::NoRuler) &&
-          !territory.territory_states.contains(&TerritoryState::InWar) {
+        if territory.territory_states.contains(&TerritoryState::NoRuler) && !territory.has_troops_from_different_players {
           godot_print!("Troop would start occupation! ::: {}", territory_id);
+
         } else if territory_current_ruler.is_some_and(|ruler_static_info| ruler_static_info.player_id == self.owner.player_id) {
           godot_print!("Troop would start patrolling or defending its land! ::: {}", territory_id);
           // Entering own territory, could start patrolling or start defending it from invaders
-        } else if territory_current_ruler.is_some_and(|ruler_static_info| ruler_static_info.player_id != self.owner.player_id)
-          {
+
+        } else if territory_current_ruler.is_some_and(|ruler_static_info| ruler_static_info.player_id != self.owner.player_id) {
           godot_print!("Troop would start a combat or keep combating! ::: {}", territory_id);
           // Entering enemy territory, could start combat or keep combatting until the territory is conquered
-        } else if territory.territory_states.contains(&TerritoryState::StartingOccupation) && /*TODO: And started being occupied by someone else */false {
-          // Entenring a territory that started being occupied by someone else, should start combat and hold down the territory occupation
+
+        } else if territory.territory_states.contains(&TerritoryState::NoRuler) && territory.has_troops_from_different_players {
+          // Entering a territory that started being occupied by someone else, should start combat and hold down the territory occupation
           // until the conflict is finished
           godot_print!("Troop would start a combat or keep combating. Also would pause enemy occupation! ::: {}", territory_id);
+        } else {
+          godot_error!("Troop has no idea what to do after the deployment! ::: {}", territory_id);
         }
       };
 

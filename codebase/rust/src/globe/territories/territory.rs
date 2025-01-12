@@ -97,14 +97,13 @@ pub enum TerritoryState {
   /// Blank state, no player has control over the territory
   NoRuler,
 
-  /// Starting occupation of rulerless territory
-  StartingOccupation,
+  StartingOccupationOfTerritoryWithNoRuler,
   
   /// Under conflict, it doesn't matter if current_ruler is_some or not
   InWar,
 
-  /// Occupied by a player, check current_ruler to know who
-  PeacefullyOccupied,
+  /// Ruled by a player, check current_ruler to know who
+  RuledBySomeone,
 }
 
 /// Not a Godot class, look at `land.rs`, `surface_point.rs` and
@@ -124,6 +123,7 @@ pub struct Territory {
   /// (TODO:) uses all the surface points of the territory to calculate which troops are inside it
   pub all_troops_in: HashSet<TroopId>,
   pub all_troops_in_by_player: HashMap<PlayerId, HashSet<TroopId>>,
+  pub has_troops_from_different_players: bool,
 
   pub current_ruler: Option<PlayerStaticInfo>,
   pub territory_states: HashSet<TerritoryState>,
@@ -160,6 +160,8 @@ impl Territory {
 
       all_troops_in: HashSet::new(),
       all_troops_in_by_player: HashMap::new(),
+      has_troops_from_different_players: false,
+
       current_ruler: None,
       territory_states: HashSet::from([
         TerritoryState::NoRuler,
@@ -273,6 +275,8 @@ impl Territory {
       .entry(player_id)
       .or_insert(HashSet::new())
       .insert(troop_id.to_string());
+
+    self.set_troops_from_different_players_flag();
   }
 
   pub fn inform_territory_departure(&mut self, troop_id: &TroopId, player_id: PlayerId) {
@@ -288,5 +292,17 @@ impl Territory {
       .get_mut(&player_id)
       .expect(&format!("Expected player {player_id} to have troops in territory {}", self.territory_id))
       .remove(troop_id);
+
+    self.set_troops_from_different_players_flag();
+  }
+
+  pub fn set_troops_from_different_players_flag(&mut self) {
+    let mut troops_by_player_counter = 0;
+    self.all_troops_in_by_player.iter().for_each(|(_, troops)| {
+      if troops.len() > 1 { troops_by_player_counter += 1 }
+    });
+
+    if troops_by_player_counter > 1 { self.has_troops_from_different_players = true; }
+    else { self.has_troops_from_different_players = false; }
   }
 }

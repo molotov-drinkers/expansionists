@@ -328,7 +328,7 @@ impl VirtualPlanet {
 
     territory.current_ruler = Some(player_static_info.clone());
     territory.territory_states.remove(&TerritoryState::NoRuler);
-    territory.territory_states.insert(TerritoryState::PeacefullyOccupied);
+    territory.territory_states.insert(TerritoryState::RuledBySomeone);
 
     let mut territory_mesh = self
       .base_mut()
