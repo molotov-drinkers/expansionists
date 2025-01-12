@@ -7,7 +7,7 @@ use crate::{globe::{coordinates_system::{
     coordinates_system::CoordinatesSystem,
     surface_point::{Coordinates, SurfacePoint, SurfacePointMetadata},
     virtual_planet::VirtualPlanet,
-  }, territories::territory::{Territory, TerritoryId}}, player::player::{Player, PlayerStaticInfo}};
+  }, territories::territory::{Territory, TerritoryId, TerritoryState}}, player::player::{Player, PlayerStaticInfo}};
 
 use super::{
   combat_engine::CombatStats, speed::SpeedType, surface::Surface
@@ -116,6 +116,7 @@ impl ICharacterBody3D for Troop {
     self.maybe_populate_trajectory_points();
     self.maybe_move_along_the_trajectory_and_set_orientation();
     self.decrease_idle_timer(delta);
+    self.get_deployment_next_action();
   }
 }
 
@@ -241,9 +242,9 @@ impl Troop {
     true
   }
 
-  fn _is_on_ally_land(&self) -> bool {
-    // TICKET: #12
-    false
+  #[allow(dead_code)]
+  fn is_on_ally_land(&self) -> bool {
+    todo!("Allyship won't be implemented in the first version");
   }
 
   fn maybe_populate_trajectory_points(&mut self) {
@@ -472,5 +473,51 @@ impl Troop {
 
     land_selected_sprite.set_visible(visible);
     sea_selected_sprite.set_visible(visible);
+  }
+
+  /// Can trigger Combat or Colonization/Occupation/War
+  fn get_deployment_next_action(&mut self) {
+    if self.troop_activities.contains(&TroopState::Deploying) {
+
+      // Some if troop hit a land
+      let Some(ref territory_id) = self.touching_surface_point.territory_id else {
+        return;
+      };
+
+      // troop arrived to the territory that has been deployed to
+      if territory_id == &self.deployed_to_territory {
+
+        let virtual_planet = self.get_virtual_planet_from_troop_scope();
+        let virtual_planet = virtual_planet.bind();
+        let territory = virtual_planet.territories
+          .get(territory_id)
+          .expect(&format!("Expected to find territory {territory_id}, at get_deployment_next_action"));
+
+        let territory_current_ruler = territory
+          .current_ruler
+          .as_ref();
+
+        if territory.territory_states.contains(&TerritoryState::NoRuler) &&
+          !territory.territory_states.contains(&TerritoryState::InWar) {
+          godot_print!("Troop would start occupation! ::: {}", territory_id);
+          return;
+        } else if territory_current_ruler.is_some_and(|ruler_static_info| ruler_static_info.player_id == self.owner.player_id) {
+          godot_print!("Troop would start patrolling or defending its land! ::: {}", territory_id);
+          // Entering own territory, could start patrolling or start defending it from invaders
+          return;
+        } else if territory_current_ruler.is_some_and(|ruler_static_info| ruler_static_info.player_id != self.owner.player_id)
+          {
+          godot_print!("Troop would start a combat or keep combating! ::: {}", territory_id);
+          // Entering enemy territory, could start combat or keep combatting until the territory is conquered
+          return;
+        } else if territory.territory_states.contains(&TerritoryState::StartingOccupation) && /*TODO: And started being occupied by someone else */false {
+          // Entenring a territory that started being occupied by someone else, should start combat and hold down the territory occupation
+          // until the conflict is finished
+          godot_print!("Troop would start a combat or keep combating. Also would pause enemy occupation! ::: {}", territory_id);
+          return;
+        }
+      };
+
+    }
   }
 }

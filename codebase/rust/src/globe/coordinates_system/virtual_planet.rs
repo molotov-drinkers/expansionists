@@ -4,7 +4,18 @@ use godot::{classes::{BoxMesh, BoxShape3D, CollisionShape3D, MeshInstance3D, Sta
 use fastrand;
 
 use crate::{
-  globe::territories::{land::Land, territory::{Territories, Territory, TerritoryId}}, player::{color::PlayerColor, player::Player}, root::root::RootScene, troops::{spawner_engine::troop_spawner, surface::Surface}
+  globe::territories::{
+    land::Land, territory::{
+      Territories, Territory, TerritoryId, TerritoryState
+    }
+  },
+  player::{
+    color::PlayerColor, player::Player
+  },
+  root::root::RootScene,
+  troops::{
+    spawner_engine::troop_spawner, surface::Surface
+  }
 };
 use super::{
   coordinates_system::{CoordinateMap, CoordinateMetadata},
@@ -314,7 +325,10 @@ impl VirtualPlanet {
 
     let territory = self.territories.get_mut(territory_id).expect("Expected territory to exist");
     let color = PlayerColor::get_land_color(&player_static_info.color);
+
     territory.current_ruler = Some(player_static_info.clone());
+    territory.territory_states.remove(&TerritoryState::NoRuler);
+    territory.territory_states.insert(TerritoryState::PeacefullyOccupied);
 
     let mut territory_mesh = self
       .base_mut()

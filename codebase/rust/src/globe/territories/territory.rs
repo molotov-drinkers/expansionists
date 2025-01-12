@@ -92,6 +92,21 @@ pub type Territories = HashMap<TerritoryId, Territory>;
 /// TroopId is a string name, is the base().get_name().to_string() of a troop
 pub type TroopId = String;
 
+#[derive(Hash, Eq, PartialEq)]
+pub enum TerritoryState {
+  /// Blank state, no player has control over the territory
+  NoRuler,
+
+  /// Starting occupation of rulerless territory
+  StartingOccupation,
+  
+  /// Under conflict, it doesn't matter if current_ruler is_some or not
+  InWar,
+
+  /// Occupied by a player, check current_ruler to know who
+  PeacefullyOccupied,
+}
+
 /// Not a Godot class, look at `land.rs`, `surface_point.rs` and
 /// `virtual_planet.rs` for the Godot classes related to territories
 pub struct Territory {
@@ -111,6 +126,7 @@ pub struct Territory {
   pub all_troops_in_by_player: HashMap<PlayerId, HashSet<TroopId>>,
 
   pub current_ruler: Option<PlayerStaticInfo>,
+  pub territory_states: HashSet<TerritoryState>,
 
   pub next_troop_progress: f64,
   pub seconds_elasped_since_last_troop: f64,
@@ -145,6 +161,9 @@ impl Territory {
       all_troops_in: HashSet::new(),
       all_troops_in_by_player: HashMap::new(),
       current_ruler: None,
+      territory_states: HashSet::from([
+        TerritoryState::NoRuler,
+      ]),
 
       next_troop_progress: 0.,
       seconds_elasped_since_last_troop: 0.,
