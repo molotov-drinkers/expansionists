@@ -67,6 +67,10 @@ pub struct Troop {
 
   /// it turns true when the troop is spawned and the orientation is set
   initial_orientation_is_set: bool,
+
+  /// it turns true when the troop receives the deployment order
+  /// and false when troop arrives to the deployed territory
+  waiting_for_deployment_following_action: bool,
 }
 
 #[godot_api]
@@ -96,6 +100,8 @@ impl ICharacterBody3D for Troop {
       current_trajectory_point: 0,
 
       initial_orientation_is_set: false,
+
+      waiting_for_deployment_following_action: false,
     }
   }
 
@@ -307,6 +313,8 @@ impl Troop {
       &self.base().get_name().to_string(),
       self.owner.player_id.clone()
     );
+
+    self.waiting_for_deployment_following_action = true;
   }
 
   fn get_territory<'a>(&mut self, territory_id: TerritoryId, virtual_planet: &'a mut GdMut<'_, VirtualPlanet>) -> &'a mut Territory {
@@ -477,7 +485,7 @@ impl Troop {
 
   /// Can trigger Combat or Colonization/Occupation/War
   fn get_deployment_next_action(&mut self) {
-    if self.troop_activities.contains(&TroopState::Deploying) {
+    if self.troop_activities.contains(&TroopState::Deploying) && self.waiting_for_deployment_following_action {
 
       // Some if troop hit a land
       let Some(ref territory_id) = self.touching_surface_point.territory_id else {
@@ -486,6 +494,7 @@ impl Troop {
 
       // troop arrived to the territory that has been deployed to
       if territory_id == &self.deployed_to_territory {
+        self.waiting_for_deployment_following_action = false;
 
         let virtual_planet = self.get_virtual_planet_from_troop_scope();
         let virtual_planet = virtual_planet.bind();
@@ -500,21 +509,17 @@ impl Troop {
         if territory.territory_states.contains(&TerritoryState::NoRuler) &&
           !territory.territory_states.contains(&TerritoryState::InWar) {
           godot_print!("Troop would start occupation! ::: {}", territory_id);
-          return;
         } else if territory_current_ruler.is_some_and(|ruler_static_info| ruler_static_info.player_id == self.owner.player_id) {
           godot_print!("Troop would start patrolling or defending its land! ::: {}", territory_id);
           // Entering own territory, could start patrolling or start defending it from invaders
-          return;
         } else if territory_current_ruler.is_some_and(|ruler_static_info| ruler_static_info.player_id != self.owner.player_id)
           {
           godot_print!("Troop would start a combat or keep combating! ::: {}", territory_id);
           // Entering enemy territory, could start combat or keep combatting until the territory is conquered
-          return;
         } else if territory.territory_states.contains(&TerritoryState::StartingOccupation) && /*TODO: And started being occupied by someone else */false {
           // Entenring a territory that started being occupied by someone else, should start combat and hold down the territory occupation
           // until the conflict is finished
           godot_print!("Troop would start a combat or keep combating. Also would pause enemy occupation! ::: {}", territory_id);
-          return;
         }
       };
 
