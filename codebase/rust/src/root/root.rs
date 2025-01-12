@@ -141,7 +141,7 @@ impl RootScene {
         let mut troops_spawn = 0;
         let num_of_initial_troops = 1;
         while troops_spawn < num_of_initial_troops {
-          spawner_engine::troop_spawner(
+          spawner_engine::spawn_troop(
             self,
             &mut player,
             &mut territory,

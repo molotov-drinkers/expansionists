@@ -45,11 +45,12 @@ type TroopActivities = HashSet<TroopState>;
 #[class(base=CharacterBody3D)]
 pub struct Troop {
   base: Base<CharacterBody3D>,
-  /// holds troop's current location
+  /// holds troop's current location, updated every frame
   touching_surface_point: SurfacePointMetadata,
-  /// holds the territory id the troop belongs to
+
+  /// holds the territory id the troop is deployed to
+  /// it changes when the troop is deployed to another territory
   pub deployed_to_territory: TerritoryId,
-  // location_situation: LocationSituation,
   surface: Surface,
 
   owner: PlayerStaticInfo,
@@ -107,7 +108,6 @@ impl ICharacterBody3D for Troop {
 
   fn ready(&mut self) {
     self.base_mut().add_to_group(Self::TROOP_CLASS_NAME);
-    // self.base_mut().add_to_group(self.owner);
     self.set_custom_collision();
     self.set_selected_sprites_visibility(false);
   }

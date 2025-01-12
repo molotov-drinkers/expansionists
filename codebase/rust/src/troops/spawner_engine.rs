@@ -15,8 +15,7 @@ use crate::{
 
 use super::{mesh_map::TroopMesh, troop::Troop};
 
-/// Called from root.rs
-pub fn troop_spawner(
+pub fn spawn_troop(
   root_scene: &mut RootScene,
   player: &mut Gd<Player>,
   territory: &mut Territory,
@@ -81,6 +80,7 @@ pub fn troop_spawner(
 
 }
 
+/// Returns (`land_mesh`, `sea_mesh`)
 fn get_colored_troop_scenes(player: &PlayerStaticInfo) -> (Gd<Node3D>, Gd<Node3D>) {
   let troop_meshes = &player.troop_meshes;
   let lands = TroopMesh::get_land_meshes();

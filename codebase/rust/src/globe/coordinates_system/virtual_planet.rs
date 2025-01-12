@@ -14,7 +14,7 @@ use crate::{
   },
   root::root::RootScene,
   troops::{
-    spawner_engine::troop_spawner, surface::Surface
+    spawner_engine::spawn_troop, surface::Surface
   }
 };
 use super::{
@@ -365,7 +365,7 @@ impl VirtualPlanet {
           let mut root_scene = root_scene.clone();
           let mut root_scene = root_scene.bind_mut();
 
-          troop_spawner(
+          spawn_troop(
             &mut root_scene,
             // self,
             // &territory_id,
