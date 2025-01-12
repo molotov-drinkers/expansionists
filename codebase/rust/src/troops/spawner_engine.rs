@@ -3,10 +3,14 @@ use godot::{
   classes::{MeshInstance3D, Sprite3D, StandardMaterial3D}, prelude::*
 };
 use crate::{
-  globe::{coordinates_system::{
-    surface_point::Coordinates,
-    virtual_planet::VirtualPlanet,
-  }, territories::territory::TerritoryId}, player::{color::PlayerColor, player::{Player, PlayerStaticInfo, PlayerType}}, root::root::RootScene
+  globe::
+    territories::territory::Territory
+  ,
+  player::{
+    color::PlayerColor,
+    player::{Player, PlayerStaticInfo, PlayerType}
+  },
+  root::root::RootScene
 };
 
 use super::{mesh_map::TroopMesh, troop::Troop};
@@ -14,20 +18,11 @@ use super::{mesh_map::TroopMesh, troop::Troop};
 /// Called from root.rs
 pub fn troop_spawner(
   root_scene: &mut RootScene,
-  virtual_planet: &mut VirtualPlanet,
-  territory_id: &TerritoryId,
   player: &mut Gd<Player>,
+  territory: &mut Territory,
 ) {
   let mut player_bind = player.bind_mut();
   let player_static_info = player_bind.static_info.clone();
-
-  let coordinates: Coordinates = virtual_planet.get_spawner_territory_coordinate(territory_id);
-
-  let cartesian = virtual_planet
-    .coordinate_map
-    .get(&coordinates)
-    .expect("Coordinate expected to exist")
-    .cartesian;
 
   let new_troop: Gd<PackedScene> = load("res://scenes/troop_scene.tscn");
   let mut new_troop = new_troop.instantiate_as::<Troop>();
@@ -52,8 +47,6 @@ pub fn troop_spawner(
     .get_node_as::<Sprite3D>("selected")
     .set_modulate(PlayerColor::get_troop_selected_color(&player_static_info.color));
 
-
-  // TICKET: #39 generate a troop ID base on: territory_id + player_id + timestamp
   new_troop.add_to_group(&player_static_info.player_id.to_string());
 
   match player_static_info.player_type {
@@ -70,17 +63,17 @@ pub fn troop_spawner(
   );
 
   // For organization matter, new_troops are spawn under /root_scene/troops
-  root_scene.base()
+  root_scene
+    .base()
     .find_child("troops") 
     .expect("troops to exist")
     .add_child(&new_troop);
 
   player_bind.register_troop_spawning();
 
-  new_troop.set_position(cartesian);
-  new_troop.bind_mut().deployed_to_territory = territory_id.to_string();
+  new_troop.set_position(territory.spawner_location);
+  new_troop.bind_mut().deployed_to_territory = territory.territory_id.to_string();
 
-  let territory = virtual_planet.get_mut_territory_from_virtual_planet(territory_id);
   territory.add_territory_deployment(
     &new_troop.get_name().to_string(),
     player_static_info.player_id

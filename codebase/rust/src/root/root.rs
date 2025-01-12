@@ -128,21 +128,23 @@ impl RootScene {
           let player_binding = player.bind();
           player_binding.static_info.clone()
         };
+        player.set_name(&player_static_info.player_id.to_string());
 
         let territory_id = &player_static_info.initial_territory;
         virtual_planet.set_new_territory_ruler(
+          &territory_id,
           &mut player,
-          &territory_id
         );
 
+        let mut territory = virtual_planet.get_mut_territory_from_virtual_planet(territory_id);
+
         let mut troops_spawn = 0;
-        let max_troops = 5;
-        while troops_spawn < max_troops {
+        let num_of_initial_troops = 1;
+        while troops_spawn < num_of_initial_troops {
           spawner_engine::troop_spawner(
             self,
-            &mut virtual_planet,
-            &territory_id,
-            &mut player
+            &mut player,
+            &mut territory,
           );
           troops_spawn+=1;
         }

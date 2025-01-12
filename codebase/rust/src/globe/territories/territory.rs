@@ -104,6 +104,7 @@ pub struct Territory {
   pub organic_max_troops: i32,
   troops_growth_velocity: f32,
   pub seconds_to_spawn_troop: f64,
+  pub spawner_location: Vector3,
 
   /// (TODO:) uses all the surface points of the territory to calculate which troops are inside it
   pub all_troops_in: HashSet<TroopId>,
@@ -139,6 +140,7 @@ impl Territory {
       organic_max_troops: 0,
       troops_growth_velocity: 0.1,
       seconds_to_spawn_troop: 10.,
+      spawner_location: Vector3::ZERO,
 
       all_troops_in: HashSet::new(),
       all_troops_in_by_player: HashMap::new(),

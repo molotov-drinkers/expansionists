@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet};
 
 use godot::{classes::INode3D, prelude::*};
 
-use crate::{globe::{coordinates_system::virtual_planet::VirtualPlanet, territories::territory::TerritoryId}, troops::mesh_map::MeshId};
+use crate::{globe::{coordinates_system::virtual_planet::VirtualPlanet, territories::territory::TerritoryId}, root::root::RootScene, troops::mesh_map::MeshId};
 use super::color::PlayerColor;
 
 /// Defines
@@ -96,12 +96,14 @@ impl Player {
     player_type: PlayerType,
     troop_meshes: TroopMeshes,
   ) {
-    self.static_info.player_id = player_id;
-    self.static_info.user_name = user_name;
-    self.static_info.color = color;
-    self.static_info.initial_territory = initial_territory;
-    self.static_info.player_type = player_type;
-    self.static_info.troop_meshes = troop_meshes;
+    self.static_info = PlayerStaticInfo {
+      player_id,
+      user_name,
+      color,
+      initial_territory,
+      player_type,
+      troop_meshes,
+    };
 
     let player_group_id = &Self::get_player_godot_identifier(player_id);
     self.base_mut().add_to_group(player_group_id);
@@ -165,6 +167,12 @@ impl Player {
       .expect("Expected to find VirtualPlanet from RootScene");
 
     virtual_planet
+  }
+
+  /// Assumes Player node has PlayerId as name
+  pub fn get_player_by_id(root_scene: Gd<RootScene>, player_id: PlayerId) -> Gd<Player> {
+    let player = root_scene.get_node_as::<Player>(&format!("players/{player_id}"));
+    player
   }
 
 }

@@ -4,7 +4,7 @@ use godot::{classes::{BoxMesh, BoxShape3D, CollisionShape3D, MeshInstance3D, Sta
 use fastrand;
 
 use crate::{
-  globe::territories::{land::Land, territory::{Territories, Territory, TerritoryId}}, player::{color::PlayerColor, player::Player}, troops::surface::Surface
+  globe::territories::{land::Land, territory::{Territories, Territory, TerritoryId}}, player::{color::PlayerColor, player::Player}, root::root::RootScene, troops::{spawner_engine::troop_spawner, surface::Surface}
 };
 use super::{
   coordinates_system::{CoordinateMap, CoordinateMetadata},
@@ -193,6 +193,14 @@ impl VirtualPlanet {
 
                 overlapped_territory.coordinates.push(surface_point_metadata.lat_long);
 
+                let coordinates: Coordinates = VirtualPlanet::get_spawner_territory_coordinate_a(overlapped_territory);
+                let cartesian = self
+                  .coordinate_map
+                  .get(&coordinates)
+                  .expect("Coordinate expected to exist")
+                  .cartesian;
+                overlapped_territory.spawner_location = cartesian;
+
                 self.coordinate_map.insert(
                   surface_point_metadata.lat_long,
                   CoordinateMetadata {
@@ -280,13 +288,26 @@ impl VirtualPlanet {
     territory_coordinates[territory_point]
   }
 
+    /// Receives a territory_id and returns a random coordinate from the territory
+    pub fn get_spawner_territory_coordinate_a(territory: &Territory) -> Coordinates {
+      let territory_coordinates = &territory.coordinates;
+      if territory_coordinates.len() == 0 {
+        panic!("Expected territory_coordinates to have at least one element");
+      }
+  
+      // TICKET: #50 this "divided by 4" is a hack to get a coordinate in the territory not close to the border
+      // Sometime it does not work, but it's good enough for now
+      let territory_point = territory_coordinates.len() / 1/4;
+      territory_coordinates[territory_point]
+    }
+
   /// Receives a latitude and longitude and returns the cartesian coordinates
   pub fn get_cartesian_from_coordinates(&self, given_coordinates: &Coordinates) -> Vector3 {
     let coordinate_metadata = self.coordinate_map.get(&given_coordinates).expect("Expected coordinates to exist");
     coordinate_metadata.cartesian
   }
 
-  pub fn set_new_territory_ruler(&mut self, player: &mut Gd<Player>, territory_id: &TerritoryId) {
+  pub fn set_new_territory_ruler(&mut self, territory_id: &TerritoryId, player: &mut Gd<Player>) {
     let mut player_bind = player.bind_mut();
     player_bind.register_territory_occupation(territory_id.clone());
     let player_static_info = &player_bind.static_info;
@@ -306,17 +327,38 @@ impl VirtualPlanet {
   }
 
   fn spawner_troop_engine_checker(&mut self, delta: f64) {
-    for (_territory_id, territory) in self.get_territories_with_ruler() {
+    let root_scene: Gd<RootScene> = self
+      .base()
+      .get_parent()
+      .expect("Expected virtual_planet o have a parent")
+      .cast::<RootScene>();
+
+    let territories_with_rulers = self.get_mut_territories_with_ruler();
+
+    for (_territory_id, territory) in territories_with_rulers {
+
       territory.seconds_elasped_since_last_troop += delta;
 
       if territory.next_troop_progress >= 100. {
+        if (territory.all_troops_in.len() as i32) < territory.organic_max_troops {
 
-        territory.next_troop_progress = 0.;
-        territory.seconds_elasped_since_last_troop = 0.;
+          territory.next_troop_progress = 0.;
+          territory.seconds_elasped_since_last_troop = 0.;
+          
+          let player_id = territory.current_ruler.as_ref().unwrap().player_id;
+          let mut player = Player::get_player_by_id(root_scene.clone(), player_id);
 
-        // TODO: Call spawn, just one caveat:
-        // TODO: Before this should also check territory.all_troops_in.len() < territory.organic_max_troops
-        // TODO: (Needs to populate all_troops_in properly though)
+          let mut root_scene = root_scene.clone();
+          let mut root_scene = root_scene.bind_mut();
+
+          troop_spawner(
+            &mut root_scene,
+            // self,
+            // &territory_id,
+            &mut player,
+            territory,
+          );
+        }
       } else {
         // Should represent how many seconds should take for a troop to be spawned at the territory
         territory.next_troop_progress = 100. * territory.seconds_elasped_since_last_troop / territory.seconds_to_spawn_troop;
@@ -324,7 +366,7 @@ impl VirtualPlanet {
     }
   }
 
-  fn get_territories_with_ruler(&mut self) -> Vec<(&TerritoryId, &mut Territory)> {
+  fn get_mut_territories_with_ruler(&mut self) -> Vec<(&TerritoryId, &mut Territory)> {
     self
       .territories
       .iter_mut()
@@ -339,5 +381,4 @@ impl VirtualPlanet {
         &format!("Expected territory {territory_id} to exist: {:?}", territory_id)
       )
   }
-
 }
