@@ -345,6 +345,8 @@ impl Troop {
 
       let Some(direction) = direction else {
         godot_error!("Expected Troop direction to be a Vector3");
+        let patrolling = self.troop_activities.contains(&TroopState::Patrolling);
+        self.reset_trajectory(patrolling);
         return
       };
 
