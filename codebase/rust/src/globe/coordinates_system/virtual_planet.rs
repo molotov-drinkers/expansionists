@@ -427,7 +427,7 @@ impl VirtualPlanet {
         .expect("Expected player to have troops in the territory")
         .len();
 
-      territory.conquering_progress_per_second += (delta * num_of_troops_in_the_territory as f64);
+      territory.conquering_progress_per_second += delta * (num_of_troops_in_the_territory as f64);
       godot_print!("time_to_be_conquered: {:.2} ... conquering_progress_per_second: {:.2}", territory.time_to_be_conquered, territory.conquering_progress_per_second);
 
       if territory.conquering_progress_per_second >= territory.time_to_be_conquered {
