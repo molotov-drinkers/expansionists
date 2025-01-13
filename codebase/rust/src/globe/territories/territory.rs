@@ -129,10 +129,11 @@ pub struct Territory {
   pub time_to_be_conquered: f64,
   pub conquering_progress_per_second: f64,
   pub player_trying_to_conquer: Option<PlayerStaticInfo>,
+  pub progress_to_reset_idle_conquering: f64,
 
   pub current_ruler: Option<PlayerStaticInfo>,
   pub next_troop_progress: f64,
-  pub seconds_elasped_since_last_troop: f64,
+  pub valid_seconds_elasped_since_last_troop: f64,
 }
 
 pub enum ColorChange {
@@ -144,14 +145,31 @@ pub enum ColorChange {
 
 impl Territory {
 
+
+
+  /// It's a factor that helps setting how many troops a territory can generate
+  /// the lower the value, the less troops a territory can generate
+  const BASE_TROOP_NUMBER_PER_TERRITORY: f32 = 0.02;
+
+  /// organic_max_troops is clamped between 1 and MAX_NUMBER_OF_TROOPS_GENERATED_PER_TERRITORY
+  const MAX_NUMBER_OF_TROOPS_GENERATED_PER_TERRITORY: i32 = 20;
+
+  /// It's a factor that helps setting how fast the troops grow in a territory
+  /// the lower the value, the slower the troops grow
+  const BASE_TROOP_GROWTH_VELOCITY: f32 = 0.001;
+
   /// It's a factor helping controlling the speed of the troops spawning
   /// the lower the value, the faster the troops spawn
-  const BASE_SECONDS_FOR_A_TROOP_TO_SPAWN: f64 = 2.;
+  const BASE_SECONDS_FOR_A_TROOP_TO_SPAWN: f64 = 3.;
 
   /// It's a factor that helps setting how much time a player has to occupying a territory
   /// to take control of it and become a ruler
   /// the lower the value, the faster the territories are conquered
   const BASE_TERRITORY_OCCUPATION_TIME: f64 = 0.2;
+
+  /// If user stops trying to conquer a territory, the progress to conquer it is reset
+  const SECONDS_TO_RESET_IDLE_CONQUERING: f64 = 10.;
+
 
   pub fn get_base_territory(territory_id: &str, continent: Continent, sub_continent: Option<SubContinent>) -> Territory {
     Territory {
@@ -177,10 +195,11 @@ impl Territory {
       time_to_be_conquered: 10.,
       conquering_progress_per_second: 0.1,
       player_trying_to_conquer: None,
+      progress_to_reset_idle_conquering: 0.,
 
       current_ruler: None,
       next_troop_progress: 0.,
-      seconds_elasped_since_last_troop: 0.,
+      valid_seconds_elasped_since_last_troop: 0.,
     }
   }
 
@@ -262,10 +281,9 @@ impl Territory {
   
   /// Should be called when the coordinates of the territory are set
   pub fn set_troops_growth_velocity_and_secs_to_spawn(&mut self) {
-    let base_factor: f32 = 0.001;
     let num_of_coordinates = self.coordinates.len();
 
-    self.troops_growth_velocity = (base_factor * num_of_coordinates as f32)
+    self.troops_growth_velocity = (Self::BASE_TROOP_GROWTH_VELOCITY * num_of_coordinates as f32)
       .clamp(0.01, 3.);
 
     self.seconds_to_spawn_troop = Self::BASE_SECONDS_FOR_A_TROOP_TO_SPAWN / self.troops_growth_velocity as f64;
@@ -273,11 +291,11 @@ impl Territory {
 
   /// Should be called when the coordinates of the territory are set
   pub fn set_organic_max_troops(&mut self) {
-    let base_factor: f32 = 0.05;
     let num_of_coordinates = self.coordinates.len();
 
-    self.organic_max_troops = ((base_factor * num_of_coordinates as f32) as i32)
-      .clamp(1, 40);
+    self.organic_max_troops = ((
+      Self::BASE_TROOP_NUMBER_PER_TERRITORY * num_of_coordinates as f32) as i32)
+      .clamp(1, Self::MAX_NUMBER_OF_TROOPS_GENERATED_PER_TERRITORY);
   }
 
   /// The greater the territory, the longer it takes to be conquered

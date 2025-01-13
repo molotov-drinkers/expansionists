@@ -47,6 +47,13 @@ impl PlayerColor {
     color
   }
 
+  pub fn get_occupying_land_color(color: &PlayerColor) -> Color {
+    let color = Self::get_player_color(color);
+    let color = color.lightened(0.75);
+
+    color
+  }
+
   pub fn get_troop_selected_color(color: &PlayerColor) -> Color {
     let color = Self::get_player_color(color);
     let mut color = color.lightened(0.5);

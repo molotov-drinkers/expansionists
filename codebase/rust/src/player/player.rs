@@ -39,8 +39,11 @@ pub type PlayerId = i32;
 pub struct Player {
   base: Base<Node3D>,
   pub static_info: PlayerStaticInfo,
-  troops_counter: i32,
+  pub troops_counter: i32,
   territory_counter: i32,
+
+  /// it's the sum of every territory's organic_max_troops being ruled by the player
+  pub max_troop_allowed: i32,
 
   alive: bool,
   
@@ -76,6 +79,7 @@ impl INode3D for Player {
       static_info: Self::get_blank_static_info(),
       troops_counter: 0,
       territory_counter: 0,
+      max_troop_allowed: 0,
       alive: true, 
       in_combat_with: HashSet::new(),
       allied_with: HashSet::new(),
