@@ -131,12 +131,8 @@ impl RootScene {
         player.set_name(&player_static_info.player_id.to_string());
 
         let territory_id = &player_static_info.initial_territory;
-        virtual_planet.set_new_territory_ruler(
-          &territory_id,
-          &mut player,
-        );
-
         let mut territory = virtual_planet.get_mut_territory_from_virtual_planet(territory_id);
+        VirtualPlanet::set_new_territory_ruler(territory, &mut player);
 
         let mut troops_spawn = 0;
         let num_of_initial_troops = 1;

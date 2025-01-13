@@ -66,6 +66,7 @@ impl INode3D for VirtualPlanet {
     if self.is_ready_for_physics == true {
       self.match_surface_points_and_territories();
       self.spawner_troop_engine_checker(delta);
+      self.occupation_checker(delta);
     }
   }
 }
@@ -229,6 +230,7 @@ impl VirtualPlanet {
             territory.set_territory_size();
             territory.set_troops_growth_velocity_and_secs_to_spawn();
             territory.set_organic_max_troops();
+            territory.set_time_to_be_conquered();
           });
 
         }
@@ -318,34 +320,38 @@ impl VirtualPlanet {
     coordinate_metadata.cartesian
   }
 
-  pub fn set_new_territory_ruler(&mut self, territory_id: &TerritoryId, player: &mut Gd<Player>) {
+  pub fn set_new_territory_ruler(territory: &mut Territory, player: &mut Gd<Player>) {
+    let territory_id = territory.territory_id.clone();
     let mut player_bind = player.bind_mut();
     player_bind.register_territory_occupation(territory_id.clone());
     let player_static_info = &player_bind.static_info;
 
-    let territory = self.territories.get_mut(territory_id).expect("Expected territory to exist");
     let color = PlayerColor::get_land_color(&player_static_info.color);
 
+    territory.player_trying_to_conquer = None;
     territory.current_ruler = Some(player_static_info.clone());
     territory.territory_states.remove(&TerritoryState::NoRuler);
+    territory.territory_states.remove(&TerritoryState::StartingOccupationOfTerritoryWithNoRuler);
     territory.territory_states.insert(TerritoryState::RuledBySomeone);
 
-    let mut territory_mesh = self
-      .base_mut()
-      .get_parent()
-      .expect("Expected virtual_planet to have a parent")
+    let mut territory_mesh = player_bind
+      .get_root_from_player()
       .get_node_as::<MeshInstance3D>(&format!("globe_scene/territories/{territory_id}"));
 
     territory_mesh.set_meta("current_base_color", &color.to_variant());
     Territory::set_color_to_active_material(&territory_mesh, color);
   }
 
-  fn spawner_troop_engine_checker(&mut self, delta: f64) {
-    let root_scene: Gd<RootScene> = self
+  fn get_root_from_virtual_planet(&mut self) -> Gd<RootScene> {
+    self
       .base()
       .get_parent()
       .expect("Expected virtual_planet o have a parent")
-      .cast::<RootScene>();
+      .cast::<RootScene>()
+  }
+
+  fn spawner_troop_engine_checker(&mut self, delta: f64) {
+    let root_scene: Gd<RootScene> = self.get_root_from_virtual_planet();
 
     let territories_with_rulers = self.get_mut_territories_with_ruler();
 
@@ -394,5 +400,43 @@ impl VirtualPlanet {
       .expect(
         &format!("Expected territory {territory_id} to exist: {:?}", territory_id)
       )
+  }
+
+  fn get_mut_territories_with_occupation_ongoing(&mut self) -> Vec<(&TerritoryId, &mut Territory)> {
+    self
+      .territories
+      .iter_mut()
+      .filter(|(_, territory)| territory.territory_states.contains(&TerritoryState::StartingOccupationOfTerritoryWithNoRuler))
+      .collect()
+  }
+
+  pub fn occupation_checker(&mut self, delta: f64) {
+    let root_scene: Gd<RootScene> = self.get_root_from_virtual_planet();
+
+    let territories_with_occupation_on_going = self.get_mut_territories_with_occupation_ongoing();
+    for (_, territory) in territories_with_occupation_on_going {
+
+      let Some(ref player_static_info) = territory.player_trying_to_conquer else {
+        godot_error!("'player_trying_to_conquer' doesn't exist during the Occupation Checker");
+        return;
+      };
+
+      let num_of_troops_in_the_territory = territory
+        .all_troops_in_by_player
+        .get(&player_static_info.player_id)
+        .expect("Expected player to have troops in the territory")
+        .len();
+
+      territory.conquering_progress_per_second += (delta * num_of_troops_in_the_territory as f64);
+      godot_print!("time_to_be_conquered: {:.2} ... conquering_progress_per_second: {:.2}", territory.time_to_be_conquered, territory.conquering_progress_per_second);
+
+      if territory.conquering_progress_per_second >= territory.time_to_be_conquered {
+        territory.conquering_progress_per_second = 0.;
+
+        let root_scene = root_scene.clone();
+        let mut player = Player::get_player_by_id(root_scene, player_static_info.player_id);
+        Self::set_new_territory_ruler(territory, &mut player);
+      }
+    }
   }
 }

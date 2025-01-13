@@ -119,15 +119,18 @@ pub struct Territory {
   troops_growth_velocity: f32,
   pub seconds_to_spawn_troop: f64,
   pub spawner_location: Vector3,
+  pub territory_states: HashSet<TerritoryState>,
 
   /// (TODO:) uses all the surface points of the territory to calculate which troops are inside it
   pub all_troops_in: HashSet<TroopId>,
   pub all_troops_in_by_player: HashMap<PlayerId, HashSet<TroopId>>,
   pub has_troops_from_different_players: bool,
 
-  pub current_ruler: Option<PlayerStaticInfo>,
-  pub territory_states: HashSet<TerritoryState>,
+  pub time_to_be_conquered: f64,
+  pub conquering_progress_per_second: f64,
+  pub player_trying_to_conquer: Option<PlayerStaticInfo>,
 
+  pub current_ruler: Option<PlayerStaticInfo>,
   pub next_troop_progress: f64,
   pub seconds_elasped_since_last_troop: f64,
 }
@@ -145,6 +148,11 @@ impl Territory {
   /// the lower the value, the faster the troops spawn
   const BASE_SECONDS_FOR_A_TROOP_TO_SPAWN: f64 = 2.;
 
+  /// It's a factor that helps setting how much time a player has to occupying a territory
+  /// to take control of it and become a ruler
+  /// the lower the value, the faster the territories are conquered
+  const BASE_TERRITORY_OCCUPATION_TIME: f64 = 0.2;
+
   pub fn get_base_territory(territory_id: &str, continent: Continent, sub_continent: Option<SubContinent>) -> Territory {
     Territory {
       territory_id: territory_id.to_string(),
@@ -158,15 +166,19 @@ impl Territory {
       seconds_to_spawn_troop: 10.,
       spawner_location: Vector3::ZERO,
 
-      all_troops_in: HashSet::new(),
-      all_troops_in_by_player: HashMap::new(),
-      has_troops_from_different_players: false,
-
-      current_ruler: None,
       territory_states: HashSet::from([
         TerritoryState::NoRuler,
       ]),
 
+      all_troops_in: HashSet::new(),
+      all_troops_in_by_player: HashMap::new(),
+      has_troops_from_different_players: false,
+
+      time_to_be_conquered: 10.,
+      conquering_progress_per_second: 0.1,
+      player_trying_to_conquer: None,
+
+      current_ruler: None,
       next_troop_progress: 0.,
       seconds_elasped_since_last_troop: 0.,
     }
@@ -266,6 +278,12 @@ impl Territory {
 
     self.organic_max_troops = ((base_factor * num_of_coordinates as f32) as i32)
       .clamp(1, 40);
+  }
+
+  /// The greater the territory, the longer it takes to be conquered
+  pub fn set_time_to_be_conquered(&mut self) {
+    let num_of_coordinates = self.coordinates.len() as f64;
+    self.time_to_be_conquered = num_of_coordinates * Self::BASE_TERRITORY_OCCUPATION_TIME;
   }
 
   pub fn add_territory_deployment(&mut self, troop_id: &TroopId, player_id: PlayerId) {

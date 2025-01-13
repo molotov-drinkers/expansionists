@@ -7,7 +7,7 @@ use crate::{globe::{coordinates_system::{
     coordinates_system::CoordinatesSystem,
     surface_point::{Coordinates, SurfacePoint, SurfacePointMetadata},
     virtual_planet::VirtualPlanet,
-  }, territories::territory::{Territory, TerritoryId, TerritoryState}}, player::player::{Player, PlayerStaticInfo}};
+  }, territories::territory::{Territory, TerritoryId, TerritoryState}}, player::player::{Player, PlayerStaticInfo}, root::root::RootScene};
 
 use super::{
   combat_engine::CombatStats, speed::SpeedType, surface::Surface
@@ -343,7 +343,11 @@ impl Troop {
         return;
       }
 
-      let direction = direction.expect("Expected Troop direction to be a Vector3");
+      let Some(direction) = direction else {
+        godot_error!("Expected Troop direction to be a Vector3");
+        return
+      };
+
       let velocity = direction * self.adopted_speed.get_speed();
       self.set_orientation(direction);
       self.base_mut().set_velocity(velocity);
@@ -448,14 +452,20 @@ impl Troop {
     }
   }
 
-  fn get_virtual_planet_from_troop_scope(&self) -> Gd<VirtualPlanet> {
+  fn get_root_from_troop(&self) -> Gd<RootScene> {
     let root = self.base()
       .get_parent()
       .expect("troop parent to exist")
       .get_parent()
-      .expect("root_scene to exist");
+      .expect("root_scene to exist")
+      .cast::<RootScene>();
 
-    let virtual_planet = root
+    root
+  }
+
+  fn get_virtual_planet_from_troop_scope(&self) -> Gd<VirtualPlanet> {
+    let virtual_planet =     self
+      .get_root_from_troop()
       .find_child("virtual_planet")
       .expect("virtual_planet to exist")
       .cast::<VirtualPlanet>();
@@ -496,10 +506,10 @@ impl Troop {
       if territory_id == &self.deployed_to_territory {
         self.waiting_for_deployment_following_action = false;
 
-        let virtual_planet = self.get_virtual_planet_from_troop_scope();
-        let virtual_planet = virtual_planet.bind();
+        let mut virtual_planet = self.get_virtual_planet_from_troop_scope();
+        let mut virtual_planet = virtual_planet.bind_mut();
         let territory = virtual_planet.territories
-          .get(territory_id)
+          .get_mut(territory_id)
           .expect(&format!("Expected to find territory {territory_id}, at get_deployment_next_action"));
 
         let territory_current_ruler = territory
@@ -508,6 +518,12 @@ impl Troop {
 
         if territory.territory_states.contains(&TerritoryState::NoRuler) && !territory.has_troops_from_different_players {
           godot_print!("Troop would start occupation! ::: {}", territory_id);
+          territory.territory_states.insert(TerritoryState::StartingOccupationOfTerritoryWithNoRuler);
+
+          let root = self.get_root_from_troop();
+          let player = Player::get_player_by_id(root, self.owner.player_id.clone());
+          let player_static_info = player.bind().static_info.clone();
+          territory.player_trying_to_conquer = Some(player_static_info);
 
         } else if territory_current_ruler.is_some_and(|ruler_static_info| ruler_static_info.player_id == self.owner.player_id) {
           godot_print!("Troop would start patrolling or defending its land! ::: {}", territory_id);
@@ -521,6 +537,7 @@ impl Troop {
           // Entering a territory that started being occupied by someone else, should start combat and hold down the territory occupation
           // until the conflict is finished
           godot_print!("Troop would start a combat or keep combating. Also would pause enemy occupation! ::: {}", territory_id);
+
         } else {
           godot_error!("Troop has no idea what to do after the deployment! ::: {}", territory_id);
         }

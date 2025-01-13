@@ -153,7 +153,7 @@ impl Player {
   /// |-players
   /// ||-player
   /// ```
-  fn get_root_from_player(&mut self) -> Gd<Node> {
+  pub fn get_root_from_player(&mut self) -> Gd<Node> {
     self
       .base()
       .get_parent().expect("Expected player to have players as parent")
