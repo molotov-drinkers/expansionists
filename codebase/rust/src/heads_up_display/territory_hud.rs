@@ -1,7 +1,8 @@
 use godot::classes::{ColorRect, Control, HBoxContainer, IControl};
 use godot::prelude::*;
 
-use crate::globe::territories::territory::Territory;
+use crate::globe::coordinates_system::virtual_planet::VirtualPlanet;
+use crate::globe::territories::territory::{Territory, TerritoryId};
 use crate::player::color::PlayerColor;
 
 use super::text_labels::TextLabels;
@@ -11,6 +12,7 @@ use super::text_labels::TextLabels;
 #[class(base=Control)]
 pub struct TerritoryHUD {
   base: Base<Control>,
+  current_territory: Option<TerritoryId>,
 }
 
 #[godot_api]
@@ -19,19 +21,33 @@ impl IControl for TerritoryHUD {
 
     TerritoryHUD {
       base: base,
+      current_territory: None,
     }
   }
 
   fn ready(&mut self) {
     self.base_mut().set_visible(false);
   }
+
+  fn process(&mut self, _delta: f64) {
+    if self.current_territory.is_some() {
+      let virtual_planet = self.get_virtual_planet_from_territory_hud();
+      let virtual_planet = virtual_planet.bind();
+
+      let territory_id = self.current_territory.as_ref().unwrap();
+      let territory = virtual_planet.get_territory_from_virtual_planet(&territory_id);
+
+      self.activate_territory_part(territory);
+      self.activate_ruler_part(territory);
+    }
+  }
 }
 
 impl TerritoryHUD {
   pub fn activate_hud(&mut self, territory: &Territory) {
     self.base_mut().set_visible(true);
-    
-    self.activate_territory_part(territory);
+    self.current_territory = Some(territory.territory_id.clone());
+
     self.activate_ruler_part(territory);
   }
 
@@ -107,5 +123,22 @@ impl TerritoryHUD {
 
   pub fn clean_hud(&mut self) {
     self.base_mut().set_visible(false);
+    self.current_territory = None;
+  }
+
+  fn get_root_from_territory_hud(&mut self) -> Gd<Node> {
+    self
+      .base()
+      .get_parent().expect("Expected TerritoryHUD to have ui as parent")
+      .get_parent().expect("Expected ui to have root as parent")
+  }
+
+  fn get_virtual_planet_from_territory_hud(&mut self) -> Gd<VirtualPlanet> {
+    let virtual_planet = self
+      .get_root_from_territory_hud()
+      .try_get_node_as::<VirtualPlanet>("virtual_planet")
+      .expect("Expected to find VirtualPlanet from RootScene");
+
+    virtual_planet
   }
 }

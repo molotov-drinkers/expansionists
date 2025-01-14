@@ -144,9 +144,6 @@ pub enum ColorChange {
 }
 
 impl Territory {
-
-
-
   /// It's a factor that helps setting how many troops a territory can generate
   /// the lower the value, the less troops a territory can generate
   const BASE_TROOP_NUMBER_PER_TERRITORY: f32 = 0.02;

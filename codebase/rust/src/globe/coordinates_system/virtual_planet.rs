@@ -382,8 +382,18 @@ impl VirtualPlanet {
   }
 
   pub fn get_mut_territory_from_virtual_planet(&mut self, territory_id: &TerritoryId) -> &mut Territory {
-    self.territories
+    self
+      .territories
       .get_mut(territory_id)
+      .expect(
+        &format!("Expected territory {territory_id} to exist: {:?}", territory_id)
+      )
+  }
+
+  pub fn get_territory_from_virtual_planet(&self, territory_id: &TerritoryId) -> &Territory {
+    self
+      .territories
+      .get(territory_id)
       .expect(
         &format!("Expected territory {territory_id} to exist: {:?}", territory_id)
       )
