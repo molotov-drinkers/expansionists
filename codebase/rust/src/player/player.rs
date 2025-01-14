@@ -17,6 +17,7 @@ use super::color::PlayerColor;
 /// atck
 /// run away
 
+#[allow(dead_code)] //TODO: remove dead_code
 struct EnemyStats {
   /// The number of troops that were injured
   casualties_caused_by_player: f32,
@@ -45,10 +46,16 @@ pub struct Player {
   /// it's the sum of every territory's organic_max_troops being ruled by the player
   pub max_troop_allowed: i32,
 
+  #[allow(dead_code)] //TODO: remove dead_code
   alive: bool,
   
+  #[allow(dead_code)] //TODO: remove dead_code
   in_combat_with: HashSet<Player>,
+  
+  #[allow(dead_code)] //TODO: remove dead_code
   allied_with: HashSet<Player>,
+  
+  #[allow(dead_code)] //TODO: remove dead_code
   enemies_stats: HashMap<PlayerId, EnemyStats>,
 }
 
@@ -143,6 +150,7 @@ impl Player {
     self.territory_counter += 1;
   }
 
+  #[allow(dead_code)] //TODO: remove dead_code
   fn register_territory_loss(&mut self) {
     self.territory_counter -= 1;
 
@@ -164,6 +172,7 @@ impl Player {
       .get_parent().expect("Expected players to have root as parent")
   }
 
+  #[allow(dead_code)] //TODO: remove dead_code
   fn get_virtual_planet_from_player(&mut self) -> Gd<VirtualPlanet> {
     let virtual_planet = self
       .get_root_from_player()

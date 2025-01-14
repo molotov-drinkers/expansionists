@@ -165,7 +165,7 @@ impl Territory {
   const BASE_TERRITORY_OCCUPATION_TIME: f64 = 0.2;
 
   /// If user stops trying to conquer a territory, the progress to conquer it is reset
-  const SECONDS_TO_RESET_IDLE_CONQUERING: f64 = 10.;
+  const _SECONDS_TO_RESET_IDLE_CONQUERING: f64 = 10.;
 
 
   pub fn get_base_territory(territory_id: &str, continent: Continent, sub_continent: Option<SubContinent>) -> Territory {
