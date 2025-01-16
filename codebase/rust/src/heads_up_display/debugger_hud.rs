@@ -24,7 +24,7 @@ impl ILabel for DebuggerHUD {
     let color = match fps {
       fps if fps < 25.0 => Color::RED,
       fps if fps < 30.0 => Color::YELLOW,
-      fps if fps < 60.0 => Color::LIGHT_GREEN,
+      fps if fps < 60.0 => Color::from_rgba(0.6, 1.0, 0.6, 1.0),
       _ => Color::GREEN,
     };
 

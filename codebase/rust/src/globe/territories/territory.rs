@@ -331,37 +331,16 @@ impl Territory {
   }
 
   pub fn inform_territory_departure(&mut self, troop_id: &TroopId, player_id: PlayerId) {
-    match self.all_troops_deployed.remove(troop_id) {
-      true => (),
-      false => godot_error!("At Territory::inform_territory_departure(), Troop {:?} not found in territory {:?}",
-        troop_id,
-        self.territory_id
-      ),
+    self.all_troops_deployed.remove(troop_id);
+    self.all_troops_deployed_and_arrived.remove(troop_id);
+
+    if let Some(player_troops) = self.all_troops_deployed_by_player.get_mut(&player_id) {
+      player_troops.remove(troop_id);
     }
 
-    match self.all_troops_deployed_and_arrived.remove(troop_id) {
-      true => (),
-      false => godot_error!("At Territory::inform_territory_departure(), Troop {:?} not found in territory {:?}",
-        troop_id,
-        self.territory_id
-      ),
+    if let Some(player_troops) = self.all_troops_deployed_and_arrived_by_player.get_mut(&player_id) {
+      player_troops.remove(troop_id);
     }
-
-    self.all_troops_deployed_by_player
-      .get_mut(&player_id)
-      .expect(
-        &format!("all_troops_deployed_by_player: Expected player {player_id} to have troops in territory {}",
-        self.territory_id)
-      )
-      .remove(troop_id);
-
-    self.all_troops_deployed_and_arrived_by_player
-      .get_mut(&player_id)
-      .expect(
-        &format!("all_troops_deployed_and_arrived_by_player: Expected player {player_id} to have troops in territory {}",
-        self.territory_id)
-      )
-      .remove(troop_id);
 
     self.set_troops_from_different_players_flag();
   }

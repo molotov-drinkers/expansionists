@@ -98,7 +98,6 @@ impl TerritoryHUD {
     );
 
     if territory.current_ruler.is_some() {
-      // TODO: Create HUD for ruler once it has one
       occupied.set_visible(true);
       unoccupied.set_visible(false);
 
