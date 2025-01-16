@@ -78,6 +78,12 @@ pub fn spawn_troop(
     player_static_info.player_id
   );
 
+  // Whenever a troop is spawned in a territory, it also means it has arrived to it
+  territory.inform_troop_arrived(
+    &new_troop.get_name().to_string(),
+    player_static_info.player_id
+  );
+
 }
 
 /// Returns (`land_mesh`, `sea_mesh`)

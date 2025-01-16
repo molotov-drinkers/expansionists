@@ -21,10 +21,12 @@ impl ILabel for DebuggerHUD {
     let fps = Engine::singleton().get_frames_per_second();
     let text = format!("FPS: {}", fps);
 
-    let color =
-      if fps < 30.0 { Color::RED }
-      else if fps < 60.0 { Color::GREEN }
-      else { Color::SEA_GREEN };
+    let color = match fps {
+      fps if fps < 25.0 => Color::RED,
+      fps if fps < 30.0 => Color::YELLOW,
+      fps if fps < 60.0 => Color::LIGHT_GREEN,
+      _ => Color::GREEN,
+    };
 
     self.base_mut().set_modulate(color);
     self.base_mut().set_text(&text);

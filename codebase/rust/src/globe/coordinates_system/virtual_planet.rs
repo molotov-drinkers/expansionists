@@ -348,7 +348,7 @@ impl VirtualPlanet {
       let mut player = Player::get_player_by_id(root_scene.clone(), player_id);
 
       if player.bind().troops_counter < player.bind().max_troop_allowed &&
-        (territory.all_troops_in.len() as i32) < territory.organic_max_troops {
+        (territory.all_troops_deployed_and_arrived.len() as i32) < territory.organic_max_troops {
 
         territory.valid_seconds_elasped_since_last_troop += delta;
 
@@ -427,7 +427,7 @@ impl VirtualPlanet {
       Territory::set_color_to_active_material(&territory_mesh, color);
 
       let num_of_troops_in_the_territory = territory
-        .all_troops_in_by_player
+        .all_troops_deployed_and_arrived_by_player
         .get(&player_static_info.player_id)
         .expect("Expected player to have troops in the territory")
         .len();

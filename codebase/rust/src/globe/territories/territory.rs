@@ -121,9 +121,14 @@ pub struct Territory {
   pub spawner_location: Vector3,
   pub territory_states: HashSet<TerritoryState>,
 
-  /// (TODO:) uses all the surface points of the territory to calculate which troops are inside it
-  pub all_troops_in: HashSet<TroopId>,
-  pub all_troops_in_by_player: HashMap<PlayerId, HashSet<TroopId>>,
+  /// It counts which troops are deployed in the territory, not necessarily arrived
+  all_troops_deployed: HashSet<TroopId>,
+  /// It counts which troops are deployed in the territory, not necessarily arrived, filtering by player
+  all_troops_deployed_by_player: HashMap<PlayerId, HashSet<TroopId>>,
+  /// It counts which troops are have arrived to the territory
+  pub all_troops_deployed_and_arrived: HashSet<TroopId>,
+  /// It counts which troops are have arrived to the territory, filtering by player
+  pub all_troops_deployed_and_arrived_by_player: HashMap<PlayerId, HashSet<TroopId>>,
   pub has_troops_from_different_players: bool,
 
   pub time_to_be_conquered: f64,
@@ -185,8 +190,12 @@ impl Territory {
         TerritoryState::NoRuler,
       ]),
 
-      all_troops_in: HashSet::new(),
-      all_troops_in_by_player: HashMap::new(),
+      all_troops_deployed: HashSet::new(),
+      all_troops_deployed_by_player: HashMap::new(),
+
+      all_troops_deployed_and_arrived: HashSet::new(),
+      all_troops_deployed_and_arrived_by_player: HashMap::new(),
+
       has_troops_from_different_players: false,
 
       time_to_be_conquered: 10.,
@@ -302,9 +311,18 @@ impl Territory {
   }
 
   pub fn add_territory_deployment(&mut self, troop_id: &TroopId, player_id: PlayerId) {
-    self.all_troops_in.insert(troop_id.clone());
+    self.all_troops_deployed.insert(troop_id.clone());
 
-    self.all_troops_in_by_player
+    self.all_troops_deployed_by_player
+      .entry(player_id)
+      .or_insert(HashSet::new())
+      .insert(troop_id.to_string());
+  }
+
+  pub fn inform_troop_arrived(&mut self, troop_id: &TroopId, player_id: PlayerId) {
+    self.all_troops_deployed_and_arrived.insert(troop_id.clone());
+
+    self.all_troops_deployed_and_arrived_by_player
       .entry(player_id)
       .or_insert(HashSet::new())
       .insert(troop_id.to_string());
@@ -313,7 +331,7 @@ impl Territory {
   }
 
   pub fn inform_territory_departure(&mut self, troop_id: &TroopId, player_id: PlayerId) {
-    match self.all_troops_in.remove(troop_id) {
+    match self.all_troops_deployed.remove(troop_id) {
       true => (),
       false => godot_error!("At Territory::inform_territory_departure(), Troop {:?} not found in territory {:?}",
         troop_id,
@@ -321,17 +339,39 @@ impl Territory {
       ),
     }
 
-    self.all_troops_in_by_player
+    match self.all_troops_deployed_and_arrived.remove(troop_id) {
+      true => (),
+      false => godot_error!("At Territory::inform_territory_departure(), Troop {:?} not found in territory {:?}",
+        troop_id,
+        self.territory_id
+      ),
+    }
+
+    self.all_troops_deployed_by_player
       .get_mut(&player_id)
-      .expect(&format!("Expected player {player_id} to have troops in territory {}", self.territory_id))
+      .expect(
+        &format!("all_troops_deployed_by_player: Expected player {player_id} to have troops in territory {}",
+        self.territory_id)
+      )
+      .remove(troop_id);
+
+    self.all_troops_deployed_and_arrived_by_player
+      .get_mut(&player_id)
+      .expect(
+        &format!("all_troops_deployed_and_arrived_by_player: Expected player {player_id} to have troops in territory {}",
+        self.territory_id)
+      )
       .remove(troop_id);
 
     self.set_troops_from_different_players_flag();
   }
 
+  /// It counts all the troops deployed and arrived to a territory, if there are troops from different players
+  /// it sets true to has_troops_from_different_players
+  /// That helps to know if a territory will be under conflict or when the conflict is finished
   pub fn set_troops_from_different_players_flag(&mut self) {
     let mut troops_by_player_counter = 0;
-    self.all_troops_in_by_player.iter().for_each(|(_, troops)| {
+    self.all_troops_deployed_and_arrived_by_player.iter().for_each(|(_, troops)| {
       if troops.len() > 1 { troops_by_player_counter += 1 }
     });
 
