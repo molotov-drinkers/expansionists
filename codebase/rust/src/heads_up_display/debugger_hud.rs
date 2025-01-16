@@ -23,8 +23,8 @@ impl ILabel for DebuggerHUD {
 
     let color =
       if fps < 30.0 { Color::RED }
-      else if fps < 60.0 { Color::YELLOW }
-      else { Color::GREEN };
+      else if fps < 60.0 { Color::GREEN }
+      else { Color::SEA_GREEN };
 
     self.base_mut().set_modulate(color);
     self.base_mut().set_text(&text);

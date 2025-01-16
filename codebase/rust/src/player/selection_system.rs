@@ -160,9 +160,8 @@ impl UiDragBox {
   #[func]
   fn move_selected_troops(&mut self, moving_to: Vector3, territory_id: TerritoryId) {
     self.in_rect_troops
-      .iter()
+      .iter_mut()
       .for_each(|troop| {
-        let mut troop = troop.clone();
         troop.bind_mut().set_order_to_move_to(
           moving_to,
           &territory_id);
