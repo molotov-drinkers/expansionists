@@ -10,7 +10,7 @@ albedo_color = Color(0, 0.564706, 0.266667, 1)
 transform = Transform3D(0.04, 0, 0, 0, 0.04, 0, 0, 0, 0.04, 0, 0, 0)
 
 [node name="ChineseSailboat" parent="." index="0"]
-transform = Transform3D(100, 0, 0, 0, -4.37114e-06, 100, 0, -100, -4.37114e-06, 0, 0, 0)
+transform = Transform3D(100, 0, 0, 0, -4.37114e-06, 100, 0, -100, -4.37114e-06, 0, 0.179682, 0)
 surface_material_override/2 = SubResource("StandardMaterial3D_jttc1")
 
 [node name="shadow" type="Sprite3D" parent="ChineseSailboat" index="0"]

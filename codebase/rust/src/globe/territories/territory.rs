@@ -6,6 +6,7 @@ use godot::{builtin::Color, classes::{MeshInstance3D, StandardMaterial3D}, prelu
 use crate::player::player::PlayerId;
 use crate::{globe::coordinates_system::surface_point::Coordinates, player::player::PlayerStaticInfo};
 
+#[derive(Eq, PartialEq, Hash)]
 pub enum Continent {
   Africa,
   Asia,
@@ -33,6 +34,7 @@ impl fmt::Display for Continent {
   }
 }
 
+#[derive(Eq, PartialEq, Hash)]
 pub enum SubContinent {
   MiddleEast,
   InteriorAsia,
@@ -61,6 +63,7 @@ pub struct Location {
   pub sub_continent: Option<SubContinent>,
 }
 
+#[derive(Eq, PartialEq, Hash)]
 pub enum Size {
   Tiny,
   Small,
