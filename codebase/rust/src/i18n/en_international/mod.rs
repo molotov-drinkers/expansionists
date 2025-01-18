@@ -5,9 +5,9 @@ use crate::{
   i18n::base::{ILanguage, I18nContinent, I18nDefaultDictionary, I18nSubContinent, I18nSize}
 };
 
-pub struct AmericanSpanish {}
+pub struct InternationalEnglish {}
 
-impl ILanguage for AmericanSpanish {
+impl ILanguage for InternationalEnglish {
   fn get_territory_dictionary(&self) -> I18nDefaultDictionary<'static> {
     HashMap::from([
       ("horn", "Horn"),

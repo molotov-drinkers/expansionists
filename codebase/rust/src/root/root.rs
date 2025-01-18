@@ -2,6 +2,7 @@ use godot::classes::{INode3D, Node3D};
 use godot::prelude::*;
 
 use crate::globe::coordinates_system::virtual_planet::VirtualPlanet;
+use crate::i18n::base::AvailableLanguage;
 use crate::player::color::PlayerColor;
 use crate::player::player::{Player, PlayerType, TroopMeshes};
 use crate::troops::mesh_map::MeshId;
@@ -54,7 +55,8 @@ impl RootScene {
       TroopMeshes {
         land: MeshId::Tank1,
         sea: MeshId::Galleon,
-      },      
+      },
+      AvailableLanguage::BrazilianPortuguese,
     );
 
     let mut cpu_2 = Player::new_alloc();
@@ -68,6 +70,7 @@ impl RootScene {
         land: MeshId::Truck1,
         sea: MeshId::Boat2,
       },      
+      AvailableLanguage::InternationalEnglish,
     );
 
     let mut cpu_3 = Player::new_alloc();
@@ -81,6 +84,7 @@ impl RootScene {
         land: MeshId::Tonk,
         sea: MeshId::Boat6,
       },      
+      AvailableLanguage::InternationalEnglish,
     );
 
     let mut cpu_4 = Player::new_alloc();
@@ -94,6 +98,7 @@ impl RootScene {
         land: MeshId::Cannon,
         sea: MeshId::Boat5,
       },      
+      AvailableLanguage::InternationalEnglish,
     );
 
     players_node.add_child(&player_1);

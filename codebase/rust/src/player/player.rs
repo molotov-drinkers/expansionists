@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet};
 
 use godot::{classes::INode3D, prelude::*};
 
-use crate::{globe::{coordinates_system::virtual_planet::VirtualPlanet, territories::territory::TerritoryId}, root::root::RootScene, troops::mesh_map::MeshId};
+use crate::{globe::{coordinates_system::virtual_planet::VirtualPlanet, territories::territory::TerritoryId}, i18n::base::AvailableLanguage, root::root::RootScene, troops::mesh_map::MeshId};
 use super::color::PlayerColor;
 
 /// Defines
@@ -75,6 +75,7 @@ pub struct PlayerStaticInfo {
   pub initial_territory: TerritoryId,
   pub player_type: PlayerType,
   pub troop_meshes: TroopMeshes,
+  pub chosen_language: AvailableLanguage,
 }
 
 #[godot_api]
@@ -106,6 +107,7 @@ impl Player {
     initial_territory: TerritoryId,
     player_type: PlayerType,
     troop_meshes: TroopMeshes,
+    chosen_language: AvailableLanguage,
   ) {
     self.static_info = PlayerStaticInfo {
       player_id,
@@ -114,6 +116,7 @@ impl Player {
       initial_territory,
       player_type,
       troop_meshes,
+      chosen_language,
     };
 
     let player_group_id = &Self::get_player_godot_identifier(player_id);
@@ -138,7 +141,8 @@ impl Player {
       troop_meshes: TroopMeshes {
         land: MeshId::Tank1,
         sea: MeshId::Boat1,
-      }
+      },
+      chosen_language: AvailableLanguage::InternationalEnglish,
     }
   }
 
@@ -186,6 +190,12 @@ impl Player {
   pub fn get_player_by_id(root_scene: Gd<RootScene>, player_id: PlayerId) -> Gd<Player> {
     let player = root_scene.get_node_as::<Player>(&format!("players/{player_id}"));
     player
+  }
+
+  pub fn get_player_language(root_scene: Gd<RootScene>, player_id: PlayerId) -> AvailableLanguage {
+    let player = Self::get_player_by_id(root_scene, player_id);
+    let chosen_language = player.bind().static_info.chosen_language.clone();
+    chosen_language
   }
 
 }
