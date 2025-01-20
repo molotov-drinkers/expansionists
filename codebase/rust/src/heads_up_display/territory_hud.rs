@@ -236,25 +236,35 @@ impl TerritoryHUD {
 
   fn show_updated_unoccupied_under_conflict_ruler_hud(under_conflict: &mut Gd<HBoxContainer>, ruler_label: &mut Gd<TextLabels>, general_dictionary: &I18nDefaultDictionary) {
     under_conflict.set_visible(true);
-    ruler_label
-      .set_text(*general_dictionary.get("unoccupied_under_conflict")
+    ruler_label.set_text(
+      *general_dictionary
+      .get("unoccupied_under_conflict")
       .expect("Expected general_dictionary to have unoccupied_under_conflict")
     );
   }
 
   fn show_updated_occupation_in_progress_ruler_hud(occupation_in_progress: &mut Gd<HBoxContainer>, ruler_label: &mut Gd<TextLabels>, general_dictionary: &I18nDefaultDictionary) {
     occupation_in_progress.set_visible(true);
-    ruler_label
-      .set_text(*general_dictionary.get("occupation_in_progress")
+    ruler_label.set_text(
+      *general_dictionary
+      .get("occupation_in_progress")
       .expect("Expected general_dictionary to have occupation_in_progress")
     );
   }
 
   fn show_updated_unoccupied_ruler_hud(unoccupied: &mut Gd<HBoxContainer>, ruler_label: &mut Gd<TextLabels>, general_dictionary: &I18nDefaultDictionary) {
     unoccupied.set_visible(true);
-    ruler_label
-      .set_text(*general_dictionary.get("unoccupied_territory")
+    ruler_label.set_text(
+      *general_dictionary
+      .get("unoccupied_territory")
       .expect("Expected general_dictionary to have unoccupied_territory")
+    );
+    
+    let mut land_description = unoccupied.get_node_as::<TextLabels>("land_description");
+    land_description.set_text(
+      *general_dictionary
+      .get("empty_land")
+      .expect("Expected general_dictionary to have empty_land")
     );
   }
 

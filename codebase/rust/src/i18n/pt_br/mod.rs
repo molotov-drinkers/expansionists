@@ -138,6 +138,7 @@ impl ILanguage for BrazilianPortuguese {
       ("troops", "Tropas"),
 
       ("unoccupied_territory", "Território Desocupado"),
+      ("empty_land", "Territorio Vazio"),
       ("unoccupied_under_conflict", "Desocupado - Sob Conflito"),
       ("occupation_in_progress", "Ocupação em Progresso"),
       ("occupied_under_conflict", "{x} - Sob Conflito"),

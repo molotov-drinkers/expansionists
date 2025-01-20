@@ -251,7 +251,7 @@ visible = false
 layout_mode = 2
 alignment = 1
 
-[node name="Label" type="TextLabels" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/unoccupied"]
+[node name="land_description" type="TextLabels" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/unoccupied"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_fonts/font = ExtResource("2_8w76i")

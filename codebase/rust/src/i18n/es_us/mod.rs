@@ -139,6 +139,7 @@ impl ILanguage for AmericanSpanish {
       ("troops", "Troops"),
 
       ("unoccupied_territory", "Unoccupied Territory"),
+      ("empty_land", "Empty Land"),
       ("unoccupied_under_conflict", "Unoccupied - Under conflict"),
       ("occupation_in_progress", "Occupation in progress"),
       ("occupied_under_conflict", "{x} - Under Conflict"),
