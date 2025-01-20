@@ -48,7 +48,7 @@ impl RootScene {
     let mut player_1 = Player::new_alloc();
     player_1.bind_mut().set_player(
       1,
-      "Player 1".to_owned(),
+      "Menino Baum".to_owned(),
       PlayerColor::Red,
       "baffin_bay".to_owned(),
       PlayerType::MainPlayer,

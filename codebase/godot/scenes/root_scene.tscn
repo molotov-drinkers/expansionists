@@ -247,7 +247,6 @@ horizontal_alignment = 1
 uppercase = true
 
 [node name="unoccupied" type="HBoxContainer" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer"]
-visible = false
 layout_mode = 2
 alignment = 1
 
@@ -255,8 +254,10 @@ alignment = 1
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_fonts/font = ExtResource("2_8w76i")
+text = "Empty Land"
 
 [node name="occupation_in_progress" type="HBoxContainer" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer"]
+visible = false
 layout_mode = 2
 size_flags_vertical = 3
 

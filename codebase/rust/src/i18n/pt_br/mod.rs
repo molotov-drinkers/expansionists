@@ -103,7 +103,7 @@ impl ILanguage for BrazilianPortuguese {
       ("lake_baikal", "Lago Baical"),
       ("nordics", "Nórdicos"),
       ("the_islands", "As Ilhas"),
-      ("rhine_region", "Região do Réno"),
+      ("rhine_region", "Região do Reno"),
       ("balkan_peninsula", "Península Balcânica"),
       ("euro_romance_lands", "Terras de Línguas Românicas"),
       ("west_slavs", "Eslavos do Oeste"),

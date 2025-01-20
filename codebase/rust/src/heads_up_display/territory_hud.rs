@@ -311,7 +311,15 @@ impl TerritoryHUD {
     ruler_banner.set_color(ruler_color);
     ruler_label.set_text(&ruler.user_name);
 
-    let num_of_troops = territory.all_troops_deployed_and_arrived.len();
+    let Some(all_troops_deployed_and_arrived_by_ruler) = territory.all_troops_deployed_and_arrived_by_player.get(&ruler.player_id) else {
+      godot_warn!(
+        "Expected to find player_id in all_troops_deployed_and_arrived_by_player\n
+        TerritoryHUD::show_updated_occupation_in_progress_ruler_hud"
+      );
+      return;
+    };
+
+    let num_of_troops = all_troops_deployed_and_arrived_by_ruler.len();
     occupied.get_node_as::<TextLabels>("VBoxContainer/troops/TextLabels")
       .set_text(&format!("{:?}x", num_of_troops));
 
