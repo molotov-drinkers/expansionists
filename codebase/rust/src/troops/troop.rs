@@ -526,6 +526,7 @@ impl Troop {
         if territory.territory_states.contains(&TerritoryState::Unoccupied) && !territory.has_troops_from_different_players {
           godot_print!("Troop would start occupation! ::: {}", touching_territory_id);
           territory.territory_states.insert(TerritoryState::OccupationInProgress);
+          territory.territory_states.remove(&TerritoryState::UnoccupiedUnderConflict);
 
           let root = self.get_root_from_troop();
           let player = Player::get_player_by_id(root, self.owner.player_id.clone());
@@ -539,9 +540,12 @@ impl Troop {
         } else if territory_current_ruler.is_some_and(|ruler_static_info| ruler_static_info.player_id != self.owner.player_id) {
           godot_print!("Troop would start a combat or keep combating! ::: {}", touching_territory_id);
           // Entering enemy territory, could start combat or keep combatting until the territory is conquered
+          territory.territory_states.insert(TerritoryState::OccupiedUnderConflict);
+          territory.player_trying_to_conquer = Some(self.owner.clone());
 
         } else if territory.territory_states.contains(&TerritoryState::Unoccupied) && territory.has_troops_from_different_players {
-          // Could also use TerritoryState::UnoccupiedUnderConflict
+          territory.territory_states.insert(TerritoryState::UnoccupiedUnderConflict);
+          territory.player_trying_to_conquer = Some(self.owner.clone());
           // Entering a territory that started being occupied by someone else, should start combat and hold down the territory occupation
           // until the conflict is finished
           godot_print!("Troop would start a combat or keep combating. Also would pause enemy occupation! ::: {}", touching_territory_id);

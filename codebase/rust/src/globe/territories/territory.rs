@@ -131,6 +131,7 @@ pub struct Territory {
 
   pub time_to_be_conquered: f64,
   pub conquering_progress_per_second: f64,
+  /// TICKET: #93 This could possibly be a list of players trying to conquer the territory
   pub player_trying_to_conquer: Option<PlayerStaticInfo>,
   pub progress_to_reset_idle_conquering: f64,
 

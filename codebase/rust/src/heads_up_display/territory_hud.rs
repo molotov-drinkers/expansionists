@@ -159,17 +159,17 @@ impl TerritoryHUD {
         general_dictionary,
       );
 
-    } else if territory.territory_states.contains(&TerritoryState::Occupied) {
-      Self::show_updated_occupied_ruler_hud(
-        &mut occupied,
+    } else if territory.territory_states.contains(&TerritoryState::OccupiedUnderConflict) {
+      Self::show_updated_occupied_under_conflict_ruler_hud(
+        &mut under_conflict,
         &mut ruler_label,
         general_dictionary,
         &territory,
       );
 
-    } else if territory.territory_states.contains(&TerritoryState::OccupiedUnderConflict) {
-      Self::show_updated_occupied_under_conflict_ruler_hud(
-        &mut under_conflict,
+    } else if territory.territory_states.contains(&TerritoryState::Occupied) {
+      Self::show_updated_occupied_ruler_hud(
+        &mut occupied,
         &mut ruler_label,
         general_dictionary,
         &territory,

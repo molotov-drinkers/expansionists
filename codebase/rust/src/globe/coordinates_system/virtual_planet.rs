@@ -67,6 +67,7 @@ impl INode3D for VirtualPlanet {
       self.match_surface_points_and_territories();
       self.spawner_troop_engine_checker(delta);
       self.occupation_checker(delta);
+      self.check_territory_under_conflict();
     }
   }
 }
@@ -319,6 +320,8 @@ impl VirtualPlanet {
     territory.current_ruler = Some(player_static_info.clone());
     territory.territory_states.remove(&TerritoryState::Unoccupied);
     territory.territory_states.remove(&TerritoryState::OccupationInProgress);
+    territory.territory_states.remove(&TerritoryState::OccupiedUnderConflict);
+    territory.territory_states.remove(&TerritoryState::UnoccupiedUnderConflict);
     territory.territory_states.insert(TerritoryState::Occupied);
 
     let mut territory_mesh = player_bind
@@ -378,6 +381,17 @@ impl VirtualPlanet {
       .territories
       .iter_mut()
       .filter(|(_, territory)| territory.current_ruler.is_some())
+      .collect()
+  }
+
+  fn get_mut_territories_under_conflict(&mut self) -> Vec<(&TerritoryId, &mut Territory)> {
+    self
+      .territories
+      .iter_mut()
+      .filter(|(_, territory)|
+        territory.territory_states.contains(&TerritoryState::OccupiedUnderConflict) ||
+        territory.territory_states.contains(&TerritoryState::UnoccupiedUnderConflict)
+      )
       .collect()
   }
 
@@ -443,5 +457,15 @@ impl VirtualPlanet {
         Self::set_new_territory_ruler(territory, &mut player);
       }
     }
+  }
+  
+  fn check_territory_under_conflict(&mut self) {
+    self.get_mut_territories_under_conflict().iter_mut().for_each(|(_, territory)| {
+
+      if !territory.has_troops_from_different_players {
+        territory.territory_states.remove(&TerritoryState::OccupiedUnderConflict);
+        territory.territory_states.remove(&TerritoryState::UnoccupiedUnderConflict);
+      }
+    });
   }
 }
