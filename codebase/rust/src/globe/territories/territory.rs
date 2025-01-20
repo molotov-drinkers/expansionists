@@ -97,16 +97,11 @@ pub type TroopId = String;
 
 #[derive(Hash, Eq, PartialEq)]
 pub enum TerritoryState {
-  /// Blank state, no player has control over the territory
-  NoRuler,
-
-  StartingOccupationOfTerritoryWithNoRuler,
-  
-  /// Under conflict, it doesn't matter if current_ruler is_some or not
-  InWar,
-
-  /// Ruled by a player, check current_ruler to know who
-  RuledBySomeone,
+  Unoccupied,
+  UnoccupiedUnderConflict,
+  OccupationInProgress,
+  Occupied,
+  OccupiedUnderConflict,
 }
 
 /// Not a Godot class, look at `land.rs`, `surface_point.rs` and
@@ -190,7 +185,7 @@ impl Territory {
       spawner_location: Vector3::ZERO,
 
       territory_states: HashSet::from([
-        TerritoryState::NoRuler,
+        TerritoryState::Unoccupied,
       ]),
 
       all_troops_deployed: HashSet::new(),

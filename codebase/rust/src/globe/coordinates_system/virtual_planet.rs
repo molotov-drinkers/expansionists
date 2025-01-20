@@ -317,9 +317,9 @@ impl VirtualPlanet {
 
     territory.player_trying_to_conquer = None;
     territory.current_ruler = Some(player_static_info.clone());
-    territory.territory_states.remove(&TerritoryState::NoRuler);
-    territory.territory_states.remove(&TerritoryState::StartingOccupationOfTerritoryWithNoRuler);
-    territory.territory_states.insert(TerritoryState::RuledBySomeone);
+    territory.territory_states.remove(&TerritoryState::Unoccupied);
+    territory.territory_states.remove(&TerritoryState::OccupationInProgress);
+    territory.territory_states.insert(TerritoryState::Occupied);
 
     let mut territory_mesh = player_bind
       .get_root_from_player()
@@ -403,7 +403,7 @@ impl VirtualPlanet {
     self
       .territories
       .iter_mut()
-      .filter(|(_, territory)| territory.territory_states.contains(&TerritoryState::StartingOccupationOfTerritoryWithNoRuler))
+      .filter(|(_, territory)| territory.territory_states.contains(&TerritoryState::OccupationInProgress))
       .collect()
   }
 

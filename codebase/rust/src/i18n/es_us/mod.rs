@@ -137,7 +137,12 @@ impl ILanguage for AmericanSpanish {
     HashMap::from([
       ("troop", "Troop"),
       ("troops", "Troops"),
+
       ("unoccupied_territory", "Unoccupied Territory"),
+      ("unoccupied_under_conflict", "Unoccupied - Under conflict"),
+      ("occupation_in_progress", "Occupation in progress"),
+      ("occupied_under_conflict", "{x} - Under Conflict"),
+
       ("ruler", "Ruler"),
       ("every_x_secs", "Every {x} secs"),
       ("max_troops", "Max Troops"),

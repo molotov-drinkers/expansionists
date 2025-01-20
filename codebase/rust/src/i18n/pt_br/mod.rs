@@ -136,7 +136,12 @@ impl ILanguage for BrazilianPortuguese {
     HashMap::from([
       ("troop", "Tropa"),
       ("troops", "Tropas"),
+
       ("unoccupied_territory", "Território Desocupado"),
+      ("unoccupied_under_conflict", "Desocupado - Sob Conflito"),
+      ("occupation_in_progress", "Ocupação em Progresso"),
+      ("occupied_under_conflict", "{x} - Sob Conflito"),
+
       ("ruler", "Regente"),
       ("every_x_secs", "A cada {x} segundos"),
       ("max_troops", "Max Troops"),

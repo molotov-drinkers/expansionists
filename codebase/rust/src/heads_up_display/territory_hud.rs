@@ -2,14 +2,13 @@ use godot::classes::{ColorRect, Control, HBoxContainer, IControl};
 use godot::prelude::*;
 
 use crate::globe::coordinates_system::virtual_planet::VirtualPlanet;
-use crate::globe::territories::territory::{Territory, TerritoryId};
-use crate::i18n::base::AvailableLanguage;
+use crate::globe::territories::territory::{Territory, TerritoryId, TerritoryState};
+use crate::i18n::base::{AvailableLanguage, I18nDefaultDictionary};
 use crate::player::color::PlayerColor;
 use crate::player::player::Player;
 use crate::root::root::RootScene;
 
 use super::text_labels::TextLabels;
-
 
 #[derive(GodotClass)]
 #[class(base=Control)]
@@ -127,40 +126,54 @@ impl TerritoryHUD {
   }
 
   fn activate_ruler_part(&mut self, territory: &Territory) {
-    let shared_path = "ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/";
-    let mut occupied = self.base().get_node_as::<HBoxContainer>(
-      &(shared_path.to_owned() + "occupied")
-    );
+    let (
+      mut ruler_label,
+      mut unoccupied,
+      mut under_conflict,
+      mut occupation_in_progress,
+      mut occupied,
+    ) = self.get_ruler_states_godot_classes();
 
-    let mut unoccupied = self.base().get_node_as::<HBoxContainer>(
-      &(shared_path.to_owned() + "unoccupied")
-    );
+    let base_dictionaries = self.chosen_language.get_translations();
+    let general_dictionary = &base_dictionaries.get_general_dictionary();
 
-    let mut ruler_label = self.base().get_node_as::<TextLabels>(
-      &(shared_path.to_owned() + "HBoxContainer/TextLabels")
-    );
+    if territory.territory_states.contains(&TerritoryState::UnoccupiedUnderConflict) {
+      Self::edit_unoccupied_under_conflict_ruler_hud(
+        &mut under_conflict,
+        &mut ruler_label,
+        general_dictionary,
+      );
 
-    if territory.current_ruler.is_some() {
-      occupied.set_visible(true);
-      unoccupied.set_visible(false);
+    } else if territory.territory_states.contains(&TerritoryState::OccupationInProgress) {
+      Self::edit_occupation_in_progress_ruler_hud(
+        &mut occupation_in_progress,
+        &mut ruler_label,
+        general_dictionary,
+      );
 
-      let ruler = territory.current_ruler.as_ref().unwrap();
-      let ruler_color = PlayerColor::get_banner_player_color(&ruler.color);
-      let mut ruler_banner = occupied.get_node_as::<ColorRect>("banner");
-      
-      ruler_banner.set_color(ruler_color);
-      ruler_label.set_text(&ruler.user_name);
+    } else if territory.territory_states.contains(&TerritoryState::Unoccupied) {
+      Self::edit_unoccupied_ruler_hud(
+        &mut unoccupied,
+        &mut ruler_label,
+        general_dictionary,
+      );
 
-      let num_of_troops = territory.all_troops_deployed_and_arrived.len();
-      occupied.get_node_as::<TextLabels>("VBoxContainer/troops/TextLabels")
-        .set_text(&format!("{:?}x", num_of_troops));
+    } else if territory.territory_states.contains(&TerritoryState::Occupied) {
+      Self::edit_occupied_ruler_hud(
+        &mut occupied,
+        &mut ruler_label,
+        general_dictionary,
+        &territory,
+      );
 
-      return
+    } else if territory.territory_states.contains(&TerritoryState::OccupiedUnderConflict) {
+      Self::edit_occupied_under_conflict_ruler_hud(
+        &mut under_conflict,
+        &mut ruler_label,
+        general_dictionary,
+        &territory,
+      );
     }
-
-    occupied.set_visible(false);
-    unoccupied.set_visible(true);
-    ruler_label.set_text("Ruler");
   }
 
   pub fn clean_hud(&mut self) {
@@ -184,4 +197,92 @@ impl TerritoryHUD {
 
     virtual_planet
   }
+
+  fn get_ruler_states_godot_classes(&mut self) -> (Gd<TextLabels>, Gd<HBoxContainer>, Gd<HBoxContainer>, Gd<HBoxContainer>, Gd<HBoxContainer>) {
+    let shared_path = "ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/";
+    let ruler_label = self.base().get_node_as::<TextLabels>(
+      &(shared_path.to_owned() + "HBoxContainer/TextLabels")
+    );
+    
+    let mut occupied = self.base().get_node_as::<HBoxContainer>(
+      &(shared_path.to_owned() + "occupied")
+    );
+
+    let mut unoccupied = self.base().get_node_as::<HBoxContainer>(
+      &(shared_path.to_owned() + "unoccupied")
+    );
+
+    let mut occupation_in_progress = self.base().get_node_as::<HBoxContainer>(
+      &(shared_path.to_owned() + "occupation_in_progress")
+    );
+
+    let mut under_conflict = self.base().get_node_as::<HBoxContainer>(
+      &(shared_path.to_owned() + "under_conflict")
+    );
+
+    occupied.set_visible(false);
+    unoccupied.set_visible(false);
+    occupation_in_progress.set_visible(false);
+    under_conflict.set_visible(false);
+
+    (
+      ruler_label,
+      unoccupied,
+      under_conflict,
+      occupation_in_progress,
+      occupied,
+    )
+  }
+
+  fn edit_unoccupied_under_conflict_ruler_hud(under_conflict: &mut Gd<HBoxContainer>, ruler_label: &mut Gd<TextLabels>, general_dictionary: &I18nDefaultDictionary) {
+    under_conflict.set_visible(true);
+    ruler_label
+      .set_text(*general_dictionary.get("unoccupied_under_conflict")
+      .expect("Expected general_dictionary to have unoccupied_under_conflict")
+    );
+  }
+
+  fn edit_occupation_in_progress_ruler_hud(occupation_in_progress: &mut Gd<HBoxContainer>, ruler_label: &mut Gd<TextLabels>, general_dictionary: &I18nDefaultDictionary) {
+    occupation_in_progress.set_visible(true);
+    ruler_label
+      .set_text(*general_dictionary.get("occupation_in_progress")
+      .expect("Expected general_dictionary to have occupation_in_progress")
+    );
+
+  }
+
+  fn edit_unoccupied_ruler_hud(unoccupied: &mut Gd<HBoxContainer>, ruler_label: &mut Gd<TextLabels>, general_dictionary: &I18nDefaultDictionary) {
+    unoccupied.set_visible(true);
+    ruler_label
+      .set_text(*general_dictionary.get("unoccupied_territory")
+      .expect("Expected general_dictionary to have unoccupied_territory")
+    );
+  }
+
+  fn edit_occupied_ruler_hud(occupied: &mut Gd<HBoxContainer>, ruler_label: &mut Gd<TextLabels>, _general_dictionary: &I18nDefaultDictionary, territory: &Territory) {
+    occupied.set_visible(true);
+      let ruler = territory.current_ruler.as_ref().unwrap();
+      let ruler_color = PlayerColor::get_banner_player_color(&ruler.color);
+      let mut ruler_banner = occupied.get_node_as::<ColorRect>("banner");
+      
+      ruler_banner.set_color(ruler_color);
+      ruler_label.set_text(&ruler.user_name);
+
+      let num_of_troops = territory.all_troops_deployed_and_arrived.len();
+      occupied.get_node_as::<TextLabels>("VBoxContainer/troops/TextLabels")
+        .set_text(&format!("{:?}x", num_of_troops));
+  }
+
+  fn edit_occupied_under_conflict_ruler_hud(under_conflict: &mut Gd<HBoxContainer>, ruler_label: &mut Gd<TextLabels>, general_dictionary: &I18nDefaultDictionary, territory: &Territory) {
+    under_conflict.set_visible(true);
+    let ruler = territory.current_ruler.as_ref().unwrap();
+
+    let translated_occupied_under_conflict = general_dictionary
+      .get("occupied_under_conflict")
+      .expect("Expected to find occupied_under_conflict in dictionary");
+    let translated_occupied_under_conflict = translated_occupied_under_conflict
+      .replace("{x}", &ruler.user_name.as_str());
+    ruler_label.set_text(&translated_occupied_under_conflict);
+  }
+
 }
