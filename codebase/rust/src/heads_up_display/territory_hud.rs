@@ -1,4 +1,4 @@
-use godot::classes::{ColorRect, Control, HBoxContainer, IControl};
+use godot::classes::{ColorRect, Control, HBoxContainer, IControl, ProgressBar};
 use godot::prelude::*;
 
 use crate::globe::coordinates_system::virtual_planet::VirtualPlanet;
@@ -149,6 +149,7 @@ impl TerritoryHUD {
         &mut occupation_in_progress,
         &mut ruler_label,
         general_dictionary,
+        &territory,
       );
 
     } else if territory.territory_states.contains(&TerritoryState::Unoccupied) {
@@ -243,13 +244,46 @@ impl TerritoryHUD {
     );
   }
 
-  fn show_updated_occupation_in_progress_ruler_hud(occupation_in_progress: &mut Gd<HBoxContainer>, ruler_label: &mut Gd<TextLabels>, general_dictionary: &I18nDefaultDictionary) {
+  fn show_updated_occupation_in_progress_ruler_hud(occupation_in_progress: &mut Gd<HBoxContainer>, ruler_label: &mut Gd<TextLabels>, general_dictionary: &I18nDefaultDictionary, territory: &Territory) {
     occupation_in_progress.set_visible(true);
     ruler_label.set_text(
       *general_dictionary
       .get("occupation_in_progress")
       .expect("Expected general_dictionary to have occupation_in_progress")
     );
+
+    let Some(player_trying_to_conquer) = &territory.player_trying_to_conquer else { return; };
+    let player_id = player_trying_to_conquer.player_id;
+    let occupier_color = PlayerColor::get_banner_player_color(&player_trying_to_conquer.color);
+    let mut occupier_banner = occupation_in_progress.get_node_as::<ColorRect>("banner");
+    
+    occupier_banner.set_color(occupier_color);
+
+    let Some(all_troops_deployed_and_arrived_by_occupier) = territory.all_troops_deployed_and_arrived_by_player.get(&player_id) else {
+      godot_warn!(
+        "Expected to find player_id in all_troops_deployed_and_arrived_by_player\n
+        TerritoryHUD::show_updated_occupation_in_progress_ruler_hud"
+      );
+      return;
+    };
+
+    let num_of_troops = all_troops_deployed_and_arrived_by_occupier.len();
+    occupation_in_progress.get_node_as::<TextLabels>("VBoxContainer/troops/TextLabels")
+      .set_text(&format!("{:?}x", num_of_troops));
+
+    let mut occupation_progress_bar = occupation_in_progress.get_node_as::<ProgressBar>("HBoxContainer/ProgressBar");
+    let mut occupation_progress_text = occupation_in_progress.get_node_as::<TextLabels>("HBoxContainer/TextLabels");
+
+    let percentage = territory.conquering_progress_per_second * 100. / territory.time_to_be_conquered;
+    occupation_progress_bar.set_value(percentage);
+    occupation_progress_bar.set_modulate(occupier_color);
+
+    occupation_progress_text.set_text(
+      *general_dictionary
+      .get("occupying_progress")
+      .expect("Expected general_dictionary to have occupying_progress")
+    );
+
   }
 
   fn show_updated_unoccupied_ruler_hud(unoccupied: &mut Gd<HBoxContainer>, ruler_label: &mut Gd<TextLabels>, general_dictionary: &I18nDefaultDictionary) {
@@ -268,7 +302,7 @@ impl TerritoryHUD {
     );
   }
 
-  fn show_updated_occupied_ruler_hud(occupied: &mut Gd<HBoxContainer>, ruler_label: &mut Gd<TextLabels>, _general_dictionary: &I18nDefaultDictionary, territory: &Territory) {
+  fn show_updated_occupied_ruler_hud(occupied: &mut Gd<HBoxContainer>, ruler_label: &mut Gd<TextLabels>, general_dictionary: &I18nDefaultDictionary, territory: &Territory) {
     occupied.set_visible(true);
     let ruler = territory.current_ruler.as_ref().unwrap();
     let ruler_color = PlayerColor::get_banner_player_color(&ruler.color);
@@ -280,6 +314,18 @@ impl TerritoryHUD {
     let num_of_troops = territory.all_troops_deployed_and_arrived.len();
     occupied.get_node_as::<TextLabels>("VBoxContainer/troops/TextLabels")
       .set_text(&format!("{:?}x", num_of_troops));
+
+    let mut next_troop_progress_bar = occupied.get_node_as::<ProgressBar>("HBoxContainer/ProgressBar");
+    let mut next_troop_progress_text = occupied.get_node_as::<TextLabels>("HBoxContainer/TextLabels");
+
+    next_troop_progress_bar.set_value(territory.next_troop_progress);
+    next_troop_progress_bar.set_modulate(ruler_color);
+
+    next_troop_progress_text.set_text(
+      *general_dictionary
+      .get("next_troop_progress")
+      .expect("Expected general_dictionary to have occupying_progress")
+    );
   }
 
   fn show_updated_occupied_under_conflict_ruler_hud(under_conflict: &mut Gd<HBoxContainer>, ruler_label: &mut Gd<TextLabels>, general_dictionary: &I18nDefaultDictionary, territory: &Territory) {

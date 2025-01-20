@@ -260,6 +260,15 @@ theme_override_fonts/font = ExtResource("2_8w76i")
 layout_mode = 2
 size_flags_vertical = 3
 
+[node name="banner" type="ColorRect" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/occupation_in_progress"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.1
+
+[node name="MarginContainer2" type="MarginContainer" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/occupation_in_progress"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+
 [node name="VBoxContainer" type="VBoxContainer" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/occupation_in_progress"]
 layout_mode = 2
 
@@ -287,21 +296,37 @@ expand_mode = 2
 layout_mode = 2
 theme_override_constants/margin_left = 16
 
-[node name="banner" type="ColorRect" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/occupation_in_progress"]
+[node name="HBoxContainer" type="VBoxContainer" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/occupation_in_progress"]
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_stretch_ratio = 0.1
 
-[node name="ProgressBar" type="ProgressBar" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/occupation_in_progress"]
+[node name="TextLabels" type="TextLabels" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/occupation_in_progress/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("2_8w76i")
+text = "Occupying progress"
+
+[node name="ProgressBar" type="ProgressBar" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/occupation_in_progress/HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_vertical = 1
+size_flags_vertical = 3
+show_percentage = false
 
 [node name="under_conflict" type="HBoxContainer" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer"]
 visible = false
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 3
+
+[node name="banner_left" type="ColorRect" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/under_conflict"]
+custom_minimum_size = Vector2(24, 0)
+layout_mode = 2
+size_flags_horizontal = 4
+
+[node name="MarginContainer4" type="MarginContainer" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/under_conflict"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
 
 [node name="VBoxContainer" type="VBoxContainer" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/under_conflict"]
 layout_mode = 2
@@ -365,10 +390,29 @@ theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_fonts/font = ExtResource("2_8w76i")
 text = "x1"
 
+[node name="MarginContainer3" type="MarginContainer" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/under_conflict"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+
+[node name="banner_right" type="ColorRect" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/under_conflict"]
+custom_minimum_size = Vector2(24, 0)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_stretch_ratio = 0.1
+
 [node name="occupied" type="HBoxContainer" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer"]
 visible = false
 layout_mode = 2
 size_flags_vertical = 3
+
+[node name="banner" type="ColorRect" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/occupied"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.1
+
+[node name="MarginContainer2" type="MarginContainer" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/occupied"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
 
 [node name="VBoxContainer" type="VBoxContainer" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/occupied"]
 layout_mode = 2
@@ -397,15 +441,22 @@ expand_mode = 2
 layout_mode = 2
 theme_override_constants/margin_left = 16
 
-[node name="banner" type="ColorRect" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/occupied"]
+[node name="HBoxContainer" type="VBoxContainer" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/occupied"]
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_stretch_ratio = 0.1
 
-[node name="ProgressBar" type="ProgressBar" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/occupied"]
+[node name="TextLabels" type="TextLabels" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/occupied/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("2_8w76i")
+text = "Next Troop"
+
+[node name="ProgressBar" type="ProgressBar" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/occupied/HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_vertical = 1
+size_flags_vertical = 3
+show_percentage = false
 
 [node name="selection_hud" type="SelectionHUD" parent="ui"]
 visible = false

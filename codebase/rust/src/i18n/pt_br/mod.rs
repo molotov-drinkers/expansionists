@@ -40,7 +40,7 @@ impl ILanguage for BrazilianPortuguese {
       ("labrador_sea_neighbors", "Vizinhos do Mar do Labrador"),
       ("new_great_britain", "Nova Grã-Bretanha"),
       ("mississippi_way", "Caminho do Mississippi"),
-      ("romance_speaking_territory", "Território de Língua Romântica"),
+      ("romance_speaking_territory", "Território de Língua Românica"),
       ("southern_north", "O Sul do Norte"),
       ("parallel_49th", "Paralelo 49"),
       ("great_bear_lake", "Grande Lago do Urso"),
@@ -142,6 +142,8 @@ impl ILanguage for BrazilianPortuguese {
       ("unoccupied_under_conflict", "Desocupado - Sob Conflito"),
       ("occupation_in_progress", "Ocupação em Progresso"),
       ("occupied_under_conflict", "{x} - Sob Conflito"),
+      ("occupying_progress", "Ocupando:"),
+      ("next_troop_progress", "Proxima Tropa:"),
 
       ("ruler", "Regente"),
       ("every_x_secs", "A cada {x} segundos"),

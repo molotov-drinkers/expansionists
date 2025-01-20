@@ -143,6 +143,8 @@ impl ILanguage for AmericanSpanish {
       ("unoccupied_under_conflict", "Unoccupied - Under conflict"),
       ("occupation_in_progress", "Occupation in progress"),
       ("occupied_under_conflict", "{x} - Under Conflict"),
+      ("occupying_progress", "Ocupando:"),
+      ("next_troop_progress", "Next Troop:"),
 
       ("ruler", "Ruler"),
       ("every_x_secs", "Every {x} secs"),
