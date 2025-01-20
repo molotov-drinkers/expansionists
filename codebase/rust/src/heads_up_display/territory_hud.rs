@@ -138,28 +138,28 @@ impl TerritoryHUD {
     let general_dictionary = &base_dictionaries.get_general_dictionary();
 
     if territory.territory_states.contains(&TerritoryState::UnoccupiedUnderConflict) {
-      Self::edit_unoccupied_under_conflict_ruler_hud(
+      Self::show_updated_unoccupied_under_conflict_ruler_hud(
         &mut under_conflict,
         &mut ruler_label,
         general_dictionary,
       );
 
     } else if territory.territory_states.contains(&TerritoryState::OccupationInProgress) {
-      Self::edit_occupation_in_progress_ruler_hud(
+      Self::show_updated_occupation_in_progress_ruler_hud(
         &mut occupation_in_progress,
         &mut ruler_label,
         general_dictionary,
       );
 
     } else if territory.territory_states.contains(&TerritoryState::Unoccupied) {
-      Self::edit_unoccupied_ruler_hud(
+      Self::show_updated_unoccupied_ruler_hud(
         &mut unoccupied,
         &mut ruler_label,
         general_dictionary,
       );
 
     } else if territory.territory_states.contains(&TerritoryState::Occupied) {
-      Self::edit_occupied_ruler_hud(
+      Self::show_updated_occupied_ruler_hud(
         &mut occupied,
         &mut ruler_label,
         general_dictionary,
@@ -167,7 +167,7 @@ impl TerritoryHUD {
       );
 
     } else if territory.territory_states.contains(&TerritoryState::OccupiedUnderConflict) {
-      Self::edit_occupied_under_conflict_ruler_hud(
+      Self::show_updated_occupied_under_conflict_ruler_hud(
         &mut under_conflict,
         &mut ruler_label,
         general_dictionary,
@@ -234,7 +234,7 @@ impl TerritoryHUD {
     )
   }
 
-  fn edit_unoccupied_under_conflict_ruler_hud(under_conflict: &mut Gd<HBoxContainer>, ruler_label: &mut Gd<TextLabels>, general_dictionary: &I18nDefaultDictionary) {
+  fn show_updated_unoccupied_under_conflict_ruler_hud(under_conflict: &mut Gd<HBoxContainer>, ruler_label: &mut Gd<TextLabels>, general_dictionary: &I18nDefaultDictionary) {
     under_conflict.set_visible(true);
     ruler_label
       .set_text(*general_dictionary.get("unoccupied_under_conflict")
@@ -242,16 +242,15 @@ impl TerritoryHUD {
     );
   }
 
-  fn edit_occupation_in_progress_ruler_hud(occupation_in_progress: &mut Gd<HBoxContainer>, ruler_label: &mut Gd<TextLabels>, general_dictionary: &I18nDefaultDictionary) {
+  fn show_updated_occupation_in_progress_ruler_hud(occupation_in_progress: &mut Gd<HBoxContainer>, ruler_label: &mut Gd<TextLabels>, general_dictionary: &I18nDefaultDictionary) {
     occupation_in_progress.set_visible(true);
     ruler_label
       .set_text(*general_dictionary.get("occupation_in_progress")
       .expect("Expected general_dictionary to have occupation_in_progress")
     );
-
   }
 
-  fn edit_unoccupied_ruler_hud(unoccupied: &mut Gd<HBoxContainer>, ruler_label: &mut Gd<TextLabels>, general_dictionary: &I18nDefaultDictionary) {
+  fn show_updated_unoccupied_ruler_hud(unoccupied: &mut Gd<HBoxContainer>, ruler_label: &mut Gd<TextLabels>, general_dictionary: &I18nDefaultDictionary) {
     unoccupied.set_visible(true);
     ruler_label
       .set_text(*general_dictionary.get("unoccupied_territory")
@@ -259,21 +258,21 @@ impl TerritoryHUD {
     );
   }
 
-  fn edit_occupied_ruler_hud(occupied: &mut Gd<HBoxContainer>, ruler_label: &mut Gd<TextLabels>, _general_dictionary: &I18nDefaultDictionary, territory: &Territory) {
+  fn show_updated_occupied_ruler_hud(occupied: &mut Gd<HBoxContainer>, ruler_label: &mut Gd<TextLabels>, _general_dictionary: &I18nDefaultDictionary, territory: &Territory) {
     occupied.set_visible(true);
-      let ruler = territory.current_ruler.as_ref().unwrap();
-      let ruler_color = PlayerColor::get_banner_player_color(&ruler.color);
-      let mut ruler_banner = occupied.get_node_as::<ColorRect>("banner");
-      
-      ruler_banner.set_color(ruler_color);
-      ruler_label.set_text(&ruler.user_name);
+    let ruler = territory.current_ruler.as_ref().unwrap();
+    let ruler_color = PlayerColor::get_banner_player_color(&ruler.color);
+    let mut ruler_banner = occupied.get_node_as::<ColorRect>("banner");
+    
+    ruler_banner.set_color(ruler_color);
+    ruler_label.set_text(&ruler.user_name);
 
-      let num_of_troops = territory.all_troops_deployed_and_arrived.len();
-      occupied.get_node_as::<TextLabels>("VBoxContainer/troops/TextLabels")
-        .set_text(&format!("{:?}x", num_of_troops));
+    let num_of_troops = territory.all_troops_deployed_and_arrived.len();
+    occupied.get_node_as::<TextLabels>("VBoxContainer/troops/TextLabels")
+      .set_text(&format!("{:?}x", num_of_troops));
   }
 
-  fn edit_occupied_under_conflict_ruler_hud(under_conflict: &mut Gd<HBoxContainer>, ruler_label: &mut Gd<TextLabels>, general_dictionary: &I18nDefaultDictionary, territory: &Territory) {
+  fn show_updated_occupied_under_conflict_ruler_hud(under_conflict: &mut Gd<HBoxContainer>, ruler_label: &mut Gd<TextLabels>, general_dictionary: &I18nDefaultDictionary, territory: &Territory) {
     under_conflict.set_visible(true);
     let ruler = territory.current_ruler.as_ref().unwrap();
 
