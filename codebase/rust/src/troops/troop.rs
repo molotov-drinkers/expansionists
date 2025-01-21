@@ -542,12 +542,15 @@ impl Troop {
           // Entering enemy territory, could start combat or keep combatting until the territory is conquered
           territory.territory_states.insert(TerritoryState::OccupiedUnderConflict);
           territory.player_trying_to_conquer = Some(self.owner.clone());
+          // TODO: set combat mode at troop
 
         } else if territory.territory_states.contains(&TerritoryState::Unoccupied) && territory.has_troops_from_different_players {
           territory.territory_states.insert(TerritoryState::UnoccupiedUnderConflict);
           territory.player_trying_to_conquer = Some(self.owner.clone());
           // Entering a territory that started being occupied by someone else, should start combat and hold down the territory occupation
           // until the conflict is finished
+          // TODO: set combat mode at troop
+
           godot_print!("Troop would start a combat or keep combating. Also would pause enemy occupation! ::: {}", touching_territory_id);
 
         } else {

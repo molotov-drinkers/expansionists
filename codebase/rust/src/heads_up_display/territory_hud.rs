@@ -1,4 +1,4 @@
-use godot::classes::{ColorRect, Control, HBoxContainer, IControl, ProgressBar};
+use godot::classes::{ColorRect, Control, HBoxContainer, IControl, ProgressBar, VBoxContainer};
 use godot::prelude::*;
 
 use crate::globe::coordinates_system::virtual_planet::VirtualPlanet;
@@ -199,26 +199,26 @@ impl TerritoryHUD {
     virtual_planet
   }
 
-  fn get_ruler_states_godot_classes(&mut self) -> (Gd<TextLabels>, Gd<HBoxContainer>, Gd<HBoxContainer>, Gd<HBoxContainer>, Gd<HBoxContainer>) {
+  fn get_ruler_states_godot_classes(&mut self) -> (Gd<TextLabels>, Gd<HBoxContainer>, Gd<VBoxContainer>, Gd<HBoxContainer>, Gd<HBoxContainer>) {
     let shared_path = "ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/";
     let ruler_label = self.base().get_node_as::<TextLabels>(
       &(shared_path.to_owned() + "HBoxContainer/TextLabels")
-    );
-    
-    let mut occupied = self.base().get_node_as::<HBoxContainer>(
-      &(shared_path.to_owned() + "occupied")
     );
 
     let mut unoccupied = self.base().get_node_as::<HBoxContainer>(
       &(shared_path.to_owned() + "unoccupied")
     );
 
+    let mut under_conflict = self.base().get_node_as::<VBoxContainer>(
+      &(shared_path.to_owned() + "under_conflict")
+    );
+
     let mut occupation_in_progress = self.base().get_node_as::<HBoxContainer>(
       &(shared_path.to_owned() + "occupation_in_progress")
     );
 
-    let mut under_conflict = self.base().get_node_as::<HBoxContainer>(
-      &(shared_path.to_owned() + "under_conflict")
+    let mut occupied = self.base().get_node_as::<HBoxContainer>(
+      &(shared_path.to_owned() + "occupied")
     );
 
     occupied.set_visible(false);
@@ -235,7 +235,7 @@ impl TerritoryHUD {
     )
   }
 
-  fn show_updated_unoccupied_under_conflict_ruler_hud(under_conflict: &mut Gd<HBoxContainer>, ruler_label: &mut Gd<TextLabels>, general_dictionary: &I18nDefaultDictionary) {
+  fn show_updated_unoccupied_under_conflict_ruler_hud(under_conflict: &mut Gd<VBoxContainer>, ruler_label: &mut Gd<TextLabels>, general_dictionary: &I18nDefaultDictionary) {
     under_conflict.set_visible(true);
     ruler_label.set_text(
       *general_dictionary
@@ -336,16 +336,63 @@ impl TerritoryHUD {
     );
   }
 
-  fn show_updated_occupied_under_conflict_ruler_hud(under_conflict: &mut Gd<HBoxContainer>, ruler_label: &mut Gd<TextLabels>, general_dictionary: &I18nDefaultDictionary, territory: &Territory) {
+  fn show_updated_occupied_under_conflict_ruler_hud(under_conflict: &mut Gd<VBoxContainer>, ruler_label: &mut Gd<TextLabels>, _general_dictionary: &I18nDefaultDictionary, territory: &Territory) {
     under_conflict.set_visible(true);
-    let ruler = territory.current_ruler.as_ref().unwrap();
+    // let ruler = territory.current_ruler.as_ref().unwrap();
 
-    let translated_occupied_under_conflict = general_dictionary
-      .get("occupied_under_conflict")
-      .expect("Expected to find occupied_under_conflict in dictionary");
-    let translated_occupied_under_conflict = translated_occupied_under_conflict
-      .replace("{x}", &ruler.user_name.as_str());
-    ruler_label.set_text(&translated_occupied_under_conflict);
+    let Some(player_trying_to_conquer) = &territory.player_trying_to_conquer else { return; };
+    let player_trying_to_conquer_id = player_trying_to_conquer.player_id;
+    let player_trying_to_conquer_color = PlayerColor::get_banner_player_color(&player_trying_to_conquer.color);
+    let Some(all_troops_deployed_and_arrived_by_player_trying_to_conquer) = territory.all_troops_deployed_and_arrived_by_player.get(&player_trying_to_conquer_id) else {
+      godot_warn!(
+        "Expected to find player_id in all_troops_deployed_and_arrived_by_player\n
+        TerritoryHUD::show_updated_occupation_in_progress_ruler_hud"
+      );
+      return;
+    };
+    let num_of_troops_of_player_trying_to_conquer = all_troops_deployed_and_arrived_by_player_trying_to_conquer.len() as f32;
+
+
+    let Some(ruler) = &territory.current_ruler else { return; };
+    let ruler_id = ruler.player_id;
+    let ruler_color = PlayerColor::get_banner_player_color(&ruler.color);
+    let Some(all_troops_deployed_and_arrived_by_ruler) = territory.all_troops_deployed_and_arrived_by_player.get(&ruler_id) else {
+      godot_warn!(
+        "Expected to find player_id in all_troops_deployed_and_arrived_by_player\n
+        TerritoryHUD::show_updated_occupation_in_progress_ruler_hud"
+      );
+      return;
+    };
+    let num_of_troops_of_ruler = all_troops_deployed_and_arrived_by_ruler.len() as f32;
+
+    // TODO: check and solve: what's up when it has 3+ players
+    let total_troops = territory.all_troops_deployed_and_arrived.len() as f32;
+    const MAX_STRAIGHT_RATIO: f32 = 20.;
+
+    let left_ratio = num_of_troops_of_ruler * MAX_STRAIGHT_RATIO / total_troops;
+    let right_ratio = num_of_troops_of_player_trying_to_conquer * MAX_STRAIGHT_RATIO / total_troops;
+
+    let mut fire_power_left_bar = under_conflict.get_node_as::<ColorRect>("fire_power_bars/left_bar");
+    let mut fire_power_right_bar = under_conflict.get_node_as::<ColorRect>("fire_power_bars/right_bar");
+
+    fire_power_left_bar.set_stretch_ratio(left_ratio);
+    fire_power_left_bar.set_color(ruler_color);
+
+    fire_power_right_bar.set_stretch_ratio(right_ratio);
+    fire_power_right_bar.set_color(player_trying_to_conquer_color);
+
+
+    let mut banner_left = under_conflict.get_node_as::<ColorRect>("HBoxContainer/banner_left");
+    let mut banner_right = under_conflict.get_node_as::<ColorRect>("HBoxContainer/banner_right");
+    banner_left.set_color(ruler_color);
+    banner_right.set_color(player_trying_to_conquer_color);
+
+    under_conflict.get_node_as::<TextLabels>("HBoxContainer/troops_left/TextLabels")
+      .set_text(&format!("{:.0}x", num_of_troops_of_ruler));
+    under_conflict.get_node_as::<TextLabels>("HBoxContainer/troops_right/TextLabels")
+      .set_text(&format!("{:.0}x", num_of_troops_of_player_trying_to_conquer));
+
+    ruler_label.set_text(&format!("{:} x {:}", &ruler.user_name.as_str(), &player_trying_to_conquer.user_name.as_str()));
   }
 
 }

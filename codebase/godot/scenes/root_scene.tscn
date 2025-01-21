@@ -247,6 +247,7 @@ horizontal_alignment = 1
 uppercase = true
 
 [node name="unoccupied" type="HBoxContainer" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer"]
+visible = false
 layout_mode = 2
 alignment = 1
 
@@ -314,88 +315,100 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 show_percentage = false
 
-[node name="under_conflict" type="HBoxContainer" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer"]
-visible = false
+[node name="under_conflict" type="VBoxContainer" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 3
 
-[node name="banner_left" type="ColorRect" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/under_conflict"]
+[node name="fire_power_bars" type="HBoxContainer" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/under_conflict"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="left_bar" type="ColorRect" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/under_conflict/fire_power_bars"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+color = Color(2.76752e-07, 0.421833, 0.179937, 1)
+
+[node name="right_bar" type="ColorRect" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/under_conflict/fire_power_bars"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+color = Color(0.620815, 0.53858, 0.183691, 1)
+
+[node name="HBoxContainer" type="HBoxContainer" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/under_conflict"]
+layout_mode = 2
+
+[node name="banner_left" type="ColorRect" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/under_conflict/HBoxContainer"]
 custom_minimum_size = Vector2(24, 0)
 layout_mode = 2
 size_flags_horizontal = 4
 
-[node name="MarginContainer4" type="MarginContainer" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/under_conflict"]
+[node name="MarginContainer4" type="MarginContainer" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/under_conflict/HBoxContainer"]
 layout_mode = 2
 theme_override_constants/margin_left = 16
 
-[node name="VBoxContainer" type="VBoxContainer" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/under_conflict"]
-layout_mode = 2
-
-[node name="troops" type="HBoxContainer" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/under_conflict/VBoxContainer"]
+[node name="troops_left" type="HBoxContainer" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/under_conflict/HBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = -5
 
-[node name="TextLabels" type="TextLabels" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/under_conflict/VBoxContainer/troops"]
+[node name="TextLabels" type="TextLabels" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/under_conflict/HBoxContainer/troops_left"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_fonts/font = ExtResource("2_8w76i")
 text = "x1"
 
-[node name="MarginContainer" type="MarginContainer" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/under_conflict/VBoxContainer/troops"]
+[node name="MarginContainer" type="MarginContainer" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/under_conflict/HBoxContainer/troops_left"]
 layout_mode = 2
 theme_override_constants/margin_left = 16
 
-[node name="TextureRect" type="TextureRect" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/under_conflict/VBoxContainer/troops"]
+[node name="TextureRect" type="TextureRect" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/under_conflict/HBoxContainer/troops_left"]
 layout_mode = 2
 texture = ExtResource("6_xmkgp")
 expand_mode = 2
 
-[node name="MarginContainer" type="MarginContainer" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/under_conflict"]
+[node name="MarginContainer" type="MarginContainer" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/under_conflict/HBoxContainer"]
 layout_mode = 2
 theme_override_constants/margin_left = 16
 
-[node name="TextLabels" type="TextLabels" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/under_conflict"]
+[node name="TextLabels" type="TextLabels" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/under_conflict/HBoxContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_fonts/font = ExtResource("2_8w76i")
 theme_override_font_sizes/font_size = 28
 text = "VS."
 
-[node name="MarginContainer2" type="MarginContainer" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/under_conflict"]
+[node name="MarginContainer2" type="MarginContainer" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/under_conflict/HBoxContainer"]
 layout_mode = 2
 theme_override_constants/margin_left = 16
 
-[node name="VBoxContainer2" type="VBoxContainer" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/under_conflict"]
-layout_mode = 2
-
-[node name="troops" type="HBoxContainer" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/under_conflict/VBoxContainer2"]
+[node name="troops_right" type="HBoxContainer" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/under_conflict/HBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = -5
 
-[node name="TextureRect" type="TextureRect" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/under_conflict/VBoxContainer2/troops"]
+[node name="TextureRect" type="TextureRect" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/under_conflict/HBoxContainer/troops_right"]
 layout_mode = 2
 texture = ExtResource("6_xmkgp")
 expand_mode = 2
 flip_h = true
 
-[node name="MarginContainer" type="MarginContainer" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/under_conflict/VBoxContainer2/troops"]
+[node name="MarginContainer" type="MarginContainer" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/under_conflict/HBoxContainer/troops_right"]
 layout_mode = 2
 theme_override_constants/margin_left = 16
 
-[node name="TextLabels" type="TextLabels" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/under_conflict/VBoxContainer2/troops"]
+[node name="TextLabels" type="TextLabels" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/under_conflict/HBoxContainer/troops_right"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_fonts/font = ExtResource("2_8w76i")
 text = "x1"
 
-[node name="MarginContainer3" type="MarginContainer" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/under_conflict"]
+[node name="MarginContainer3" type="MarginContainer" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/under_conflict/HBoxContainer"]
 layout_mode = 2
 theme_override_constants/margin_left = 16
 
-[node name="banner_right" type="ColorRect" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/under_conflict"]
+[node name="banner_right" type="ColorRect" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/under_conflict/HBoxContainer"]
 custom_minimum_size = Vector2(24, 0)
 layout_mode = 2
 size_flags_horizontal = 4
