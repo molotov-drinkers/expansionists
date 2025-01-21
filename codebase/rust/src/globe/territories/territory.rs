@@ -329,8 +329,6 @@ impl Territory {
     self.set_troops_from_different_players_flag();
   }
 
-  // TODO: potential bug here:
-  // when troop is asked to runaway and it been asked to get back, it may be not showing at the hashmap again, needs to check this
   pub fn inform_territory_departure(&mut self, troop_id: &TroopId, player_id: PlayerId) {
     self.all_troops_deployed.remove(troop_id);
     self.all_troops_deployed_and_arrived.remove(troop_id);

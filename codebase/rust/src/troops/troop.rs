@@ -36,7 +36,16 @@ enum TroopState {
   Deploying,
 
   /// Whenever the troop is in combat
-  Combating,
+  Combating(CombatTypes),
+}
+
+/// Combat types the troop can engage
+/// Needs to populate Self::combat_types() method
+#[derive(Hash, Eq, PartialEq, Clone)]
+enum CombatTypes {
+  Attacking,
+  Defending,
+  FightingOverUnoccupiedTerritory,
 }
 
 type TroopActivities = HashSet<TroopState>;
@@ -123,18 +132,23 @@ impl ICharacterBody3D for Troop {
     self.maybe_move_along_the_trajectory_and_set_orientation();
     self.decrease_idle_timer(delta);
     self.get_deployment_next_action();
+    self.trigger_combat_engage_if_needed();
   }
 }
 
 #[godot_api]
 impl Troop {
 
+  /// Group, Used to add represent the troop itself
   pub const TROOP_CLASS_NAME: &'static str = "troop";
 
-  /// Used to add represent the troop belongs to the player itself and
+  /// Group, Used to add represent the troop belongs to the player itself and
   /// it's not some other player's troop
   pub const MAIN_PLAYER_TROOPS: &'static str = "main_player_troops";
   pub const BOT_TROOPS: &'static str = "bot_troops";
+
+  /// Group, Used to add represent the troop is in combat
+  pub const TROOP_COMBATTING: &'static str = "troop_is_combatting";
 
   /// Defines the time the troop will wait before moving again while patrolling
   const DEFAULT_IDLE_TIMER: f32 = 0.7;
@@ -254,7 +268,7 @@ impl Troop {
   }
 
   fn maybe_populate_trajectory_points(&mut self) {
-    if !self.troop_activities.contains(&TroopState::Combating) &&
+    if !self.troop_is_combatting() &&
       !self.troop_activities.contains(&TroopState::Moving) &&
       self.troop_activities.contains(&TroopState::Patrolling) {
 
@@ -466,13 +480,9 @@ impl Troop {
   }
 
   fn get_virtual_planet_from_troop_scope(&self) -> Gd<VirtualPlanet> {
-    let virtual_planet =     self
+    self
       .get_root_from_troop()
-      .find_child("virtual_planet")
-      .expect("virtual_planet to exist")
-      .cast::<VirtualPlanet>();
-
-    virtual_planet
+      .get_node_as::<VirtualPlanet>("virtual_planet")
   }
 
   pub fn select_troop(&mut self) {
@@ -524,7 +534,6 @@ impl Troop {
           .as_ref();
 
         if territory.territory_states.contains(&TerritoryState::Unoccupied) && !territory.has_troops_from_different_players {
-          godot_print!("Troop would start occupation! ::: {}", touching_territory_id);
           territory.territory_states.insert(TerritoryState::OccupationInProgress);
           territory.territory_states.remove(&TerritoryState::UnoccupiedUnderConflict);
 
@@ -534,22 +543,20 @@ impl Troop {
           territory.player_trying_to_conquer = Some(player_static_info);
 
         } else if territory_current_ruler.is_some_and(|ruler_static_info| ruler_static_info.player_id == self.owner.player_id) {
-          godot_print!("Troop would start patrolling or defending its land! ::: {}", touching_territory_id);
           // Entering own territory, could start patrolling or start defending it from invaders
 
         } else if territory_current_ruler.is_some_and(|ruler_static_info| ruler_static_info.player_id != self.owner.player_id) {
-          godot_print!("Troop would start a combat or keep combating! ::: {}", touching_territory_id);
           // Entering enemy territory, could start combat or keep combatting until the territory is conquered
           territory.territory_states.insert(TerritoryState::OccupiedUnderConflict);
           territory.player_trying_to_conquer = Some(self.owner.clone());
-          // TODO: set combat mode at troop
 
         } else if territory.territory_states.contains(&TerritoryState::Unoccupied) && territory.has_troops_from_different_players {
           territory.territory_states.insert(TerritoryState::UnoccupiedUnderConflict);
           territory.player_trying_to_conquer = Some(self.owner.clone());
           // Entering a territory that started being occupied by someone else, should start combat and hold down the territory occupation
           // until the conflict is finished
-          // TODO: set combat mode at troop
+
+          // TODO: implement this, for now battle is happening only if territory has a ruler
 
           godot_print!("Troop would start a combat or keep combating. Also would pause enemy occupation! ::: {}", touching_territory_id);
 
@@ -557,7 +564,60 @@ impl Troop {
           godot_error!("Troop has no idea what to do after the deployment! ::: {}", touching_territory_id);
         }
       };
-
     }
   }
+
+  fn combat_types() -> [CombatTypes; 3] {
+    [
+      CombatTypes::Attacking,
+      CombatTypes::Defending,
+      CombatTypes::FightingOverUnoccupiedTerritory
+    ]
+  }
+
+  fn trigger_combat_engage_if_needed(&mut self) {
+    let Some(ref touching_territory_id) = self.touching_surface_point.territory_id else {
+      return;
+    };
+
+    let mut virtual_planet = self.get_virtual_planet_from_troop_scope();
+    let mut virtual_planet = virtual_planet.bind_mut();
+    let territory = virtual_planet.territories
+      .get_mut(touching_territory_id)
+      .expect(&format!("Expected to find territory {touching_territory_id}, at engage_combat_if_needed"));
+    
+    if territory.has_troops_from_different_players {
+
+      if territory.current_ruler.is_none() {
+        self.troop_activities.insert(TroopState::Combating(CombatTypes::FightingOverUnoccupiedTerritory));
+
+      } else {
+        territory.current_ruler.as_ref().map(|ruler_static_info| {
+          if ruler_static_info.player_id != self.owner.player_id {
+            self.troop_activities.insert(TroopState::Combating(CombatTypes::Attacking));
+          } else {
+            self.troop_activities.insert(TroopState::Combating(CombatTypes::Defending));
+          }
+        });
+      }
+
+    } else {
+      self.base_mut().remove_from_group(Self::TROOP_COMBATTING);
+      for combat_type in Self::combat_types().iter() {
+        self.troop_activities.remove(&TroopState::Combating(combat_type.clone()));
+      };
+    }
+
+  }
+
+  fn troop_is_combatting(&self) -> bool {
+    for combat_type in Self::combat_types().iter() {
+      if self.troop_activities.contains(&TroopState::Combating(combat_type.clone())) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
 }

@@ -33,7 +33,7 @@ rings = 0
 radius = 0.035
 height = 0.5
 
-[node name="projectile" type="Node3D"]
+[node name="projectile" type="Projectile"]
 transform = Transform3D(-0.6, 0, 5.24537e-08, 0, 0.6, 0, -5.24537e-08, 0, -0.6, 0, 0, 0)
 
 [node name="bullet" type="Node3D" parent="."]

@@ -87,6 +87,8 @@ patch_margin_bottom = 4
 
 [node name="highlighted_trajectories" type="Node3D" parent="troops"]
 
+[node name="projectiles" type="Node3D" parent="troops"]
+
 [node name="world_environment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_75xfn")
 
