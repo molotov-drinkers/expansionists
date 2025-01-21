@@ -63,7 +63,7 @@ pub struct Troop {
   surface: Surface,
 
   owner: PlayerStaticInfo,
-  _combat_stats: CombatStats,
+  combat_stats: CombatStats,
 
   troop_activities: TroopActivities,
   adopted_speed: SpeedType,
@@ -94,7 +94,7 @@ impl ICharacterBody3D for Troop {
       surface: Surface::Land,
 
       owner: Player::get_blank_static_info(),
-      _combat_stats: CombatStats::new(),
+      combat_stats: CombatStats::new(),
 
       troop_activities: HashSet::from([
         TroopState::Idle,
@@ -126,13 +126,14 @@ impl ICharacterBody3D for Troop {
     // it's important to set the orientation before setting the surface troop
     self.set_initial_orientation();
 
+    let virtual_planet = &mut self.get_virtual_planet_from_troop_scope();
     self.set_surface_troop();
     self.check_and_change_mesh();
-    self.maybe_populate_trajectory_points();
+    self.maybe_populate_trajectory_points(virtual_planet);
     self.maybe_move_along_the_trajectory_and_set_orientation();
     self.decrease_idle_timer(delta);
-    self.get_deployment_next_action();
-    self.trigger_combat_engage_if_needed();
+    self.get_deployment_next_action(virtual_planet);
+    self.trigger_combat_engage_if_needed(virtual_planet);
   }
 }
 
@@ -257,22 +258,11 @@ impl Troop {
     ));
   }
 
-  fn _is_on_self_land(&self) -> bool {
-    // TICKET: #12
-    true
-  }
-
-  #[allow(dead_code)]
-  fn is_on_ally_land(&self) -> bool {
-    todo!("Allyship won't be implemented in the first version");
-  }
-
-  fn maybe_populate_trajectory_points(&mut self) {
+  fn maybe_populate_trajectory_points(&mut self, virtual_planet: &Gd<VirtualPlanet>) {
     if !self.troop_is_combatting() &&
       !self.troop_activities.contains(&TroopState::Moving) &&
       self.troop_activities.contains(&TroopState::Patrolling) {
 
-      let virtual_planet = self.get_virtual_planet_from_troop_scope();
       let virtual_planet = virtual_planet.bind();
 
       let moving_to: Coordinates = virtual_planet
@@ -506,7 +496,7 @@ impl Troop {
   }
 
   /// Can trigger Combat or Colonization/Occupation/War
-  fn get_deployment_next_action(&mut self) {
+  fn get_deployment_next_action(&mut self, virtual_planet: &mut Gd<VirtualPlanet>) {
     if self.waiting_for_deployment_following_action {
 
       // Some if troop hit a land
@@ -518,7 +508,6 @@ impl Troop {
       if touching_territory_id == &self.deployed_to_territory {
         self.waiting_for_deployment_following_action = false;
 
-        let mut virtual_planet = self.get_virtual_planet_from_troop_scope();
         let mut virtual_planet = virtual_planet.bind_mut();
         let territory = virtual_planet.territories
           .get_mut(touching_territory_id)
@@ -575,18 +564,21 @@ impl Troop {
     ]
   }
 
-  fn trigger_combat_engage_if_needed(&mut self) {
+  fn trigger_combat_engage_if_needed(&mut self, virtual_planet: &Gd<VirtualPlanet>) {
     let Some(ref touching_territory_id) = self.touching_surface_point.territory_id else {
       return;
     };
 
-    let mut virtual_planet = self.get_virtual_planet_from_troop_scope();
-    let mut virtual_planet = virtual_planet.bind_mut();
+    let virtual_planet = virtual_planet.bind();
     let territory = virtual_planet.territories
-      .get_mut(touching_territory_id)
+      .get(touching_territory_id)
       .expect(&format!("Expected to find territory {touching_territory_id}, at engage_combat_if_needed"));
     
     if territory.has_troops_from_different_players {
+
+      self.base_mut().add_to_group(Self::TROOP_COMBATTING);
+      self.troop_activities.remove(&TroopState::Patrolling);
+      self.troop_activities.remove(&TroopState::Idle);
 
       if territory.current_ruler.is_none() {
         self.troop_activities.insert(TroopState::Combating(CombatTypes::FightingOverUnoccupiedTerritory));
@@ -601,13 +593,11 @@ impl Troop {
         });
       }
 
-    } else {
-      self.base_mut().remove_from_group(Self::TROOP_COMBATTING);
-      for combat_type in Self::combat_types().iter() {
-        self.troop_activities.remove(&TroopState::Combating(combat_type.clone()));
-      };
+    } else if self.base().is_in_group(Self::TROOP_COMBATTING) {
+      self.remove_combatting_states();
+      self.reset_trajectory(true);
+      self.combat_stats.in_after_combat = true;
     }
-
   }
 
   fn troop_is_combatting(&self) -> bool {
@@ -618,6 +608,13 @@ impl Troop {
     }
 
     return false;
+  }
+
+  fn remove_combatting_states(&mut self) {
+    self.base_mut().remove_from_group(Self::TROOP_COMBATTING);
+    for combat_type in Self::combat_types().iter() {
+      self.troop_activities.remove(&TroopState::Combating(combat_type.clone()));
+    }
   }
 
 }
