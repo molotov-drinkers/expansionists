@@ -261,21 +261,6 @@ impl VirtualPlanet {
     }
   }
 
-  /// Receives a territory coordinate and returns a random coordinate from the same territory
-  /// It's used for keeping a troop walking inside of a territory
-  fn _get_another_territory_coordinate(&self, given_coordinates: &Coordinates) -> Coordinates {
-    let coordinate_metadata = self
-      .coordinate_map
-      .get(&given_coordinates)
-      .expect("Expected coordinates to exist");
-
-    let territory_id = coordinate_metadata
-      .territory_id
-      .clone()
-      .expect(&format!("expect territory_id to exist, {:?}", coordinate_metadata));
-
-    self.get_an_random_territory_coordinate(territory_id.as_str())
-  }
 
   /// Receives a territory_id and returns a random coordinate from the territory
   pub fn get_an_random_territory_coordinate(&self, territory_id: &str) -> Coordinates {
@@ -296,7 +281,7 @@ impl VirtualPlanet {
     }
 
     // TICKET: #50 this "divided by 4" is a hack to get a coordinate in the territory not close to the border
-    // Sometime it does not work, but it's good enough for now
+    // Sometimes it does not work, but it's good enough for now
     let territory_point = territory_coordinates.len() / 1/4;
     territory_coordinates[territory_point]
   }

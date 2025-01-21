@@ -338,7 +338,6 @@ impl TerritoryHUD {
 
   fn show_updated_occupied_under_conflict_ruler_hud(under_conflict: &mut Gd<VBoxContainer>, ruler_label: &mut Gd<TextLabels>, _general_dictionary: &I18nDefaultDictionary, territory: &Territory) {
     under_conflict.set_visible(true);
-    // let ruler = territory.current_ruler.as_ref().unwrap();
 
     let Some(player_trying_to_conquer) = &territory.player_trying_to_conquer else { return; };
     let player_trying_to_conquer_id = player_trying_to_conquer.player_id;
