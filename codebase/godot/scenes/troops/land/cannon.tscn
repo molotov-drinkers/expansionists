@@ -114,3 +114,6 @@ surface_material_override/1 = SubResource("StandardMaterial3D_56dwi")
 [node name="shadow" type="Sprite3D" parent="Cannon"]
 transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, 0, 0, 0)
 texture = ExtResource("1_lwr0b")
+
+[node name="projectile_spawner" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.063, 0.665, 1.6)

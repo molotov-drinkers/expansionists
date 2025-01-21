@@ -1,11 +1,18 @@
-[gd_scene load_steps=3 format=3 uid="uid://twxl3dj2u7xk"]
+[gd_scene load_steps=4 format=3 uid="uid://twxl3dj2u7xk"]
 
 [ext_resource type="PackedScene" uid="uid://b5dv4qdqxvrmc" path="res://assets/Pirate Low Poly Pack/Pirate Low Poly Pack/SquareSloop.fbx" id="1_cn6fg"]
 [ext_resource type="Texture2D" uid="uid://dibbfbpk5lepg" path="res://assets/troop_shadow.png" id="2_hh0c8"]
+[ext_resource type="PackedScene" uid="uid://cvb24qs0ytcre" path="res://scenes/troops/combat/cannon.tscn" id="3_6ilrd"]
 
 [node name="SquareSloop" instance=ExtResource("1_cn6fg")]
 transform = Transform3D(0.04, 0, 0, 0, 0.04, 0, 0, 0, 0.04, 0, 0, 0)
 
-[node name="shadow" type="Sprite3D" parent="SquareSloop" index="0"]
+[node name="composable_cannon" parent="SquareSloop" index="0" instance=ExtResource("3_6ilrd")]
+transform = Transform3D(-0.005, 0, 4.37114e-10, 4.35643e-10, 0.000409779, 0.00498318, -3.5824e-11, 0.00498318, -0.000409779, 0, -0.0105404, 0.00169211)
+
+[node name="shadow" type="Sprite3D" parent="SquareSloop" index="1"]
 transform = Transform3D(0.2, 0, 0, 0, 0.2, 0, 0, 0, 0.2, 0, 0, 0)
 texture = ExtResource("2_hh0c8")
+
+[node name="projectile_spawner" type="Node3D" parent="." index="1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.72, 1.69)

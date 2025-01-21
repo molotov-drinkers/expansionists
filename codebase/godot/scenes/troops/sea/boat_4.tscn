@@ -1,11 +1,21 @@
-[gd_scene load_steps=3 format=3 uid="uid://cmc0y0me1o4bs"]
+[gd_scene load_steps=4 format=3 uid="uid://cmc0y0me1o4bs"]
 
 [ext_resource type="PackedScene" uid="uid://box80ff57b0i5" path="res://assets/Pirate Low Poly Pack/Pirate Low Poly Pack/MizzenSailboat.fbx" id="1_nebc8"]
 [ext_resource type="Texture2D" uid="uid://dibbfbpk5lepg" path="res://assets/troop_shadow.png" id="2_sjfff"]
+[ext_resource type="PackedScene" uid="uid://cvb24qs0ytcre" path="res://scenes/troops/combat/cannon.tscn" id="3_hnpvl"]
 
 [node name="MizzenSailboat" instance=ExtResource("1_nebc8")]
 transform = Transform3D(0.04, 0, 0, 0, 0.04, 0, 0, 0, 0.04, 0, 0, 0)
 
-[node name="shadow" type="Sprite3D" parent="MizzenSailboat" index="0"]
+[node name="MizzenSailboat" parent="." index="0"]
+transform = Transform3D(100, -1.74846e-05, -7.64274e-13, 2.42647e-20, -4.37114e-06, 100, -1.74846e-05, -100, -4.37114e-06, 0, 0, 0)
+
+[node name="composable_cannon" parent="MizzenSailboat" index="0" instance=ExtResource("3_hnpvl")]
+transform = Transform3D(-0.005, -4.35644e-10, 3.58165e-11, 0, 0.000409693, 0.00498319, -4.37114e-10, 0.00498319, -0.000409693, 0, -0.00625312, 0.000858653)
+
+[node name="shadow" type="Sprite3D" parent="MizzenSailboat" index="1"]
 transform = Transform3D(0.2, 0, 0, 0, 0.2, 0, 0, 0, 0.2, 0, 0, 0)
 texture = ExtResource("2_sjfff")
+
+[node name="projectile_spawner" type="Node3D" parent="." index="1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.612717, 1.23971)

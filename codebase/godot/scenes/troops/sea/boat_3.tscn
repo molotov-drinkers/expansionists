@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3 uid="uid://3ib6qfiex2c6"]
+[gd_scene load_steps=4 format=3 uid="uid://3ib6qfiex2c6"]
 
 [ext_resource type="PackedScene" uid="uid://c57yc2mudjv46" path="res://assets/Pirate Low Poly Pack/Pirate Low Poly Pack/Dhow.fbx" id="1_ykuav"]
 [ext_resource type="Texture2D" uid="uid://dibbfbpk5lepg" path="res://assets/troop_shadow.png" id="2_1ycfo"]
+[ext_resource type="PackedScene" uid="uid://cvb24qs0ytcre" path="res://scenes/troops/combat/cannon.tscn" id="3_8kwua"]
 
 [node name="Dhow" instance=ExtResource("1_ykuav")]
 transform = Transform3D(0.04, 0, 0, 0, 0.04, 0, 0, 0, 0.04, 0, 0, 0)
@@ -9,3 +10,9 @@ transform = Transform3D(0.04, 0, 0, 0, 0.04, 0, 0, 0, 0.04, 0, 0, 0)
 [node name="shadow" type="Sprite3D" parent="Dhow" index="0"]
 transform = Transform3D(0.17, 0, 0, 0, 0.17, -5.32907e-15, 0, 5.32907e-15, 0.17, 4.0859e-05, -0.00265783, -7.7166e-05)
 texture = ExtResource("2_1ycfo")
+
+[node name="composable_cannon" parent="." index="1" instance=ExtResource("3_8kwua")]
+transform = Transform3D(-0.5, 0, 4.37114e-08, -3.58241e-09, 0.498318, -0.040978, -4.35643e-08, -0.040978, -0.498318, -0.100978, 0.223727, 0.597444)
+
+[node name="projectile_spawner" type="Node3D" parent="." index="2"]
+transform = Transform3D(1, 0, 0, 0, 0.99095, 0.134228, 0, -0.134228, 0.99095, -0.103886, 0.77503, 1.25598)

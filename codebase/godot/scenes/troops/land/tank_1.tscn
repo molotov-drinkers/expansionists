@@ -86,3 +86,6 @@ surface_material_override/0 = SubResource("StandardMaterial3D_6qcsv")
 [node name="shadow" type="Sprite3D" parent="FuturisticTank"]
 transform = Transform3D(0.42, 0, 0, 0, 0.42, 0, 0, 0, 0.42, 0, 0, 0)
 texture = ExtResource("1_8cvqb")
+
+[node name="projectile_spawner" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.618, 2.649)

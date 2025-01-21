@@ -1,6 +1,7 @@
-[gd_scene load_steps=7 format=4 uid="uid://wtwkos7kbp20"]
+[gd_scene load_steps=8 format=4 uid="uid://wtwkos7kbp20"]
 
 [ext_resource type="Texture2D" uid="uid://dibbfbpk5lepg" path="res://assets/troop_shadow.png" id="1_0dyhp"]
+[ext_resource type="PackedScene" uid="uid://cvb24qs0ytcre" path="res://scenes/troops/combat/cannon.tscn" id="2_vflmb"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_swq45"]
 resource_name = "Wood1"
@@ -82,6 +83,12 @@ mesh = SubResource("ArrayMesh_j2yjt")
 skeleton = NodePath("")
 surface_material_override/0 = SubResource("StandardMaterial3D_c0k5t")
 
+[node name="composable_cannon" parent="RowBoat" instance=ExtResource("2_vflmb")]
+transform = Transform3D(-0.005, 0, 4.37114e-10, 4.33292e-10, 0.000659725, 0.00495629, -5.76749e-11, 0.00495629, -0.000659725, 0, -0.0025272, 0.000873808)
+
 [node name="shadow" type="Sprite3D" parent="RowBoat"]
 transform = Transform3D(0.17, 0, 0, 0, 0.17, 0, 0, 0, 0.17, 0, 0, 0)
 texture = ExtResource("1_0dyhp")
+
+[node name="projectile_spawner" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.99095, 0.134228, 0, -0.134228, 0.99095, 0, 0.789, 0.881)
