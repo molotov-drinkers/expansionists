@@ -352,7 +352,7 @@ impl Territory {
   pub fn set_troops_from_different_players_flag(&mut self) {
     let mut troops_by_player_counter = 0;
     self.all_troops_deployed_and_arrived_by_player.iter().for_each(|(_, troops)| {
-      if troops.len() > 1 { troops_by_player_counter += 1 }
+      if troops.len() > 0 { troops_by_player_counter += 1 }
     });
 
     if troops_by_player_counter > 1 { self.has_troops_from_different_players = true; }
