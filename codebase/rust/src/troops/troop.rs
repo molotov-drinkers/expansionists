@@ -10,7 +10,7 @@ use crate::{globe::{coordinates_system::{
   }, territories::territory::{Territory, TerritoryId, TerritoryState}}, player::player::{Player, PlayerStaticInfo}, root::root::RootScene};
 
 use super::{
-  combat_engine::CombatStats, speed::SpeedType, surface::Surface
+  combat::combat_stats::CombatStats, speed::SpeedType, surface::Surface
 };
 
 #[derive(Hash, Eq, PartialEq)]
