@@ -10,11 +10,11 @@ use crate::{globe::{coordinates_system::{
   }, territories::territory::{Territory, TerritoryId, TerritoryState}}, player::player::{Player, PlayerStaticInfo}, root::root::RootScene};
 
 use super::{
-  combat::combat_stats::CombatStats, speed::SpeedType, surface::Surface
+  combat::{combat_engager::CombatTypes, combat_stats::CombatStats}, speed::SpeedType, surface::Surface
 };
 
 #[derive(Hash, Eq, PartialEq)]
-enum TroopState {
+pub enum TroopState {
   /// Whenever the troop is moving it doesn't matter the place nor reason
   Moving,
 
@@ -39,14 +39,7 @@ enum TroopState {
   Combating(CombatTypes),
 }
 
-/// Combat types the troop can engage
-/// Needs to populate Self::combat_types() method
-#[derive(Hash, Eq, PartialEq, Clone)]
-enum CombatTypes {
-  Attacking,
-  Defending,
-  FightingOverUnoccupiedTerritory,
-}
+
 
 type TroopActivities = HashSet<TroopState>;
 
@@ -55,17 +48,17 @@ type TroopActivities = HashSet<TroopState>;
 pub struct Troop {
   base: Base<CharacterBody3D>,
   /// holds troop's current location, updated every frame
-  touching_surface_point: SurfacePointMetadata,
+  pub touching_surface_point: SurfacePointMetadata,
 
   /// holds the territory id the troop is deployed to
   /// it changes when the troop is deployed to another territory
   pub deployed_to_territory: TerritoryId,
   surface: Surface,
 
-  owner: PlayerStaticInfo,
-  combat_stats: CombatStats,
+  pub owner: PlayerStaticInfo,
+  pub combat_stats: CombatStats,
 
-  troop_activities: TroopActivities,
+  pub troop_activities: TroopActivities,
   adopted_speed: SpeedType,
 
   /// indicates the time the troop will wait before moving again while patrolling
@@ -553,67 +546,6 @@ impl Troop {
           godot_error!("Troop has no idea what to do after the deployment! ::: {}", touching_territory_id);
         }
       };
-    }
-  }
-
-  fn combat_types() -> [CombatTypes; 3] {
-    [
-      CombatTypes::Attacking,
-      CombatTypes::Defending,
-      CombatTypes::FightingOverUnoccupiedTerritory
-    ]
-  }
-
-  fn trigger_combat_engage_if_needed(&mut self, virtual_planet: &Gd<VirtualPlanet>) {
-    let Some(ref touching_territory_id) = self.touching_surface_point.territory_id else {
-      return;
-    };
-
-    let virtual_planet = virtual_planet.bind();
-    let territory = virtual_planet.territories
-      .get(touching_territory_id)
-      .expect(&format!("Expected to find territory {touching_territory_id}, at engage_combat_if_needed"));
-    
-    if territory.has_troops_from_different_players {
-
-      self.base_mut().add_to_group(Self::TROOP_COMBATTING);
-      self.troop_activities.remove(&TroopState::Patrolling);
-      self.troop_activities.remove(&TroopState::Idle);
-
-      if territory.current_ruler.is_none() {
-        self.troop_activities.insert(TroopState::Combating(CombatTypes::FightingOverUnoccupiedTerritory));
-
-      } else {
-        territory.current_ruler.as_ref().map(|ruler_static_info| {
-          if ruler_static_info.player_id != self.owner.player_id {
-            self.troop_activities.insert(TroopState::Combating(CombatTypes::Attacking));
-          } else {
-            self.troop_activities.insert(TroopState::Combating(CombatTypes::Defending));
-          }
-        });
-      }
-
-    } else if self.base().is_in_group(Self::TROOP_COMBATTING) {
-      self.remove_combatting_states();
-      self.reset_trajectory(true);
-      self.combat_stats.in_after_combat = true;
-    }
-  }
-
-  fn troop_is_combatting(&self) -> bool {
-    for combat_type in Self::combat_types().iter() {
-      if self.troop_activities.contains(&TroopState::Combating(combat_type.clone())) {
-        return true;
-      }
-    }
-
-    return false;
-  }
-
-  fn remove_combatting_states(&mut self) {
-    self.base_mut().remove_from_group(Self::TROOP_COMBATTING);
-    for combat_type in Self::combat_types().iter() {
-      self.troop_activities.remove(&TroopState::Combating(combat_type.clone()));
     }
   }
 
