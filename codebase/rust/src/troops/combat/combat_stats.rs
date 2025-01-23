@@ -1,3 +1,5 @@
+use crate::{globe::territories::territory::TroopId, troops::troop::Troop};
+
 pub enum LocationSituation {
   SelfLand,
   AllyLand,
@@ -21,7 +23,7 @@ pub struct CombatStats {
   _alive: bool,
 
   _fighting_behavior: FighthingBehavior,
-
+  pub troop_being_attacked: Option<TroopId>,
 }
 
 const COOL_DOWN_TIMER_IN_SECS: f64 = 2.;
@@ -47,6 +49,7 @@ impl CombatStats {
         cooling_down: false,
         cooling_down_counter: 0.,
       },
+      troop_being_attacked: None,
     }
   }
 }

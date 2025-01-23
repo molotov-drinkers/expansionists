@@ -102,6 +102,11 @@ impl Troop {
       return;
     }
 
+
+    // todo: should check if it's already attacking a troop, if so, keep attacking it
+    // if not, find_optimal_enemy_troop_to_be_attacked
+    // let Some(enemy_troop) = self.combat_stats.troop_being_attacked;
+
     // todo: try to find a enemy within the radius, then pick the closest one
     // if no enemy in the radius, get any in the territory
     let Some(enemy_troop) = self.find_optimal_enemy_troop_to_be_attacked(virtual_planet) else {
