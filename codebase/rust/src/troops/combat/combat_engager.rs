@@ -110,7 +110,7 @@ impl Troop {
 
     // let _updated_target_position = enemy_troop.get_global_transform().origin;
 
-    self.open_fire_on_the_enemy(enemy_troop)
+    self.open_fire_on_the_enemy(enemy_troop, virtual_planet)
 
   }
 
@@ -179,24 +179,28 @@ impl Troop {
     Some(troop)
   }
 
-  fn open_fire_on_the_enemy(&mut self, enemy_troop: Gd<Troop>) {
+  fn open_fire_on_the_enemy(&mut self, enemy_troop: Gd<Troop>, virtual_planet: &Gd<VirtualPlanet>) {
     if self.combat_stats.cannon.cooling_down {
       return
     }
 
+    let virtual_planet = virtual_planet.bind();
+    let root = virtual_planet.get_root_from_virtual_planet();
+
     let target_position = enemy_troop.get_global_transform().origin;
 
-    let mut projectile_spawner = self
-      .base()
-      .get_node_as::<Node3D>("projectile_spawner");
+    let mut projectiles_node = root
+      .get_node_as::<Node3D>("troops/projectiles");
 
     let projectile: Gd<PackedScene> = load("res://scenes/troops/combat/projectile.tscn");
     let mut projectile = projectile.instantiate_as::<Projectile>();
 
     projectile.bind_mut().up_to_date_target_position = target_position; 
+    let position_to_spawn_projectile = self.get_projectile_spawner_position();
+    projectile.set_global_transform(position_to_spawn_projectile);
 
-    // projectile.set_target_position(target_position);
-    projectile_spawner.add_child(&projectile);
+    projectiles_node.add_child(&projectile);
+
   }
 
   // fn update_combat_stats
