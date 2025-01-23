@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use super::surface::Surface;
+use super::surface::surface::Surface;
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub enum MeshId {

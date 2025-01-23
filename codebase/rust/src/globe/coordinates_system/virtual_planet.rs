@@ -14,7 +14,7 @@ use crate::{
   },
   root::root::RootScene,
   troops::{
-    spawner_engine::spawn_troop, surface::Surface
+    spawner_engine::spawn_troop, surface::surface::Surface
   }
 };
 use super::{
@@ -194,9 +194,7 @@ impl VirtualPlanet {
                 .get_name()
                 .to_string();
 
-              let possible_territory_colission = self.territories.get_mut(&territory_id);
-              if possible_territory_colission.is_some() {
-                let overlapped_territory = possible_territory_colission.unwrap();
+              if let Some(overlapped_territory) = self.territories.get_mut(&territory_id) {
                 // Self::paint_surface_point(&surface_point, overlapped_territory);
 
                 surface_point.add_to_group(&territory_id);

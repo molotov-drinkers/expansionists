@@ -19,7 +19,7 @@ use crate::{
 use super::{
   combat::{combat_engager::CombatTypes, combat_stats::CombatStats},
   speed::SpeedType,
-  surface::Surface
+  surface::surface::Surface
 };
 
 #[derive(Hash, Eq, PartialEq)]
@@ -53,14 +53,16 @@ type TroopActivities = HashSet<TroopState>;
 #[derive(GodotClass)]
 #[class(base=CharacterBody3D)]
 pub struct Troop {
-  base: Base<CharacterBody3D>,
+  pub base: Base<CharacterBody3D>,
   /// holds troop's current location, updated every frame
   pub touching_surface_point: SurfacePointMetadata,
 
   /// holds the territory id the troop is deployed to
   /// it changes when the troop is deployed to another territory
   pub deployed_to_territory: TerritoryId,
-  surface: Surface,
+  pub surface: Surface,
+  /// If it changes, needs to swap in between sea and land mesh
+  pub surface_type_changed: bool,
 
   pub owner: PlayerStaticInfo,
   pub combat_stats: CombatStats,
@@ -92,6 +94,7 @@ impl ICharacterBody3D for Troop {
       touching_surface_point: SurfacePoint::get_blank_surface_point_metadata(),
       deployed_to_territory: "".to_string(),
       surface: Surface::Land,
+      surface_type_changed: false,
 
       owner: Player::get_blank_static_info(),
       combat_stats: CombatStats::new(),
@@ -119,6 +122,7 @@ impl ICharacterBody3D for Troop {
     self.base_mut().add_to_group(Self::TROOP_CLASS_NAME);
     self.set_custom_collision();
     self.set_selected_sprites_visibility(false);
+    self.set_troop_visibility();
   }
 
   fn process(&mut self, delta: f64) {
@@ -131,7 +135,7 @@ impl ICharacterBody3D for Troop {
     self.check_and_change_mesh();
     self.maybe_populate_trajectory_points(virtual_planet);
     self.maybe_move_along_the_trajectory_and_set_orientation();
-    self.decrease_idle_timer(delta);
+    self.decrease_idle_timer_if_idling(delta);
     self.get_deployment_next_action(virtual_planet);
     self.trigger_combat_engage_if_needed(virtual_planet);
   }
@@ -174,50 +178,6 @@ impl Troop {
     let troop_collision_mask = 2;
     self.base_mut().set_collision_mask(troop_collision_layer);
     self.base_mut().set_collision_layer(troop_collision_mask);
-  }
-
-  /// Sets troop surface according to the surface_point troop is touching
-  fn set_surface_troop(&mut self) {
-    let surface_point = SurfacePoint::get_troop_surface_point(
-      self
-    );
-
-    // if it doesn't find a surface point, it doesn't panic, just keep the previous surface
-    if surface_point.is_none() {
-      return;
-    }
-
-    let surface_point = surface_point.unwrap();
-    if surface_point.is_in_group(&Surface::Land.to_string()) {
-      self.surface = Surface::Land;
-    } else {
-      self.surface = Surface::Sea;
-    }
-
-    self.touching_surface_point = surface_point.bind().surface_point_metadata.clone();
-  }
-
-  /// Sets troop to show the proper mesh according to the surface the troop is touching
-  fn check_and_change_mesh(&mut self) {
-    let mut sea_mesh = self
-      .base_mut()
-      .find_child("sea")
-      .expect("Expected to find sea troop")
-      .cast::<Node3D>();
-
-    let mut land_mesh = self
-      .base_mut()
-      .find_child("land")
-      .expect("Expected to find land troop")
-      .cast::<Node3D>();
-
-    if self.surface == Surface::Land {
-      sea_mesh.set_visible(false);
-      land_mesh.set_visible(true);
-    } else {
-      sea_mesh.set_visible(true);
-      land_mesh.set_visible(false);
-    }
   }
 
   /// Sets the initial orientation of the troop when it's spawned
@@ -364,7 +324,7 @@ impl Troop {
     self.moving_trajectory_is_set = false;
   }
 
-  fn decrease_idle_timer(&mut self, delta: f64) {
+  fn decrease_idle_timer_if_idling(&mut self, delta: f64) {
     if self.troop_activities.contains(&TroopState::Idle) {
       self.idle_timer -= delta as f32;
     }
