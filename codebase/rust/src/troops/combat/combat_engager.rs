@@ -79,4 +79,14 @@ impl Troop {
       self.troop_activities.remove(&TroopState::Combating(combat_type));
     }
   }
+
+  /// Every troop scene should have a child node named `projectile_spawner`
+  /// This method returns the >Global position< of the `projectile_spawner` node
+  pub fn get_projectile_spawner_position(&self) -> Vector3 {
+    let projectile_spawner = self
+      .base()
+      .get_node_as::<Node3D>("projectile_spawner");
+
+    projectile_spawner.get_global_position()
+  }
 }

@@ -1,16 +1,16 @@
 use godot::prelude::*;
 
-// enum TypesOfTarget {
-//   Troop,
-// }
+enum TypesOfTarget {
+  Troop,
+}
 
 #[derive(GodotClass)]
 #[class(base=Node3D)]
 pub struct Projectile {
   base: Base<Node3D>,
   showing: bool,
-  // up_to_date_target_position: Vector3,
-  // current_position: Vector3,
+  up_to_date_target_position: Vector3,
+  current_position: Vector3,
 }
 
 #[godot_api]
@@ -20,8 +20,8 @@ impl INode3D for Projectile {
     Projectile {
       base: base,
       showing: true,
-      // up_to_date_target_position: Vector3::ZERO,
-      // current_position: Vector3::ZERO,
+      up_to_date_target_position: Vector3::ZERO,
+      current_position: Vector3::ZERO,
     }
   }
 

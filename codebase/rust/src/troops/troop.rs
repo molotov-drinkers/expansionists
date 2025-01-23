@@ -1,16 +1,25 @@
 use std::collections::HashSet;
 
 use godot::{
-  classes::{BoxMesh, CharacterBody3D, ICharacterBody3D, MeshInstance3D, Sprite3D, StandardMaterial3D}, prelude::*
+  classes::{BoxMesh, CharacterBody3D, ICharacterBody3D, MeshInstance3D, StandardMaterial3D}, prelude::*
 };
-use crate::{globe::{coordinates_system::{
-    coordinates_system::CoordinatesSystem,
-    surface_point::{Coordinates, SurfacePoint, SurfacePointMetadata},
-    virtual_planet::VirtualPlanet,
-  }, territories::territory::{Territory, TerritoryId, TerritoryState}}, player::player::{Player, PlayerStaticInfo}, root::root::RootScene};
+use crate::{
+  globe::{
+    coordinates_system::{
+      coordinates_system::CoordinatesSystem,
+      surface_point::{Coordinates, SurfacePoint, SurfacePointMetadata},
+      virtual_planet::VirtualPlanet,
+    },
+    territories::territory::TerritoryId
+  },
+  player::player::{Player, PlayerStaticInfo},
+  root::root::RootScene
+};
 
 use super::{
-  combat::{combat_engager::CombatTypes, combat_stats::CombatStats}, speed::SpeedType, surface::Surface
+  combat::{combat_engager::CombatTypes, combat_stats::CombatStats},
+  speed::SpeedType,
+  surface::Surface
 };
 
 #[derive(Hash, Eq, PartialEq)]
@@ -39,8 +48,6 @@ pub enum TroopState {
   Combating(CombatTypes),
 }
 
-
-
 type TroopActivities = HashSet<TroopState>;
 
 #[derive(GodotClass)]
@@ -59,13 +66,13 @@ pub struct Troop {
   pub combat_stats: CombatStats,
 
   pub troop_activities: TroopActivities,
-  adopted_speed: SpeedType,
+  pub adopted_speed: SpeedType,
 
   /// indicates the time the troop will wait before moving again while patrolling
   idle_timer: f32,
 
-  moving_trajectory_points: [Vector3; CoordinatesSystem::NUM_OF_WAYPOINTS],
-  moving_trajectory_is_set: bool,
+  pub moving_trajectory_points: [Vector3; CoordinatesSystem::NUM_OF_WAYPOINTS],
+  pub moving_trajectory_is_set: bool,
   current_trajectory_point: usize,
 
   /// it turns true when the troop is spawned and the orientation is set
@@ -73,7 +80,7 @@ pub struct Troop {
 
   /// it turns true when the troop receives the deployment order
   /// and false when troop arrives to the deployed territory
-  waiting_for_deployment_following_action: bool,
+  pub waiting_for_deployment_following_action: bool,
 }
 
 #[godot_api]
@@ -274,53 +281,6 @@ impl Troop {
     }
   }
 
-  pub fn set_order_to_move_to(&mut self, destination: Vector3, dest_territory_id: &TerritoryId) {
-    self.reset_trajectory(false);
-    self.troop_activities.insert(TroopState::Moving);
-    self.troop_activities.insert(TroopState::Deploying);
-    self.troop_activities.remove(&TroopState::Patrolling);
-
-    let geodesic_trajectory = CoordinatesSystem::get_geodesic_trajectory(
-      self.touching_surface_point.cartesian,
-      destination,
-      VirtualPlanet::get_planet_radius() as f32
-    );
-
-    let mut virtual_planet = self.get_virtual_planet_from_troop_scope();
-    let mut virtual_planet = &mut virtual_planet.bind_mut();
-
-    let origin_territory = self.get_territory(
-      self.deployed_to_territory.clone(), &mut virtual_planet
-    );
-
-    origin_territory.inform_territory_departure(
-      &self.base().get_name().to_string(),
-      self.owner.player_id.clone()
-    );
-
-    self.moving_trajectory_points = geodesic_trajectory;
-    self.moving_trajectory_is_set = true;
-    self.adopted_speed = SpeedType::FightOrFlight;
-    self.deployed_to_territory = dest_territory_id.clone();
-
-    let destination_territory = self.get_territory(
-      self.deployed_to_territory.clone(), &mut virtual_planet
-    );
-    destination_territory.add_territory_deployment(
-      &self.base().get_name().to_string(),
-      self.owner.player_id.clone()
-    );
-
-    self.waiting_for_deployment_following_action = true;
-  }
-
-  fn get_territory<'a>(&mut self, territory_id: TerritoryId, virtual_planet: &'a mut GdMut<'_, VirtualPlanet>) -> &'a mut Territory {
-    let territory = virtual_planet
-      .get_mut_territory_from_virtual_planet(&territory_id);
-
-    territory
-  }
-
   fn maybe_move_along_the_trajectory_and_set_orientation(&mut self) {
     if self.moving_trajectory_is_set && !self.troop_activities.contains(&TroopState::Idle) {
       if self.have_future_invasion_in_the_trajectory() {
@@ -389,7 +349,7 @@ impl Troop {
     false
   }
 
-  fn reset_trajectory(&mut self, gets_back_to_patrolling: bool) {
+  pub fn reset_trajectory(&mut self, gets_back_to_patrolling: bool) {
     self.troop_activities.remove(&TroopState::Moving);
     self.troop_activities.remove(&TroopState::Deploying);
     self.troop_activities.insert(TroopState::Idle);
@@ -451,7 +411,7 @@ impl Troop {
     }
   }
 
-  fn get_root_from_troop(&self) -> Gd<RootScene> {
+  pub fn get_root_from_troop(&self) -> Gd<RootScene> {
     let root = self.base()
       .get_parent()
       .expect("troop parent to exist")
@@ -462,91 +422,10 @@ impl Troop {
     root
   }
 
-  fn get_virtual_planet_from_troop_scope(&self) -> Gd<VirtualPlanet> {
+  pub fn get_virtual_planet_from_troop_scope(&self) -> Gd<VirtualPlanet> {
     self
       .get_root_from_troop()
       .get_node_as::<VirtualPlanet>("virtual_planet")
   }
-
-  pub fn select_troop(&mut self) {
-    self.troop_activities.insert(TroopState::Selected);
-
-    self.set_selected_sprites_visibility(true);
-  }
-
-  pub fn deselect_troop(&mut self) {
-    self.troop_activities.remove(&TroopState::Selected);
-
-    self.set_selected_sprites_visibility(false);
-  }
-
-  fn set_selected_sprites_visibility(&mut self, visible: bool) {
-    let mut land_selected_sprite = self.base_mut().get_node_as::<Sprite3D>("land/selected");
-    let mut sea_selected_sprite = self.base_mut().get_node_as::<Sprite3D>("sea/selected");
-
-    land_selected_sprite.set_visible(visible);
-    sea_selected_sprite.set_visible(visible);
-  }
-
-  /// Can trigger Combat or Colonization/Occupation/War
-  fn get_deployment_next_action(&mut self, virtual_planet: &mut Gd<VirtualPlanet>) {
-    if self.waiting_for_deployment_following_action {
-
-      // Some if troop hit a land
-      let Some(ref touching_territory_id) = self.touching_surface_point.territory_id else {
-        return;
-      };
-
-      // troop arrived to the territory that has been deployed to
-      if touching_territory_id == &self.deployed_to_territory {
-        self.waiting_for_deployment_following_action = false;
-
-        let mut virtual_planet = virtual_planet.bind_mut();
-        let territory = virtual_planet.territories
-          .get_mut(touching_territory_id)
-          .expect(&format!("Expected to find territory {touching_territory_id}, at get_deployment_next_action"));
-
-        territory.inform_troop_arrived(
-          &self.base().get_name().to_string(),
-          self.owner.player_id
-        );
-
-        let territory_current_ruler = territory
-          .current_ruler
-          .as_ref();
-
-        if territory.territory_states.contains(&TerritoryState::Unoccupied) && !territory.has_troops_from_different_players {
-          territory.territory_states.insert(TerritoryState::OccupationInProgress);
-          territory.territory_states.remove(&TerritoryState::UnoccupiedUnderConflict);
-
-          let root = self.get_root_from_troop();
-          let player = Player::get_player_by_id(root, self.owner.player_id.clone());
-          let player_static_info = player.bind().static_info.clone();
-          territory.player_trying_to_conquer = Some(player_static_info);
-
-        } else if territory_current_ruler.is_some_and(|ruler_static_info| ruler_static_info.player_id == self.owner.player_id) {
-          // Entering own territory, could start patrolling or start defending it from invaders
-
-        } else if territory_current_ruler.is_some_and(|ruler_static_info| ruler_static_info.player_id != self.owner.player_id) {
-          // Entering enemy territory, could start combat or keep combatting until the territory is conquered
-          territory.territory_states.insert(TerritoryState::OccupiedUnderConflict);
-          territory.player_trying_to_conquer = Some(self.owner.clone());
-
-        } else if territory.territory_states.contains(&TerritoryState::Unoccupied) && territory.has_troops_from_different_players {
-          territory.territory_states.insert(TerritoryState::UnoccupiedUnderConflict);
-          territory.player_trying_to_conquer = Some(self.owner.clone());
-          // Entering a territory that started being occupied by someone else, should start combat and hold down the territory occupation
-          // until the conflict is finished
-
-          // TODO: implement this, for now battle is happening only if territory has a ruler
-
-          godot_print!("Troop would start a combat or keep combating. Also would pause enemy occupation! ::: {}", touching_territory_id);
-
-        } else {
-          godot_error!("Troop has no idea what to do after the deployment! ::: {}", touching_territory_id);
-        }
-      };
-    }
-  }
-
+  
 }
