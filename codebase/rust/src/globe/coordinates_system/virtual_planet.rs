@@ -315,7 +315,7 @@ impl VirtualPlanet {
     Territory::set_color_to_active_material(&territory_mesh, color);
   }
 
-  fn get_root_from_virtual_planet(&mut self) -> Gd<RootScene> {
+  pub fn get_root_from_virtual_planet(&self) -> Gd<RootScene> {
     self
       .base()
       .get_parent()

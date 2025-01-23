@@ -1,6 +1,6 @@
 use godot::prelude::*;
 
-enum TypesOfTarget {
+pub enum TypesOfTarget {
   Troop,
 }
 
@@ -9,7 +9,13 @@ enum TypesOfTarget {
 pub struct Projectile {
   base: Base<Node3D>,
   showing: bool,
-  up_to_date_target_position: Vector3,
+  
+  pub trajectory: Vec<Vector3>,
+  pub trajectory_is_set: bool,
+
+  pub target: Option<TypesOfTarget>,
+
+  pub up_to_date_target_position: Vector3,
   current_position: Vector3,
 }
 
@@ -20,6 +26,12 @@ impl INode3D for Projectile {
     Projectile {
       base: base,
       showing: true,
+
+      trajectory: Vec::new(),
+      trajectory_is_set: false,
+
+      target: None,
+
       up_to_date_target_position: Vector3::ZERO,
       current_position: Vector3::ZERO,
     }
@@ -28,5 +40,15 @@ impl INode3D for Projectile {
   fn ready(&mut self) {
     let showing = self.showing;
     self.base_mut().set_visible(showing);
+  }
+
+  fn process(&mut self, delta: f64) {
+    self.move_towards_target(delta);
+  }
+}
+
+impl Projectile {
+  fn move_towards_target(&mut self, _delta: f64) {
+
   }
 }
