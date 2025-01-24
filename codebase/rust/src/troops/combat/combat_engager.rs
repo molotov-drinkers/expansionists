@@ -1,4 +1,4 @@
-use crate::{globe::{coordinates_system::virtual_planet::VirtualPlanet, territories::territory::TroopId}, troops::troop::{Troop, TroopState}};
+use crate::{globe::coordinates_system::virtual_planet::VirtualPlanet, troops::{surface::surface::Surface, troop::{Troop, TroopId, TroopState}}};
 use godot::prelude::*;
 
 use super::projectile::Projectile;
@@ -85,9 +85,15 @@ impl Troop {
   /// Every troop scene should have a child node named `projectile_spawner`
   /// This method returns the >Global position< of the `projectile_spawner` node
   fn get_projectile_spawner_position(&self) -> Transform3D {
+    let path = if self.surface == Surface::Land {
+      "land/composable_mesh/projectile_spawner"
+    } else {
+      "sea/composable_mesh/projectile_spawner"
+    };
+
     let projectile_spawner = self
       .base()
-      .get_node_as::<Node3D>("projectile_spawner");
+      .get_node_as::<Node3D>(path);
 
     projectile_spawner.get_global_transform()
   }
@@ -102,30 +108,38 @@ impl Troop {
       return;
     }
 
-
-    // todo: should check if it's already attacking a troop, if so, keep attacking it
-    // if not, find_optimal_enemy_troop_to_be_attacked
-    // let Some(enemy_troop) = self.combat_stats.troop_being_attacked;
-
-    // todo: try to find a enemy within the radius, then pick the closest one
-    // if no enemy in the radius, get any in the territory
-    let Some(enemy_troop) = self.find_optimal_enemy_troop_to_be_attacked(virtual_planet) else {
-      return
+    let virtual_planet = &virtual_planet.bind();
+    let enemy_troop = if self.combat_stats.troop_being_attacked.is_some() {
+      Self::get_troop_by_id(
+        &virtual_planet,
+        &self.combat_stats.troop_being_attacked.as_ref().unwrap()
+      )
+    } else {
+      // todo: try to find a enemy within the radius, then pick the closest one
+      // if no enemy in the radius, get any in the territory
+      self.find_optimal_enemy_troop_to_be_attacked(virtual_planet)
     };
+    let Some(enemy_troop) = enemy_troop else {
+      godot_print!("No enemy troop found to keep fighting");
+      return;
+    };
+
+    self.combat_stats.troop_being_attacked = Some(enemy_troop.get_name().to_string());
 
     // let _updated_target_position = enemy_troop.get_global_transform().origin;
 
+    // Move the troop towards the enemy troop
+    // open fire only when the troop is within the range
     self.open_fire_on_the_enemy(enemy_troop, virtual_planet)
 
   }
 
   /// TODO: doc
-  fn find_optimal_enemy_troop_to_be_attacked(&mut self, virtual_planet: &Gd<VirtualPlanet>) -> Option<Gd<Troop>> {
+  fn find_optimal_enemy_troop_to_be_attacked(&mut self, virtual_planet: &GdRef<'_, VirtualPlanet>) -> Option<Gd<Troop>> {
     let Some(ref touching_territory_id) = self.touching_surface_point.territory_id else {
       return None;
     };
 
-    let virtual_planet: GdRef<'_, VirtualPlanet> = virtual_planet.bind();
     let territory = virtual_planet.territories
       .get(touching_territory_id)
       .expect(&format!("Expected to find territory {touching_territory_id}, at engage_combat_if_needed"));
@@ -146,7 +160,7 @@ impl Troop {
         return None;
       };
 
-    let positon = &self.base().get_global_transform().origin;
+    let self_position = &self.base().get_global_transform().origin;
 
     let troop_found = enemy_troops
       .iter()
@@ -154,7 +168,7 @@ impl Troop {
 
         if let Some(enemy_troop) = Self::get_troop_by_id(&virtual_planet, enemy_troop_id) {
           let enemy_position = enemy_troop.get_global_transform().origin;
-          let distance = positon.distance_to(enemy_position);
+          let distance = self_position.distance_to(enemy_position);
 
           if distance <= self.combat_stats.cannon.range {
             return Some(enemy_troop);
@@ -184,12 +198,11 @@ impl Troop {
     Some(troop)
   }
 
-  fn open_fire_on_the_enemy(&mut self, enemy_troop: Gd<Troop>, virtual_planet: &Gd<VirtualPlanet>) {
+  fn open_fire_on_the_enemy(&mut self, enemy_troop: Gd<Troop>, virtual_planet: &GdRef<'_, VirtualPlanet>) {
     if self.combat_stats.cannon.cooling_down {
       return
     }
 
-    let virtual_planet = virtual_planet.bind();
     let root = virtual_planet.get_root_from_virtual_planet();
 
     let target_position = enemy_troop.get_global_transform().origin;

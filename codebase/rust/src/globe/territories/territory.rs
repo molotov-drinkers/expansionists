@@ -4,6 +4,7 @@ use std::fmt;
 use godot::{builtin::Color, classes::{MeshInstance3D, StandardMaterial3D}, prelude::*};
 
 use crate::player::player::PlayerId;
+use crate::troops::troop::TroopId;
 use crate::{globe::coordinates_system::surface_point::Coordinates, player::player::PlayerStaticInfo};
 
 #[derive(Eq, PartialEq, Hash)]
@@ -92,8 +93,6 @@ impl fmt::Display for Size {
 pub type TerritoryId = String;
 pub type Territories = HashMap<TerritoryId, Territory>;
 
-/// TroopId is a string name, is the base().get_name().to_string() of a troop
-pub type TroopId = String;
 
 #[derive(Hash, Eq, PartialEq)]
 pub enum TerritoryState {

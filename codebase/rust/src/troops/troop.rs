@@ -50,6 +50,9 @@ pub enum TroopState {
 
 type TroopActivities = HashSet<TroopState>;
 
+/// TroopId is a string name, is the base().get_name().to_string() of a troop
+pub type TroopId = String;
+
 #[derive(GodotClass)]
 #[class(base=CharacterBody3D)]
 pub struct Troop {
@@ -137,9 +140,9 @@ impl ICharacterBody3D for Troop {
     self.maybe_move_along_the_trajectory_and_set_orientation();
     self.decrease_idle_timer_if_idling(delta);
     self.get_deployment_next_action(virtual_planet);
-    self.trigger_combat_engage_if_needed(virtual_planet);
-    
-    self.keep_fighting_if_combatting(virtual_planet);
+
+    // self.trigger_combat_engage_if_needed(virtual_planet);
+    // self.keep_fighting_if_combatting(virtual_planet);
   }
 }
 

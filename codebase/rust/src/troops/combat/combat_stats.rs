@@ -1,4 +1,4 @@
-use crate::{globe::territories::territory::TroopId, troops::troop::Troop};
+use crate::troops::troop::TroopId;
 
 pub enum LocationSituation {
   SelfLand,
