@@ -91,7 +91,7 @@ impl Projectile {
     const PROJECTILE_SPEED: f32 = 0.95;
     let velocity = direction * PROJECTILE_SPEED;
 
-    self.base_mut().look_at(target_position);
+    // self.set_orientation(direction);
     self.base_mut().set_velocity(velocity);
     self.base_mut().move_and_slide();
 
@@ -108,4 +108,34 @@ impl Projectile {
     }
 
   }
+
+
+  // todo: copy from troop, rename and refactor it properly
+  //// Sets orientation to respect the globe trajectory and gravity
+  //// if the troop is moving, it will set the orientation to the direction it's moving
+  // fn set_orientation(&mut self, trajectory_vector: Vector3) {
+  //   // This is the "up" direction on the surface
+  //   let normal = self.base().get_global_position().normalized();
+
+  //   // Calculate the right vector using the cross product (normal x forward)
+  //   let right = normal
+  //     .cross(trajectory_vector)
+  //     .try_normalized()
+  //     .expect("normal and forward expected to exist");
+  
+  //   // Calculate the new forward vector as the cross product of right and normal
+  //   let new_forward = right
+  //     .cross(normal)
+  //     .try_normalized()
+  //     .expect("right vector expected to exist");
+  
+  //   // Create a new rotation basis
+  //   let basis = Basis::new_looking_at(new_forward, normal, true);
+
+  //   let origin = self.base().get_global_position();
+  //   self.base_mut().set_global_transform(Transform3D::new(
+  //     basis, 
+  //     origin
+  //   ));
+  // }
 }

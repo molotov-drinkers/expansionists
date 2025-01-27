@@ -78,7 +78,7 @@ pub struct Troop {
 
   pub moving_trajectory_points: [Vector3; CoordinatesSystem::NUM_OF_WAYPOINTS],
   pub moving_trajectory_is_set: bool,
-  current_trajectory_point: usize,
+  pub current_trajectory_point: usize,
 
   /// it turns true when the troop is spawned and the orientation is set
   initial_orientation_is_set: bool,
@@ -197,7 +197,7 @@ impl Troop {
 
   /// Sets orientation to respect the globe trajectory and gravity
   /// if the troop is moving, it will set the orientation to the direction it's moving
-  fn set_orientation(&mut self, trajectory_vector: Vector3) {
+  pub fn set_orientation(&mut self, trajectory_vector: Vector3) {
     // This is the "up" direction on the surface
     let normal = self.base().get_global_position().normalized();
 
