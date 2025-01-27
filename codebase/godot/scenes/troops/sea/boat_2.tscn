@@ -91,4 +91,4 @@ transform = Transform3D(0.17, 0, 0, 0, 0.17, 0, 0, 0, 0.17, 0, 0, 0)
 texture = ExtResource("1_0dyhp")
 
 [node name="projectile_spawner" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.99095, 0.134228, 0, -0.134228, 0.99095, 0, 0.789, 0.881)
+transform = Transform3D(-1, 1.17134e-08, -8.66345e-08, 0, 0.990983, 0.133986, 8.74228e-08, 0.133986, -0.990983, 0, 0.789, 0.881)

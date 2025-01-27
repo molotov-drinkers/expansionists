@@ -1,17 +1,20 @@
-use godot::prelude::*;
+use godot::{classes::{CharacterBody3D, ICharacterBody3D}, prelude::*};
+
+use crate::globe::coordinates_system::{coordinates_system::CoordinatesSystem, virtual_planet::VirtualPlanet};
 
 pub enum TypesOfTarget {
   Troop,
 }
 
 #[derive(GodotClass)]
-#[class(base=Node3D)]
+#[class(base=CharacterBody3D)]
 pub struct Projectile {
-  base: Base<Node3D>,
+  base: Base<CharacterBody3D>,
   showing: bool,
   
   pub trajectory: Vec<Vector3>,
   pub trajectory_is_set: bool,
+  current_trajectory_point: usize,
 
   pub target: Option<TypesOfTarget>,
 
@@ -20,8 +23,8 @@ pub struct Projectile {
 }
 
 #[godot_api]
-impl INode3D for Projectile {
-  fn init(base: Base<Node3D>) -> Projectile {
+impl ICharacterBody3D for Projectile {
+  fn init(base: Base<CharacterBody3D>) -> Projectile {
 
     Projectile {
       base: base,
@@ -29,6 +32,7 @@ impl INode3D for Projectile {
 
       trajectory: Vec::new(),
       trajectory_is_set: false,
+      current_trajectory_point: 0,
 
       target: None,
 
@@ -43,12 +47,65 @@ impl INode3D for Projectile {
   }
 
   fn process(&mut self, delta: f64) {
+    self.maybe_upsert_trajectory();
     self.move_towards_target(delta);
   }
 }
 
 impl Projectile {
+  fn maybe_upsert_trajectory(&mut self) {
+    if self.trajectory_is_set {
+      return;
+    }
+
+    let trajectory = CoordinatesSystem::get_geodesic_trajectory(
+      self.base().get_global_transform().origin,
+      // todo: was self.up_to_date_target_position alredy set at this point?
+      self.up_to_date_target_position,
+      VirtualPlanet::get_planet_radius() as f32
+    );
+    self.trajectory = trajectory.to_vec();
+    self.trajectory_is_set = true;
+  }
+
   fn move_towards_target(&mut self, _delta: f64) {
+    let target_position = self.up_to_date_target_position;
+    let current_position = self.base().get_global_transform().origin;
+
+    let direction = (target_position - current_position).try_normalized();
+    let on_the_last_waypoint = self.current_trajectory_point == (self.trajectory.len() -1);
+
+    if direction.is_none() && !on_the_last_waypoint {
+      self.current_trajectory_point = self.current_trajectory_point + 1;
+      return;
+    }
+
+    let Some(direction) = direction else {
+      godot_error!("Expected Projectile direction to be a Vector3");
+      self.base_mut().queue_free();
+
+      // todo: Decide if should deal damage to the enemy troop
+      return
+    };
+
+    const PROJECTILE_SPEED: f32 = 0.95;
+    let velocity = direction * PROJECTILE_SPEED;
+
+    self.base_mut().look_at(target_position);
+    self.base_mut().set_velocity(velocity);
+    self.base_mut().move_and_slide();
+
+    let current_distance = current_position.distance_to(target_position);
+    let too_close_to_the_waypoint = current_distance < 0.1;
+
+    if too_close_to_the_waypoint && !on_the_last_waypoint {
+      self.current_trajectory_point = self.current_trajectory_point + 1;
+    }
+
+    if too_close_to_the_waypoint && on_the_last_waypoint {
+      self.base_mut().queue_free();
+      // todo: should deal damage to the enemy troop
+    }
 
   }
 }

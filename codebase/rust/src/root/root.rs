@@ -56,7 +56,7 @@ impl RootScene {
         land: MeshId::Tank1,
         sea: MeshId::Galleon,
       },
-      AvailableLanguage::BrazilianPortuguese,
+      AvailableLanguage::InternationalEnglish,
     );
 
     let mut cpu_2 = Player::new_alloc();

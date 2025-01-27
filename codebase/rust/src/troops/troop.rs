@@ -141,8 +141,8 @@ impl ICharacterBody3D for Troop {
     self.decrease_idle_timer_if_idling(delta);
     self.get_deployment_next_action(virtual_planet);
 
-    // self.trigger_combat_engage_if_needed(virtual_planet);
-    // self.keep_fighting_if_combatting(virtual_planet);
+    self.trigger_combat_engage_if_needed(virtual_planet);
+    self.keep_fighting_if_combatting(delta, virtual_planet);
   }
 }
 

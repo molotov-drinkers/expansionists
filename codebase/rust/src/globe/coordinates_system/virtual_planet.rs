@@ -328,6 +328,8 @@ impl VirtualPlanet {
 
     let territories_with_rulers = self.get_mut_territories_with_ruler();
 
+    // todo: Should get peaceful territories only
+    // todo: Also, shouldn't get territories on aftercombat situation
     for (_territory_id, territory) in territories_with_rulers {
 
       let player_id = territory.current_ruler.as_ref().unwrap().player_id;

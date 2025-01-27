@@ -1,4 +1,4 @@
-use crate::{globe::coordinates_system::virtual_planet::VirtualPlanet, troops::{surface::surface::Surface, troop::{Troop, TroopId, TroopState}}};
+use crate::{globe::coordinates_system::virtual_planet::VirtualPlanet, troops::{surface::surface::Surface, troop::{Troop, TroopId, TroopState}, combat::combat_stats::CombatStats}};
 use godot::prelude::*;
 
 use super::projectile::Projectile;
@@ -103,7 +103,7 @@ impl Troop {
     target_position
   }
 
-  pub fn keep_fighting_if_combatting(&mut self, virtual_planet: &Gd<VirtualPlanet>) {
+  pub fn keep_fighting_if_combatting(&mut self, delta: f64, virtual_planet: &Gd<VirtualPlanet>) {
     if !self.troop_is_combatting() {
       return;
     }
@@ -130,7 +130,9 @@ impl Troop {
 
     // Move the troop towards the enemy troop
     // open fire only when the troop is within the range
-    self.open_fire_on_the_enemy(enemy_troop, virtual_planet)
+    if self.has_cool_down_finished(delta) {
+      self.open_fire_on_the_enemy(enemy_troop, virtual_planet)
+    }
 
   }
 
@@ -146,12 +148,11 @@ impl Troop {
     
     let Some(enemy_player_id) = territory.all_troops_deployed_and_arrived_by_player
       .keys()
-      .find(|player_id| {
-        **player_id != self.owner.player_id
-      }) else {
-        godot_print!("No enemy troops found in territory {touching_territory_id}");
-        return None;
-      };
+      .find(|player_id| {**player_id != self.owner.player_id })
+        else {
+          godot_print!("No enemy troops found in territory {touching_territory_id}");
+          return None;
+        };
 
     let Some(enemy_troops) = territory
       .all_troops_deployed_and_arrived_by_player
@@ -198,11 +199,17 @@ impl Troop {
     Some(troop)
   }
 
-  fn open_fire_on_the_enemy(&mut self, enemy_troop: Gd<Troop>, virtual_planet: &GdRef<'_, VirtualPlanet>) {
-    if self.combat_stats.cannon.cooling_down {
-      return
+  fn has_cool_down_finished(&mut self, delta: f64) -> bool {
+    self.combat_stats.cannon.cooling_down_counter += delta;
+    if self.combat_stats.cannon.cooling_down_counter >= CombatStats::COOL_DOWN_TIMER_IN_SECS {
+      self.combat_stats.cannon.cooling_down_counter = 0.;
+      return true;
     }
 
+    false
+  }
+
+  fn open_fire_on_the_enemy(&mut self, enemy_troop: Gd<Troop>, virtual_planet: &GdRef<'_, VirtualPlanet>) {
     let root = virtual_planet.get_root_from_virtual_planet();
 
     let target_position = enemy_troop.get_global_transform().origin;

@@ -15,6 +15,12 @@ pub enum FighthingBehavior {
   Pacifist,
 }
 
+pub struct Cannon {
+  _damage: i32,
+  pub range: f32,
+  pub cooling_down_counter: f64,
+}
+
 pub struct CombatStats {
   pub in_after_combat: bool,
   pub cannon: Cannon,
@@ -26,17 +32,10 @@ pub struct CombatStats {
   pub troop_being_attacked: Option<TroopId>,
 }
 
-const COOL_DOWN_TIMER_IN_SECS: f64 = 2.;
-const CANNON_RANGE: f32 = 10.;
-
-pub struct Cannon {
-  _damage: i32,
-  pub range: f32,
-  pub cooling_down: bool,
-  cooling_down_counter: f64,
-}
-
 impl CombatStats {
+  pub const COOL_DOWN_TIMER_IN_SECS: f64 = 2.;
+  const CANNON_RANGE: f32 = 10.;
+
   pub fn new() -> CombatStats {
     CombatStats {
       in_after_combat: false,
@@ -45,8 +44,7 @@ impl CombatStats {
       _fighting_behavior: FighthingBehavior::Beligerent,
       cannon: Cannon {
         _damage: 11,
-        range: CANNON_RANGE,
-        cooling_down: false,
+        range: Self::CANNON_RANGE,
         cooling_down_counter: 0.,
       },
       troop_being_attacked: None,
