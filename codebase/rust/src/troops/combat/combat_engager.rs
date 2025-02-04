@@ -42,12 +42,10 @@ impl Troop {
       }
 
     } else if self.base().is_in_group(Self::TROOP_COMBATTING) {
-      self.troop_activities.insert(TroopState::Patrolling);
-
-      if self.troop_activities.contains(&TroopState::Combating(CombatTypes::Defending)) {
-        self.no_combat_reset_trajectory(true);
-      }
-
+      
+      // TODO: there seems to be a bug (maybe) here, it doesn't start patrolling that naturally after leaving a combating territory
+      
+      self.no_combat_reset_trajectory(true);
       self.remove_combatting_states();
       self.combat_stats.in_after_combat = true;
       self.combat_stats.reset_cannon_cool_down();
