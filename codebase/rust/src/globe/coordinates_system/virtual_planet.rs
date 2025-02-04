@@ -14,7 +14,7 @@ use crate::{
   },
   root::root::RootScene,
   troops::{
-    spawner_engine::spawn_troop, surface::Surface
+    spawner_engine::spawn_troop, surface::surface::Surface
   }
 };
 use super::{
@@ -194,9 +194,7 @@ impl VirtualPlanet {
                 .get_name()
                 .to_string();
 
-              let possible_territory_colission = self.territories.get_mut(&territory_id);
-              if possible_territory_colission.is_some() {
-                let overlapped_territory = possible_territory_colission.unwrap();
+              if let Some(overlapped_territory) = self.territories.get_mut(&territory_id) {
                 // Self::paint_surface_point(&surface_point, overlapped_territory);
 
                 surface_point.add_to_group(&territory_id);
@@ -317,7 +315,7 @@ impl VirtualPlanet {
     Territory::set_color_to_active_material(&territory_mesh, color);
   }
 
-  fn get_root_from_virtual_planet(&mut self) -> Gd<RootScene> {
+  pub fn get_root_from_virtual_planet(&self) -> Gd<RootScene> {
     self
       .base()
       .get_parent()
@@ -330,6 +328,8 @@ impl VirtualPlanet {
 
     let territories_with_rulers = self.get_mut_territories_with_ruler();
 
+    // todo: Should get peaceful territories only
+    // todo: Also, shouldn't get territories on aftercombat situation
     for (_territory_id, territory) in territories_with_rulers {
 
       let player_id = territory.current_ruler.as_ref().unwrap().player_id;

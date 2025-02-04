@@ -8,6 +8,7 @@ use crate::{
   heads_up_display::territory_hud::TerritoryHUD,
 };
 
+// TICKET: #98
 enum _LandState {
   /// Should be used when the land is stable
   /// and not being attacked
@@ -84,17 +85,6 @@ impl IStaticBody3D for Land {
     Territory::unchecking_territory(territory);
   }
 
-  fn process(&mut self, _delta: f64) {
-    let virtual_planet = self.get_virtual_planet_from_land();
-    
-    let territories = &virtual_planet.bind().territories;
-    let territories_with_rules = territories.iter()
-      .filter(|(_, territory)| territory.current_ruler.is_some());
-
-    for (_, _territory) in territories_with_rules {
-      // TODO: Call Troop Spawner engine based on territory numbers and spawn rules
-    }
-  }
 }
 
 #[godot_api]
