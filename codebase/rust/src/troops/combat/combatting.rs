@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use crate::{
   globe::coordinates_system::{coordinates_system::CoordinatesSystem, virtual_planet::VirtualPlanet},
   troops::{combat::combat_stats::CombatStats, surface::surface::Surface, troop::{Troop, TroopId, TroopState}}
@@ -8,10 +9,12 @@ use super::{combat_stats::CombatTypes, projectile::Projectile};
 
 
 impl Troop {
-  pub fn keep_fighting_if_combatting(&mut self, delta: f64, virtual_planet: &Gd<VirtualPlanet>) {
+  pub fn keep_fighting_if_combatting(&mut self, _delta: f64, virtual_planet: &Gd<VirtualPlanet>) {
     if !self.troop_is_combatting() {
       return;
     }
+
+    let _virtual_planet = &virtual_planet.bind();
 
     // TODO: Combat:
     // How it should be?
@@ -20,19 +23,25 @@ impl Troop {
     // 3. Defender open fire
     // 4. Attacker returns fire
 
+    // Caveat:
+    // Should be aware a attacker can be ordered directly to attack a defender, (Right click on the defender)
+    // so the defender should be able to open fire
+
     if self.troop_activities.contains(&TroopState::Combating(CombatTypes::Attacking)) {
       
     } else if self.troop_activities.contains(&TroopState::Combating(CombatTypes::Defending)) {
       
     } else {
       godot_error!("Troop is combatting but haven't defined if it's attacking or defending");
+      return;
     }
 
-    let virtual_planet = &virtual_planet.bind();
-    let enemy_troop = if self.combat_stats.troop_being_attacked.is_some() {
+    // TODO: not reaching below this point so far, needs to refactor all this logic
+    /*
+    let enemy_troop = if self.combat_stats.opening_fire_on_troop.is_some() {
       Self::get_troop_by_id(
         &virtual_planet,
-        &self.combat_stats.troop_being_attacked.as_ref().unwrap()
+        &self.combat_stats.opening_fire_on_troop.as_ref().unwrap()
       )
     } else {
       // todo: try to find a enemy within the radius, then pick the closest one
@@ -40,16 +49,15 @@ impl Troop {
       self.find_optimal_enemy_troop_to_be_attacked(virtual_planet)
     };
     let Some(enemy_troop) = enemy_troop else {
-      godot_print!("No enemy troop found to keep fighting, cleaning combat_stats.troop_being_attacked");
-      self.combat_stats.troop_being_attacked = None;
+      godot_print!("No enemy troop found to keep fighting, cleaning combat_stats.opening_fire_on_troop");
+      self.combat_stats.opening_fire_on_troop = None;
       return;
     };
 
-    self.combat_stats.troop_being_attacked = Some(enemy_troop.get_name().to_string());
+    self.combat_stats.opening_fire_on_troop = Some(enemy_troop.get_name().to_string());
 
     let target_position = enemy_troop.get_global_transform().origin;
     let self_position = &self.base().get_global_transform().origin;
-    
 
     let troops_distance = self_position.distance_to(target_position);
     if troops_distance > self.combat_stats.cannon.range {
@@ -70,7 +78,7 @@ impl Troop {
         self.open_fire_on_the_enemy(enemy_troop, virtual_planet)
       }
     }
-
+    */
   }
 
   /// TODO: doc

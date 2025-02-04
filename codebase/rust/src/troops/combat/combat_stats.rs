@@ -31,7 +31,7 @@ pub struct CombatStats {
   _alive: bool,
 
   _fighting_behavior: FighthingBehavior,
-  pub troop_being_attacked: Option<TroopId>,
+  pub opening_fire_on_troop: Option<TroopId>,
 }
 
 impl CombatStats {
@@ -50,7 +50,7 @@ impl CombatStats {
         range: Self::CANNON_RANGE,
         cooling_down_counter: 0.,
       },
-      troop_being_attacked: None,
+      opening_fire_on_troop: None,
       moving_while_fighting: false,
     }
   }

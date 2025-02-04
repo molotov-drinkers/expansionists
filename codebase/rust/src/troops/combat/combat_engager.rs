@@ -17,10 +17,8 @@ impl Troop {
       .get(touching_territory_id)
       .expect(&format!("Expected to find territory {touching_territory_id}, at engage_combat_if_needed"));
     
-    if territory.has_troops_from_different_players && touching_territory_id == &self.deployed_to_territory {
-
+    if territory.has_troops_from_different_players && self.is_the_territory_deployed_to(touching_territory_id) {
       self.base_mut().add_to_group(Self::TROOP_COMBATTING);
-
       self.troop_activities.remove(&TroopState::Patrolling);
       self.troop_activities.remove(&TroopState::Idle);
 
@@ -39,11 +37,9 @@ impl Troop {
       }
 
     } else if self.base().is_in_group(Self::TROOP_COMBATTING) {
-      self.troop_activities.insert(TroopState::Idle);
-      
+      self.troop_activities.insert(TroopState::Patrolling);
       self.remove_combatting_states();
       // todo: when it's combatting from the water, it seems like it's keep combatting endlessly
-
       // self.reset_trajectory(true);
       self.combat_stats.in_after_combat = true;
     }
@@ -66,6 +62,9 @@ impl Troop {
     }
   }
 
+  fn is_the_territory_deployed_to(&self, touching_territory_id: &String) -> bool {
+    &self.deployed_to_territory == touching_territory_id
+  }
   // fn update_combat_stats
 
 }
