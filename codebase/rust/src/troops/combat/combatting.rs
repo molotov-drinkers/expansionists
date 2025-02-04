@@ -1,16 +1,31 @@
 use crate::{
   globe::coordinates_system::{coordinates_system::CoordinatesSystem, virtual_planet::VirtualPlanet},
-  troops::{combat::combat_stats::CombatStats, surface::surface::Surface, troop::{Troop, TroopId}}
+  troops::{combat::combat_stats::CombatStats, surface::surface::Surface, troop::{Troop, TroopId, TroopState}}
 };
 use godot::prelude::*;
 
-use super::projectile::Projectile;
+use super::{combat_stats::CombatTypes, projectile::Projectile};
 
 
 impl Troop {
   pub fn keep_fighting_if_combatting(&mut self, delta: f64, virtual_planet: &Gd<VirtualPlanet>) {
     if !self.troop_is_combatting() {
       return;
+    }
+
+    // TODO: Combat:
+    // How it should be?
+    // 1. Attacker invades it
+    // 2. Defender approaches the Attacker within the combat radius
+    // 3. Defender open fire
+    // 4. Attacker returns fire
+
+    if self.troop_activities.contains(&TroopState::Combating(CombatTypes::Attacking)) {
+      
+    } else if self.troop_activities.contains(&TroopState::Combating(CombatTypes::Defending)) {
+      
+    } else {
+      godot_error!("Troop is combatting but haven't defined if it's attacking or defending");
     }
 
     let virtual_planet = &virtual_planet.bind();

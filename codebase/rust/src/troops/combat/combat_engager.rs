@@ -4,26 +4,7 @@ use crate::{
 };
 use godot::prelude::*;
 
-/// Combat types the troop can engage
-/// Needs to populate CombatTypes::iter() method
-#[derive(Hash, Eq, PartialEq, Clone)]
-pub enum CombatTypes {
-  Attacking,
-  Defending,
-  FightingOverUnoccupiedTerritory,
-}
-
-impl CombatTypes {
-  pub fn iter() -> impl Iterator<Item = CombatTypes> {
-    [
-      Self::Attacking,
-      Self::Defending,
-      Self::FightingOverUnoccupiedTerritory,
-    ]
-    .iter()
-    .cloned()
-  }
-}
+use super::combat_stats::CombatTypes;
 
 impl Troop {
   pub fn trigger_combat_engage_if_needed(&mut self, virtual_planet: &Gd<VirtualPlanet>) {
