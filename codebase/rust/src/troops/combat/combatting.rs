@@ -1,4 +1,3 @@
-#![allow(dead_code)]
 use crate::{
   globe::coordinates_system::{coordinates_system::CoordinatesSystem, virtual_planet::VirtualPlanet},
   troops::{combat::combat_stats::CombatStats, surface::surface::Surface, troop::{Troop, TroopId, TroopState}}
@@ -9,12 +8,12 @@ use super::{combat_stats::CombatTypes, projectile::Projectile};
 
 
 impl Troop {
-  pub fn keep_fighting_if_combatting(&mut self, _delta: f64, virtual_planet: &Gd<VirtualPlanet>) {
+  pub fn keep_fighting_if_combatting(&mut self, delta: f64, virtual_planet: &Gd<VirtualPlanet>) {
     if !self.troop_is_combatting() {
       return;
     }
 
-    let _virtual_planet = &virtual_planet.bind();
+    let virtual_planet = &virtual_planet.bind();
 
     // TODO: Combat:
     // How it should be?
@@ -37,7 +36,6 @@ impl Troop {
     }
 
     // TODO: not reaching below this point so far, needs to refactor all this logic
-    /*
     let enemy_troop = if self.combat_stats.opening_fire_on_troop.is_some() {
       Self::get_troop_by_id(
         &virtual_planet,
@@ -78,7 +76,6 @@ impl Troop {
         self.open_fire_on_the_enemy(enemy_troop, virtual_planet)
       }
     }
-    */
   }
 
   /// TODO: doc
