@@ -19,7 +19,7 @@ pub struct Projectile {
   pub target: Option<TypesOfTarget>,
 
   pub up_to_date_target_position: Vector3,
-  current_position: Vector3,
+  _current_position: Vector3,
 }
 
 #[godot_api]
@@ -37,7 +37,7 @@ impl ICharacterBody3D for Projectile {
       target: None,
 
       up_to_date_target_position: Vector3::ZERO,
-      current_position: Vector3::ZERO,
+      _current_position: Vector3::ZERO,
     }
   }
 

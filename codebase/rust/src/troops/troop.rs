@@ -141,6 +141,12 @@ impl ICharacterBody3D for Troop {
     self.decrease_idle_timer_if_idling(delta);
     self.get_deployment_next_action(virtual_planet);
 
+    // TODO: Combat:
+    // How it should be?
+    // 1. Attacker invades it
+    // 2. Defender approaches the Attacker within the combat radius
+    // 3. Defender open fire
+    // 4. Attacker returns fire
     self.trigger_combat_engage_if_needed(virtual_planet);
     self.keep_fighting_if_combatting(delta, virtual_planet);
   }
