@@ -6,7 +6,6 @@ use godot::prelude::*;
 
 use super::{combat_stats::CombatTypes, projectile::Projectile};
 
-
 impl Troop {
   pub fn keep_fighting_if_combatting(&mut self, delta: f64, virtual_planet: &Gd<VirtualPlanet>) {
     if !self.troop_is_combatting() {
@@ -27,62 +26,59 @@ impl Troop {
     // so the defender should be able to open fire
 
     if self.troop_activities.contains(&TroopState::Combating(CombatTypes::Attacking)) {
-      
+      // TODO: This may be filled by:
+      // 1. the right click
+      // 2. when the defender approaches the attacker
+      // 3. when it invades the enemy territory and defender is in the radius
+      if self.combat_stats.opening_fire_on_troop.is_some() {
+        Self::get_troop_by_id(
+          &virtual_planet,
+          &self.combat_stats.opening_fire_on_troop.as_ref().unwrap()
+        );
+      }
+
     } else if self.troop_activities.contains(&TroopState::Combating(CombatTypes::Defending)) {
-      
-    } else {
-      godot_error!("Troop is combatting but haven't defined if it's attacking or defending");
-      return;
-    }
+      let enemy_troop = if self.combat_stats.opening_fire_on_troop.is_some() {
+        Self::get_troop_by_id(
+          &virtual_planet,
+          &self.combat_stats.opening_fire_on_troop.as_ref().unwrap()
+        )
+      } else {
+        self.find_closest_enemy_troop_to_be_attacked(virtual_planet)
+      };
 
-    // TODO: not reaching below this point so far, needs to refactor all this logic
-    let enemy_troop = if self.combat_stats.opening_fire_on_troop.is_some() {
-      Self::get_troop_by_id(
-        &virtual_planet,
-        &self.combat_stats.opening_fire_on_troop.as_ref().unwrap()
-      )
-    } else {
-      // todo: try to find a enemy within the radius, then pick the closest one
-      // if no enemy in the radius, get any in the territory
-      self.find_optimal_enemy_troop_to_be_attacked(virtual_planet)
-    };
-    let Some(enemy_troop) = enemy_troop else {
-      godot_print!("No enemy troop found to keep fighting, cleaning combat_stats.opening_fire_on_troop");
-      self.combat_stats.opening_fire_on_troop = None;
-      return;
-    };
+      let Some(enemy_troop) = enemy_troop else {
+        godot_print!("No enemy troop found to keep fighting, cleaning combat_stats.opening_fire_on_troop");
+        self.combat_stats.opening_fire_on_troop = None;
+        return;
+      };
 
-    self.combat_stats.opening_fire_on_troop = Some(enemy_troop.get_name().to_string());
+      self.combat_stats.opening_fire_on_troop = Some(enemy_troop.get_name().to_string());
+      let target_position = enemy_troop.get_global_transform().origin;
+      let self_position = &self.base().get_global_transform().origin;
 
-    let target_position = enemy_troop.get_global_transform().origin;
-    let self_position = &self.base().get_global_transform().origin;
+      let troops_distance = self_position.distance_to(target_position);
 
-    let troops_distance = self_position.distance_to(target_position);
-    if troops_distance > self.combat_stats.cannon.range {
+      if troops_distance > self.combat_stats.cannon.range {
+        self.set_trajectory_to_get_closer_to_enemy(target_position);
+        self.get_closer_to_attack(target_position, *self_position);
+      } else {
 
-      // todos: Lotta issues here =(
-      self.set_trajectory_to_get_closer_to_enemy(target_position);
-      self.get_closer_to_attack(target_position, *self_position);
-
-    } else {
-      // self.combat_stats.cannon.firing = true;
-      // todo if this works, could be a troop state
-      self.combat_stats.moving_while_fighting = false;
-
-      // self.base_mut().look_at(target_position.normalized());
-      self.set_orientation(target_position.normalized());
-
-      if self.has_cool_down_finished(delta) {
-        self.open_fire_on_the_enemy(enemy_troop, virtual_planet)
+        if self.has_cool_down_finished(delta) {
+          self.set_orientation(target_position.normalized());
+          self.open_fire_on_the_enemy(enemy_troop, virtual_planet)
+        }
       }
     }
+    godot_error!("Troop is combatting but haven't defined if it's attacking or defending");
   }
 
-  /// TODO: doc
-  fn find_optimal_enemy_troop_to_be_attacked(&mut self, virtual_planet: &GdRef<'_, VirtualPlanet>) -> Option<Gd<Troop>> {
-    let Some(ref touching_territory_id) = self.touching_surface_point.territory_id else {
-      return None;
-    };
+  fn find_closest_enemy_troop_to_be_attacked(&mut self, virtual_planet: &GdRef<'_, VirtualPlanet>) -> Option<Gd<Troop>> {
+    if !self.arrived_to_territory {
+      // won't look for enemy troops if it hasn't arrived to the territory
+      return None
+    }
+    let touching_territory_id = &self.deployed_to_territory;
 
     let territory = virtual_planet.territories
       .get(touching_territory_id)
@@ -107,45 +103,27 @@ impl Troop {
 
     let closest_enemy_troop = enemy_troops
       .iter()
-      .fold(None, |closest, enemy_troop_id| {
+      .fold(None, |current_closest, enemy_troop_id| {
         if let Some(enemy_troop) = Self::get_troop_by_id(&virtual_planet, enemy_troop_id) {
           let enemy_position = enemy_troop.get_global_transform().origin;
-          let distance = self_position.distance_to(enemy_position);
+          let new_comparable_distance = self_position.distance_to(enemy_position);
 
-          if distance <= self.combat_stats.cannon.range {
-              match closest {
-                  Some((_, min_distance)) if distance >= min_distance => closest, // Keep the previous closest if it's better
-                  _ => Some((enemy_troop, distance)), // Otherwise, update the closest
-              }
-          } else {
-            // Skip if the enemy is out of range
-            closest
-          }
+            match current_closest {
+              // Keep the previous closest if it's better
+              Some((_, current_min_distance))
+                if new_comparable_distance >= current_min_distance => current_closest,
+              
+              // Otherwise, update the closest:
+              _ => Some((enemy_troop, new_comparable_distance)),
+            }
         } else {
           // If there's no enemy found, keep the current closest
-          closest
+          current_closest
         }
       })
       .map(|(enemy_troop, _closest_distance)| enemy_troop);
 
-
-
-    // let troop_found = enemy_troops
-    //   .iter()
-    //   .find_map(|enemy_troop_id| {
-    //     if let Some(enemy_troop) = Self::get_troop_by_id(&virtual_planet, enemy_troop_id) {
-    //       let enemy_position = enemy_troop.get_global_transform().origin;
-    //       let distance = self_position.distance_to(enemy_position);
-
-    //       if distance <= self.combat_stats.cannon.range {
-    //         return Some(enemy_troop);
-    //       }
-    //     }
-
-    //     None
-    //   });
-
-    closest_enemy_troop
+    return closest_enemy_troop;
   }
 
   /// Every troop scene should have a child node named `projectile_spawner`
@@ -173,6 +151,7 @@ impl Troop {
     if self.combat_stats.moving_while_fighting {
       return;
     }
+
     let geodesic_trajectory = CoordinatesSystem::get_geodesic_trajectory(
       self.touching_surface_point.cartesian,
       target_position,
@@ -181,10 +160,7 @@ impl Troop {
 
     // todo if this works, could be a troop state
     self.combat_stats.moving_while_fighting = true;
-
     self.moving_trajectory_points = geodesic_trajectory;
-    // self.moving_trajectory_is_set = true;
-    // self.troop_activities.insert(TroopState::Moving);
   }
 
   fn get_closer_to_attack(&mut self, _target_position: Vector3, current_position: Vector3) {
@@ -198,6 +174,9 @@ impl Troop {
     let velocity = direction * self.adopted_speed.get_speed();
     self.set_orientation(direction);
     self.base_mut().set_velocity(velocity);
+    self.base_mut().move_and_slide();
+    // TODO: Check if it has non-intended geodesic invasion, should go around and find another path
+    // TODO: Maybe this could be done by the pathfinding algorithm
 
     let current_distance = current_position.distance_to(current_target);
     let too_close_to_the_waypoint = current_distance < 0.1;

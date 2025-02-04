@@ -20,6 +20,8 @@ pub struct Projectile {
 
   pub up_to_date_target_position: Vector3,
   _current_position: Vector3,
+
+  // _fired_by: TroopId,
 }
 
 #[godot_api]

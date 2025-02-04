@@ -8,9 +8,10 @@ use super::combat_stats::CombatTypes;
 
 impl Troop {
   pub fn trigger_combat_engage_if_needed(&mut self, virtual_planet: &Gd<VirtualPlanet>) {
-    let Some(ref touching_territory_id) = self.touching_surface_point.territory_id else {
+    if !self.arrived_to_territory {
       return;
-    };
+    }
+    let touching_territory_id = &self.deployed_to_territory;
 
     let virtual_planet = virtual_planet.bind();
     let territory = virtual_planet.territories

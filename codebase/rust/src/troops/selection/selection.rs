@@ -31,6 +31,7 @@ impl Troop {
       self.owner.player_id.clone()
     );
 
+    self.arrived_to_territory = false;
     self.moving_trajectory_points = geodesic_trajectory;
     self.moving_trajectory_is_set = true;
     self.adopted_speed = SpeedType::FightOrFlight;

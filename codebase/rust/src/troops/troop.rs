@@ -63,6 +63,9 @@ pub struct Troop {
   /// holds the territory id the troop is deployed to
   /// it changes when the troop is deployed to another territory
   pub deployed_to_territory: TerritoryId,
+  /// indicates troop has arrived to the territory it was deployed to
+  pub arrived_to_territory: bool,
+
   pub surface: Surface,
   /// If it changes, needs to swap in between sea and land mesh
   pub surface_type_changed: bool,
@@ -96,6 +99,7 @@ impl ICharacterBody3D for Troop {
       base: base,
       touching_surface_point: SurfacePoint::get_blank_surface_point_metadata(),
       deployed_to_territory: "".to_string(),
+      arrived_to_territory: true,
       surface: Surface::Land,
       surface_type_changed: false,
 
@@ -247,7 +251,11 @@ impl Troop {
   }
 
   fn maybe_move_along_the_trajectory_and_set_orientation(&mut self) {
-    if self.moving_trajectory_is_set && !self.troop_activities.contains(&TroopState::Idle) {
+    if self.moving_trajectory_is_set &&
+      !self.troop_activities.contains(&TroopState::Idle) &&
+      // Combating has its own movement logic
+      !self.troop_is_combatting() {
+
       if self.have_future_invasion_in_the_trajectory() {
         self.reset_trajectory(true);
         return;

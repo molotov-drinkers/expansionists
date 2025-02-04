@@ -36,7 +36,7 @@ pub struct CombatStats {
 
 impl CombatStats {
   pub const COOL_DOWN_TIMER_IN_SECS: f64 = 2.;
-  pub const CANNON_RANGE: f32 = 1.;
+  pub const CANNON_RANGE: f32 = 0.4;
 
   pub fn new() -> CombatStats {
     CombatStats {
