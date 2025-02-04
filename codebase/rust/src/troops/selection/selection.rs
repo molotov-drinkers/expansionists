@@ -8,7 +8,7 @@ use godot::{classes::Sprite3D, prelude::*};
 
 impl Troop {
   pub fn set_order_to_move_to(&mut self, destination: Vector3, dest_territory_id: &TerritoryId) {
-    self.reset_trajectory(false);
+    self.no_combat_reset_trajectory(false);
     self.troop_activities.insert(TroopState::Moving);
     self.troop_activities.insert(TroopState::Deploying);
     self.troop_activities.remove(&TroopState::Patrolling);

@@ -67,8 +67,8 @@ impl RootScene {
       "latinos".to_owned(),
       PlayerType::Bot,
       TroopMeshes {
-        land: MeshId::Truck1,
-        sea: MeshId::Boat2,
+        land: MeshId::Tonk,
+        sea: MeshId::Boat6,
       },      
       AvailableLanguage::InternationalEnglish,
     );
@@ -81,7 +81,7 @@ impl RootScene {
       "east_savanna".to_owned(),
       PlayerType::Bot,
       TroopMeshes {
-        land: MeshId::Tonk,
+        land: MeshId::Truck1,
         sea: MeshId::Boat6,
       },      
       AvailableLanguage::InternationalEnglish,

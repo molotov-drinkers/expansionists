@@ -53,24 +53,32 @@ impl Troop {
         return;
       };
 
+      // Being sure isn't targetting some troop no longer combatting on that territory
+      if enemy_troop.bind().deployed_to_territory != self.deployed_to_territory {
+        self.combat_stats.opening_fire_on_troop = None;
+        return;
+      };
+
       self.combat_stats.opening_fire_on_troop = Some(enemy_troop.get_name().to_string());
       let target_position = enemy_troop.get_global_transform().origin;
       let self_position = &self.base().get_global_transform().origin;
-
       let troops_distance = self_position.distance_to(target_position);
 
       if troops_distance > self.combat_stats.cannon.range {
         self.set_trajectory_to_get_closer_to_enemy(target_position);
-        self.get_closer_to_attack(target_position, *self_position);
+
       } else {
+        
+        self.reset_trajectory();
 
         if self.has_cool_down_finished(delta) {
           self.set_orientation(target_position.normalized());
           self.open_fire_on_the_enemy(enemy_troop, virtual_planet)
         }
       }
+    } else {
+      godot_error!("Troop is combatting but haven't defined if it's attacking or defending");
     }
-    godot_error!("Troop is combatting but haven't defined if it's attacking or defending");
   }
 
   fn find_closest_enemy_troop_to_be_attacked(&mut self, virtual_planet: &GdRef<'_, VirtualPlanet>) -> Option<Gd<Troop>> {
@@ -148,42 +156,20 @@ impl Troop {
   }
 
   fn set_trajectory_to_get_closer_to_enemy(&mut self, target_position: Vector3) {
-    if self.combat_stats.moving_while_fighting {
-      return;
-    }
+    if !self.moving_trajectory_is_set {
 
-    let geodesic_trajectory = CoordinatesSystem::get_geodesic_trajectory(
-      self.touching_surface_point.cartesian,
-      target_position,
-      VirtualPlanet::get_planet_radius() as f32
-    );
+      // TODO: Check if it has non-intended geodesic invasion, should go around and find another path
+      // TODO: Maybe this could be done by the pathfinding algorithm
+      // TODO:Could be something like CoordinatesSystem::get_path_in_the_frontiers
 
-    // todo if this works, could be a troop state
-    self.combat_stats.moving_while_fighting = true;
-    self.moving_trajectory_points = geodesic_trajectory;
-  }
+      let geodesic_trajectory = CoordinatesSystem::get_geodesic_trajectory(
+        self.touching_surface_point.cartesian,
+        target_position,
+        VirtualPlanet::get_planet_radius() as f32
+      );
 
-  fn get_closer_to_attack(&mut self, _target_position: Vector3, current_position: Vector3) {
-    let current_target = self.moving_trajectory_points[self.current_trajectory_point];
-    let direction = (current_target - current_position).try_normalized();
-    let Some(direction) = direction else {
-      // godot_error!("direction was None at get_closer_to_attack");
-      return
-    };
-
-    let velocity = direction * self.adopted_speed.get_speed();
-    self.set_orientation(direction);
-    self.base_mut().set_velocity(velocity);
-    self.base_mut().move_and_slide();
-    // TODO: Check if it has non-intended geodesic invasion, should go around and find another path
-    // TODO: Maybe this could be done by the pathfinding algorithm
-
-    let current_distance = current_position.distance_to(current_target);
-    let too_close_to_the_waypoint = current_distance < 0.1;
-
-    let on_the_last_waypoint = self.current_trajectory_point == (self.moving_trajectory_points.len() -1);
-    if too_close_to_the_waypoint && !on_the_last_waypoint {
-      self.current_trajectory_point = self.current_trajectory_point + 1;
+      self.moving_trajectory_points = geodesic_trajectory;
+      self.moving_trajectory_is_set = true;
     }
 
   }
