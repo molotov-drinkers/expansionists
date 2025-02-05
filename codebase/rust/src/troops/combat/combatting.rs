@@ -70,9 +70,9 @@ impl Troop {
       } else {
         
         self.reset_trajectory();
+        self.set_orientation(target_position.normalized());
 
         if self.has_cool_down_finished(delta) {
-          self.set_orientation(target_position.normalized());
           self.open_fire_on_the_enemy(enemy_troop, virtual_planet)
         }
       }
