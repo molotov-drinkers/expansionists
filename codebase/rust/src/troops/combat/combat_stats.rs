@@ -36,7 +36,7 @@ pub struct CombatStats {
 
 impl CombatStats {
   pub const COOL_DOWN_TIMER_IN_SECS: f64 = 2.;
-  pub const CANNON_RANGE: f32 = 1.;
+  pub const CANNON_RANGE: f32 = 0.4;
 
   pub fn new() -> CombatStats {
     CombatStats {
@@ -48,11 +48,15 @@ impl CombatStats {
         _damage: 11,
         // firing: false,
         range: Self::CANNON_RANGE,
-        cooling_down_counter: 0.,
+        cooling_down_counter: Self::COOL_DOWN_TIMER_IN_SECS,
       },
       opening_fire_on_troop: None,
       moving_while_fighting: false,
     }
+  }
+
+  pub fn reset_cannon_cool_down(&mut self) {
+    self.cannon.cooling_down_counter = Self::COOL_DOWN_TIMER_IN_SECS;
   }
 }
 

@@ -1,6 +1,6 @@
 use crate::{
   globe::coordinates_system::virtual_planet::VirtualPlanet,
-  troops::troop::{Troop, TroopState}
+  troops::{speed::SpeedType, troop::{Troop, TroopState}}
 };
 use godot::prelude::*;
 
@@ -8,9 +8,10 @@ use super::combat_stats::CombatTypes;
 
 impl Troop {
   pub fn trigger_combat_engage_if_needed(&mut self, virtual_planet: &Gd<VirtualPlanet>) {
-    let Some(ref touching_territory_id) = self.touching_surface_point.territory_id else {
+    if !self.arrived_to_territory {
       return;
-    };
+    }
+    let touching_territory_id = &self.deployed_to_territory;
 
     let virtual_planet = virtual_planet.bind();
     let territory = virtual_planet.territories
@@ -21,6 +22,7 @@ impl Troop {
       self.base_mut().add_to_group(Self::TROOP_COMBATTING);
       self.troop_activities.remove(&TroopState::Patrolling);
       self.troop_activities.remove(&TroopState::Idle);
+      self.adopted_speed = SpeedType::FightOrFlight;
 
       // Setting the combat type and combating states on the troops
       if territory.current_ruler.is_none() {
@@ -32,16 +34,21 @@ impl Troop {
             self.troop_activities.insert(TroopState::Combating(CombatTypes::Attacking));
           } else {
             self.troop_activities.insert(TroopState::Combating(CombatTypes::Defending));
+            // Defenders should go after the attackers
+            self.moving_trajectory_is_set = false;
+
           }
         });
       }
 
     } else if self.base().is_in_group(Self::TROOP_COMBATTING) {
-      self.troop_activities.insert(TroopState::Patrolling);
+      
+      // TODO: there seems to be a bug (maybe) here, it doesn't start patrolling that naturally after leaving a combating territory
+      
+      self.no_combat_reset_trajectory(true);
       self.remove_combatting_states();
-      // todo: when it's combatting from the water, it seems like it's keep combatting endlessly
-      // self.reset_trajectory(true);
       self.combat_stats.in_after_combat = true;
+      self.combat_stats.reset_cannon_cool_down();
     }
   }
 

@@ -27,6 +27,7 @@ impl Troop {
           &self.base().get_name().to_string(),
           self.owner.player_id
         );
+        self.arrived_to_territory = true;
 
         let territory_current_ruler = territory
           .current_ruler

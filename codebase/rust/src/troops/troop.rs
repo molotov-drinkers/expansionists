@@ -63,6 +63,9 @@ pub struct Troop {
   /// holds the territory id the troop is deployed to
   /// it changes when the troop is deployed to another territory
   pub deployed_to_territory: TerritoryId,
+  /// indicates troop has arrived to the territory it was deployed to
+  pub arrived_to_territory: bool,
+
   pub surface: Surface,
   /// If it changes, needs to swap in between sea and land mesh
   pub surface_type_changed: bool,
@@ -96,6 +99,7 @@ impl ICharacterBody3D for Troop {
       base: base,
       touching_surface_point: SurfacePoint::get_blank_surface_point_metadata(),
       deployed_to_territory: "".to_string(),
+      arrived_to_territory: true,
       surface: Surface::Land,
       surface_type_changed: false,
 
@@ -247,9 +251,11 @@ impl Troop {
   }
 
   fn maybe_move_along_the_trajectory_and_set_orientation(&mut self) {
-    if self.moving_trajectory_is_set && !self.troop_activities.contains(&TroopState::Idle) {
+    if self.moving_trajectory_is_set &&
+      !self.troop_activities.contains(&TroopState::Idle) {
+
       if self.have_future_invasion_in_the_trajectory() {
-        self.reset_trajectory(true);
+        self.no_combat_reset_trajectory(true);
         return;
       }
 
@@ -268,7 +274,7 @@ impl Troop {
       let Some(direction) = direction else {
         godot_error!("Expected Troop direction to be a Vector3");
         let patrolling = self.troop_activities.contains(&TroopState::Patrolling);
-        self.reset_trajectory(patrolling);
+        self.no_combat_reset_trajectory(patrolling);
         return
       };
 
@@ -287,7 +293,7 @@ impl Troop {
 
       // Finish the movement if the troop has reached the last waypoint
       if too_close_to_the_waypoint && on_the_last_waypoint {
-        self.reset_trajectory(true);
+        self.no_combat_reset_trajectory(true);
       }
     }
   }
@@ -314,7 +320,8 @@ impl Troop {
     false
   }
 
-  pub fn reset_trajectory(&mut self, gets_back_to_patrolling: bool) {
+  /// Resets all the states needed to reset when the troop is not in combat
+  pub fn no_combat_reset_trajectory(&mut self, gets_back_to_patrolling: bool) {
     self.troop_activities.remove(&TroopState::Moving);
     self.troop_activities.remove(&TroopState::Deploying);
     self.troop_activities.insert(TroopState::Idle);
@@ -324,6 +331,10 @@ impl Troop {
     }
 
     self.adopted_speed = SpeedType::Patrolling;
+    self.reset_trajectory();
+  }
+
+  pub fn reset_trajectory(&mut self) {
     self.current_trajectory_point = 0;
     self.moving_trajectory_points = [Vector3::ZERO; CoordinatesSystem::NUM_OF_WAYPOINTS];
     self.moving_trajectory_is_set = false;
