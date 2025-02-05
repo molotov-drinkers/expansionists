@@ -207,8 +207,9 @@ impl Troop {
     let projectile: Gd<PackedScene> = load("res://scenes/troops/combat/projectile.tscn");
     let mut projectile = projectile.instantiate_as::<Projectile>();
 
-    projectile.bind_mut().up_to_date_target_position = target_position; 
     let position_to_spawn_projectile = self.get_projectile_spawner_position();
+    projectile.bind_mut().up_to_date_target_position = target_position; 
+    projectile.bind_mut().fired_by = self.base().get_name().to_string();
     projectile.set_global_transform(position_to_spawn_projectile);
 
     projectiles_node.add_child(&projectile);
