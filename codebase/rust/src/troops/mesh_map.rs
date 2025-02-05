@@ -21,7 +21,7 @@ pub enum MeshId {
 pub struct TroopMesh {
   pub scene_name: String,
   pub surface: Surface,
-  pub surface_to_be_colored: i32,
+  pub surface_to_be_colored: u16,
 }
 
 type MeshMap = HashMap<MeshId, TroopMesh>;

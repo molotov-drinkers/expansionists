@@ -336,7 +336,7 @@ impl VirtualPlanet {
       let mut player = Player::get_player_by_id(root_scene.clone(), player_id);
 
       if player.bind().troops_counter < player.bind().max_troop_allowed &&
-        (territory.all_troops_deployed_and_arrived.len() as i32) < territory.organic_max_troops {
+        (territory.all_troops_deployed_and_arrived.len() as u32) < territory.organic_max_troops {
 
         territory.valid_seconds_elasped_since_last_troop += delta;
 

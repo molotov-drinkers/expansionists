@@ -22,9 +22,9 @@ struct EnemyStats {
   /// The number of troops that were injured
   casualties_caused_by_player: f32,
   /// The number of troops that were killed
-  fatalities_caused_by_player: i32,
+  fatalities_caused_by_player: u32,
   /// The number of territories that were taken
-  territories_taken_by_player: i32,
+  territories_taken_by_player: u32,
 }
 
 #[derive(Debug, Clone)]
@@ -33,18 +33,18 @@ pub struct TroopMeshes {
   pub sea: MeshId,
 }
 
-pub type PlayerId = i32;
+pub type PlayerId = u32;
 
 #[derive(GodotClass)]
 #[class(base=Node3D)]
 pub struct Player {
   base: Base<Node3D>,
   pub static_info: PlayerStaticInfo,
-  pub troops_counter: i32,
-  territory_counter: i32,
+  pub troops_counter: u32,
+  territory_counter: u32,
 
   /// it's the sum of every territory's organic_max_troops being ruled by the player
-  pub max_troop_allowed: i32,
+  pub max_troop_allowed: u32,
 
   #[allow(dead_code)] //TODO: remove dead_code
   alive: bool,
@@ -125,7 +125,7 @@ impl Player {
   }
 
   /// Returns the player id used in Godot set on the nodes' name and as group
-  /// it couldn't use the PlayerId beucase it's just a i32 and
+  /// it couldn't use the PlayerId because it's just a u32 and
   /// it could clash with other nodes and group names
   fn get_player_godot_identifier(player_id: PlayerId) -> String {
     format!("player_{player_id}")

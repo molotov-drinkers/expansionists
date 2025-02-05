@@ -113,14 +113,14 @@ fn get_colored_troop_scenes(player: &PlayerStaticInfo) -> (Gd<Node3D>, Gd<Node3D
     .expect("Expected land mesh to exist")
     .try_cast::<MeshInstance3D>()
     .expect("Expected land child to be a MeshInstance3D")
-    .set_surface_override_material(land_troop.surface_to_be_colored, &material);
+    .set_surface_override_material(land_troop.surface_to_be_colored.into(), &material);
 
   sea_mesh
     .get_child(0)
     .expect("Expected sea mesh to exist")
     .try_cast::<MeshInstance3D>()
     .expect("Expected sea child to be a MeshInstance3D")
-    .set_surface_override_material(sea_troop.surface_to_be_colored, &material);
+    .set_surface_override_material(sea_troop.surface_to_be_colored.into(), &material);
 
   land_mesh.set_name("composable_mesh");
   sea_mesh.set_name("composable_mesh");

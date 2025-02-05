@@ -112,7 +112,7 @@ pub struct Territory {
   pub coordinates: Vec<Coordinates>,
   pub size: Size,
 
-  pub organic_max_troops: i32,
+  pub organic_max_troops: u32,
   troops_growth_velocity: f32,
   pub seconds_to_spawn_troop: f64,
   pub spawner_location: Vector3,
@@ -152,8 +152,7 @@ impl Territory {
   const BASE_TROOP_NUMBER_PER_TERRITORY: f32 = 0.02;
 
   /// organic_max_troops is clamped between 1 and MAX_NUMBER_OF_TROOPS_GENERATED_PER_TERRITORY
-  /// TODO: Change MAX_NUMBER_OF_TROOPS_GENERATED_PER_TERRITORY to 20
-  const MAX_NUMBER_OF_TROOPS_GENERATED_PER_TERRITORY: i32 = 2 /* 20 */;
+  const MAX_NUMBER_OF_TROOPS_GENERATED_PER_TERRITORY: u32 = 20;
 
   /// It's a factor that helps setting how fast the troops grow in a territory
   /// the lower the value, the slower the troops grow
@@ -299,7 +298,7 @@ impl Territory {
     let num_of_coordinates = self.coordinates.len();
 
     self.organic_max_troops = ((
-      Self::BASE_TROOP_NUMBER_PER_TERRITORY * num_of_coordinates as f32) as i32)
+      Self::BASE_TROOP_NUMBER_PER_TERRITORY * num_of_coordinates as f32) as u32)
       .clamp(1, Self::MAX_NUMBER_OF_TROOPS_GENERATED_PER_TERRITORY);
   }
 

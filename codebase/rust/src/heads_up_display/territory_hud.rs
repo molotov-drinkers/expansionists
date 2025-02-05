@@ -39,7 +39,7 @@ impl IControl for TerritoryHUD {
     if self.current_territory.is_some() {   
       // TODO: remove hardcoded player id
       if !self.language_set {
-        const MAIN_PLAYER_ID: i32 = 1;
+        const MAIN_PLAYER_ID: u32 = 1;
         self.chosen_language = Player::get_player_language(
           self.get_root_from_territory_hud(),
           MAIN_PLAYER_ID
