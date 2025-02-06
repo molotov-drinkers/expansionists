@@ -108,7 +108,7 @@ impl Troop {
   fn find_closest_enemy_troop_to_be_attacked(
     &mut self,
     virtual_planet: &GdRef<'_, VirtualPlanet>,
-    in_the_cannon_range: bool,
+    close_to_the_cannon_range: bool,
   ) -> Option<Gd<Troop>> {
     if !self.arrived_to_territory {
       // won't look for enemy troops if it hasn't arrived to the territory
@@ -144,7 +144,9 @@ impl Troop {
           let enemy_position = enemy_troop.get_global_transform().origin;
           let new_comparable_distance = self_position.distance_to(enemy_position);
 
-          if in_the_cannon_range && new_comparable_distance > self.combat_stats.cannon.range {
+          let cannon_range_plus_buffer = self.combat_stats.cannon.range + (self.combat_stats.cannon.range/8.);
+
+          if close_to_the_cannon_range && new_comparable_distance > cannon_range_plus_buffer {
             return current_closest;
           }
 
