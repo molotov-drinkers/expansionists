@@ -46,39 +46,10 @@ impl Troop {
       self.find_closest_enemy_troop_to_be_attacked(virtual_planet, false)
     };
 
-    let Some(enemy_troop) = enemy_troop else {
-      godot_print!("No enemy troop found to keep fighting, cleaning combat_stats.opening_fire_on_troop");
-      self.combat_stats.opening_fire_on_troop = None;
-      return;
-    };
-
-    // Being sure isn't targetting some troop no longer combatting on that territory
-    if enemy_troop.bind().deployed_to_territory != self.deployed_to_territory {
-      self.combat_stats.opening_fire_on_troop = None;
-      return;
-    };
-
-    self.combat_stats.opening_fire_on_troop = Some(enemy_troop.get_name().to_string());
-    let target_position = enemy_troop.get_global_transform().origin;
-    let self_position = &self.base().get_global_transform().origin;
-    let troops_distance = self_position.distance_to(target_position);
-
-    if troops_distance > self.combat_stats.cannon.range {
-      self.set_trajectory_to_get_closer_to_enemy(target_position);
-
-    } else {
-      
-      self.reset_trajectory();
-      self.set_orientation(target_position.normalized());
-
-      if self.has_cool_down_finished(delta) {
-        self.open_fire_on_the_enemy(enemy_troop, virtual_planet)
-      }
-    }
+    self.handle_combat(delta, virtual_planet, enemy_troop);
   }
 
   fn handle_attacking_behavior(&mut self, delta: f64, virtual_planet: &GdRef<'_, VirtualPlanet>) {
-
     // TODO: This may be filled by:
     // 1. the right click
     // 2. when the defender approaches the attacker
@@ -93,37 +64,45 @@ impl Troop {
       self.find_closest_enemy_troop_to_be_attacked(virtual_planet, true)
     };
 
+    self.handle_combat(delta, virtual_planet, enemy_troop);
+  }
 
-    // let Some(enemy_troop) = enemy_troop else {
-    //   godot_print!("No enemy troop found to keep fighting, cleaning combat_stats.opening_fire_on_troop");
-    //   self.combat_stats.opening_fire_on_troop = None;
-    //   return;
-    // };
+  fn handle_combat(&mut self, delta: f64, virtual_planet: &GdRef<'_, VirtualPlanet>, enemy_troop: Option<Gd<Troop>>) {
+    let Some(enemy_troop) = enemy_troop else {
+      godot_print!("No enemy troop found to keep fighting, cleaning combat_stats.opening_fire_on_troop");
+      self.combat_stats.opening_fire_on_troop = None;
+      return;
+    };
 
-    // // Being sure isn't targetting some troop no longer combatting on that territory
-    // if enemy_troop.bind().deployed_to_territory != self.deployed_to_territory {
-    //   self.combat_stats.opening_fire_on_troop = None;
-    //   return;
-    // };
+    // Being sure isn't targetting some troop no longer combatting on that territory
+    if enemy_troop.bind().deployed_to_territory != self.deployed_to_territory {
+      self.combat_stats.opening_fire_on_troop = None;
+      return;
+    };
 
-    // self.combat_stats.opening_fire_on_troop = Some(enemy_troop.get_name().to_string());
-    // let target_position = enemy_troop.get_global_transform().origin;
-    // let self_position = &self.base().get_global_transform().origin;
-    // let troops_distance = self_position.distance_to(target_position);
+    self.combat_stats.opening_fire_on_troop = Some(enemy_troop.get_name().to_string());
 
-    // if troops_distance > self.combat_stats.cannon.range {
-    //   self.set_trajectory_to_get_closer_to_enemy(target_position);
+    // Troop might be deployed while combatting, so it should not keep firing
+    // whenever it's being deployed to another surface_point
+    if self.troop_activities.contains(&TroopState::Deploying) {
+      return;
+    }
 
-    // } else {
-      
-    //   self.reset_trajectory();
-    //   self.set_orientation(target_position.normalized());
+    let target_position = enemy_troop.get_global_transform().origin;
+    let self_position = &self.base().get_global_transform().origin;
+    let troops_distance = self_position.distance_to(target_position);
 
-    //   if self.has_cool_down_finished(delta) {
-    //     self.open_fire_on_the_enemy(enemy_troop, virtual_planet)
-    //   }
-    // }
+    if troops_distance > self.combat_stats.cannon.range {
+      self.set_trajectory_to_get_closer_to_enemy(target_position);
 
+    } else {
+      self.reset_trajectory();
+      self.set_orientation(target_position.normalized());
+
+      if self.has_cool_down_finished(delta) {
+        self.open_fire_on_the_enemy(enemy_troop, virtual_planet)
+      }
+    }
   }
 
   fn find_closest_enemy_troop_to_be_attacked(
@@ -204,11 +183,6 @@ impl Troop {
     projectile_spawner.get_global_transform()
   }
 
-  fn _get_combat_target_position(&self) -> Vector3 {
-    let target_position = self.get_projectile_spawner_position().origin;
-    target_position
-  }
-
   fn set_trajectory_to_get_closer_to_enemy(&mut self, target_position: Vector3) {
     if !self.moving_trajectory_is_set {
 
@@ -268,6 +242,5 @@ impl Troop {
 
     projectiles_node.add_child(&projectile);
   }
-
 
 }

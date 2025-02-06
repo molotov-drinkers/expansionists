@@ -42,13 +42,11 @@ impl Troop {
       }
 
     } else if self.base().is_in_group(Self::TROOP_COMBATTING) {
-      
-      // TODO: there seems to be a bug (maybe) here, it doesn't start patrolling that naturally after leaving a combating territory
-      
       self.no_combat_reset_trajectory(true);
       self.remove_combatting_states();
       self.combat_stats.in_after_combat = true;
       self.combat_stats.reset_cannon_cool_down();
+      self.combat_stats.opening_fire_on_troop = None;
     }
   }
 
@@ -72,6 +70,7 @@ impl Troop {
   fn is_the_territory_deployed_to(&self, touching_territory_id: &String) -> bool {
     &self.deployed_to_territory == touching_territory_id
   }
+
   // fn update_combat_stats
 
 }

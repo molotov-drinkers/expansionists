@@ -40,8 +40,8 @@ pub enum TroopState {
   /// If the troop is selected by the player
   Selected,
 
-  /// Whenever the troop is being deployed to another territory
-  /// other than the one it was before
+  /// Whenever the troop is being deployed to another surface_point
+  /// other than the one it was before by the order of its player
   Deploying,
 
   /// Whenever the troop is in combat
