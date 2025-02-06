@@ -79,7 +79,7 @@ pub struct Troop {
   /// indicates the time the troop will wait before moving again while patrolling
   idle_timer: f32,
 
-  pub moving_trajectory_points: [Vector3; CoordinatesSystem::NUM_OF_WAYPOINTS],
+  pub moving_trajectory_points: Vec<Vector3>,
   pub moving_trajectory_is_set: bool,
   pub current_trajectory_point: usize,
 
@@ -115,7 +115,7 @@ impl ICharacterBody3D for Troop {
 
       idle_timer: Self::DEFAULT_IDLE_TIMER,
 
-      moving_trajectory_points: [Vector3::ZERO; CoordinatesSystem::NUM_OF_WAYPOINTS],
+      moving_trajectory_points: Vec::new(),
       moving_trajectory_is_set: false,
       current_trajectory_point: 0,
 
@@ -244,7 +244,7 @@ impl Troop {
       );
 
       // self.highlight_geodesic_trajectory(&geodesic_trajectory);
-      self.moving_trajectory_points = geodesic_trajectory;
+      self.moving_trajectory_points = geodesic_trajectory.to_vec();
       self.moving_trajectory_is_set = true;
       self.troop_activities.insert(TroopState::Moving);
     }
@@ -336,7 +336,7 @@ impl Troop {
 
   pub fn reset_trajectory(&mut self) {
     self.current_trajectory_point = 0;
-    self.moving_trajectory_points = [Vector3::ZERO; CoordinatesSystem::NUM_OF_WAYPOINTS];
+    self.moving_trajectory_points = Vec::new();
     self.moving_trajectory_is_set = false;
   }
 

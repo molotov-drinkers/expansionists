@@ -32,7 +32,7 @@ impl Troop {
     );
 
     self.arrived_to_territory = false;
-    self.moving_trajectory_points = geodesic_trajectory;
+    self.moving_trajectory_points = geodesic_trajectory.to_vec();
     self.moving_trajectory_is_set = true;
     self.adopted_speed = SpeedType::FightOrFlight;
     self.deployed_to_territory = dest_territory_id.clone();

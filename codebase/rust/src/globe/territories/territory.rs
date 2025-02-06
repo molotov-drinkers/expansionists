@@ -152,7 +152,8 @@ impl Territory {
   const BASE_TROOP_NUMBER_PER_TERRITORY: f32 = 0.02;
 
   /// organic_max_troops is clamped between 1 and MAX_NUMBER_OF_TROOPS_GENERATED_PER_TERRITORY
-  const MAX_NUMBER_OF_TROOPS_GENERATED_PER_TERRITORY: u32 = 20;
+  // TODO: CHANGE THIS VALUE BACK TO 20:
+  const MAX_NUMBER_OF_TROOPS_GENERATED_PER_TERRITORY: u32 = 2;
 
   /// It's a factor that helps setting how fast the troops grow in a territory
   /// the lower the value, the slower the troops grow

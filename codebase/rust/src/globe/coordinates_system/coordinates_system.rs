@@ -1,8 +1,8 @@
-use std::{cell::RefCell, collections::HashMap, rc::Rc};
+use std::{borrow::BorrowMut, cell::RefCell, collections::HashMap, ops::DerefMut, rc::Rc, sync::{Arc, Mutex}};
 use godot::{classes::World3D, prelude::*};
 
 use crate::globe::territories::territory::TerritoryId;
-use super::surface_point::{Coordinates, SurfacePoint};
+use super::{surface_point::{Coordinates, SurfacePoint}, virtual_planet::VirtualPlanet};
 
 #[derive(Debug)]
 pub struct CoordinateMetadata {
@@ -51,20 +51,30 @@ impl CoordinatesSystem {
     trajectory
   }
 
+  /// STILL WIP
+  /// 
   /// TODO: Create a doc
   pub fn get_in_the_frontiers_trajectory(
     origin: Vector3,
     destination: Vector3,
     radius: f32,
-    world: Gd<World3D>,
-    jurisdiction_territory_id: TerritoryId,
-  ) {
-    let world = Rc::new(RefCell::new(world));
+    world: &mut Gd<World3D>,
+    within_the_territory_id: &TerritoryId,
+    virtual_planet: &GdRef<'_, VirtualPlanet>,
+  ) -> Vec<Vector3> {
+    // Needs to be a Arc because it's going to be passed to the recursive function
+    let base_arc_world = Arc::new(Mutex::new(world));
     let geodesic_trajectory = Self::get_geodesic_trajectory(origin, destination, radius);
-    
-    for trajectory_point in geodesic_trajectory.iter() {
-      let world = Rc::clone(&world);
-      let mut world = world.borrow_mut();
+
+    let mut in_the_frontiers_trajectory: Vec<Vector3> = Vec::new();
+
+    for (index, trajectory_point) in geodesic_trajectory.iter().enumerate() {
+
+      let world = Arc::clone(&base_arc_world);
+      let Ok(mut world) = world.lock() else {
+        godot_error!("6548464 Error getting world");
+        continue;
+      };
 
       let surface_point = SurfacePoint::get_surface_point(
         *trajectory_point,
@@ -73,25 +83,74 @@ impl CoordinatesSystem {
       );
       
       let Some(surface_point) = surface_point else {
-        return;
+        continue;
       };
 
       let surface_point = surface_point.bind();
       let Some(ref trajectory_territory_id) = surface_point.surface_point_metadata.territory_id else {
-        return;
+        continue;
       };
 
-      if jurisdiction_territory_id != *trajectory_territory_id {
-        godot_print!("should recreate trajectory");
+      if within_the_territory_id != trajectory_territory_id {
 
-        // TODO: Pathfinding draft:
-        // Create a recursion using the surface_point_metadata.lat_long
-        // then, increase/decrease +N -N on the lat/long
-        // until it finds a territory_id that matches the jurisdiction_territory_id
-        // N should be 2? 3? 10?
+        let (latitude, longitude) = surface_point.surface_point_metadata.lat_long;
+        const BUFFER: i16 = 2;
+
+        // TODO: Check if it's more natural move  Norteast, Northwest, Southeast, Southwest
+        let possible_waypoints = [
+          // Trajectory passing by North
+          (latitude + BUFFER, longitude),
+          // Trajectory passing by South
+          (latitude - BUFFER, longitude),
+          // Trajectory passing by East
+          (latitude, longitude + BUFFER),
+          // Trajectory passing by West
+          (latitude, longitude - BUFFER),
+        ];
+
+        for possible_waypoint in possible_waypoints.iter() {
+          // Waypoint doesn't exist in the coordinate_map
+          let Some(possible_waypoint_metadata) = virtual_planet.coordinate_map.get(possible_waypoint) else {
+            // coordinate does not exist
+            continue;
+          };
+
+          // Waypoint is not in the same territory
+          if possible_waypoint_metadata.territory_id.as_ref().is_some_and(
+            |possible_waypoint_territory_id| possible_waypoint_territory_id != within_the_territory_id
+          ) {
+            break;
+          }
+          
+          let world = Arc::clone(&base_arc_world);
+          let Ok(mut world) = world.lock() else {
+            godot_error!("8794618 Error getting world");
+            continue;
+          };
+
+          // Recursively checking if the geodesic waypoint->destination is in the frontiers
+          let remaining_points = Self::get_in_the_frontiers_trajectory(
+            possible_waypoint_metadata.cartesian,
+            destination,
+            radius,
+            &mut world,
+            within_the_territory_id,
+            virtual_planet,
+          );
+
+
+          for initial_points_in_the_frontiers in &geodesic_trajectory[0..index] {
+            in_the_frontiers_trajectory.push(*initial_points_in_the_frontiers);
+          }
+
+          in_the_frontiers_trajectory.extend(remaining_points);
+          return in_the_frontiers_trajectory;
+        }
       }
-
     }
+
+    // TODO: If recursion doesnt find a path, should do basic geodesic trajectory to no crash the program
+    return geodesic_trajectory.to_vec();
 
   }
   

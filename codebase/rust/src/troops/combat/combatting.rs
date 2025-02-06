@@ -93,7 +93,7 @@ impl Troop {
     let troops_distance = self_position.distance_to(target_position);
 
     if troops_distance > self.combat_stats.cannon.range {
-      self.set_trajectory_to_get_closer_to_enemy(target_position);
+      self.set_trajectory_to_get_closer_to_enemy(target_position, virtual_planet);
 
     } else {
       self.reset_trajectory();
@@ -189,29 +189,30 @@ impl Troop {
     projectile_spawner.get_global_transform()
   }
 
-  fn set_trajectory_to_get_closer_to_enemy(&mut self, target_position: Vector3) {
+  fn set_trajectory_to_get_closer_to_enemy(&mut self, target_position: Vector3, virtual_planet: &GdRef<'_, VirtualPlanet>) {
     if !self.moving_trajectory_is_set {
 
       // TODO: Check if it has non-intended geodesic invasion, should go around and find another path
       // TODO: Maybe this could be done by the pathfinding algorithm
-      // TODO:Could be something like CoordinatesSystem::get_path_in_the_frontiers
+      // TODO: Could be something like CoordinatesSystem::get_path_in_the_frontiers
 
-      let geodesic_trajectory = CoordinatesSystem::get_geodesic_trajectory(
-        self.touching_surface_point.cartesian,
-        target_position,
-        VirtualPlanet::get_planet_radius() as f32
-      );
+      // let geodesic_trajectory = CoordinatesSystem::get_geodesic_trajectory(
+      //   self.touching_surface_point.cartesian,
+      //   target_position,
+      //   VirtualPlanet::get_planet_radius() as f32
+      // );
 
-      let world = self.base().get_world_3d().expect("World to exist");
-      let _within_the_jurisdiction_trajectory = CoordinatesSystem::get_in_the_frontiers_trajectory(
+      let mut world = self.base().get_world_3d().expect("World to exist");
+      let in_the_frontiers_trajectory = CoordinatesSystem::get_in_the_frontiers_trajectory(
         self.touching_surface_point.cartesian,
         target_position,
         VirtualPlanet::get_planet_radius() as f32,
-        world,
-        self.deployed_to_territory.clone(),
+        &mut world,
+        &self.deployed_to_territory,
+        virtual_planet,
       );
 
-      self.moving_trajectory_points = geodesic_trajectory;
+      self.moving_trajectory_points = in_the_frontiers_trajectory;
       self.moving_trajectory_is_set = true;
     }
 
