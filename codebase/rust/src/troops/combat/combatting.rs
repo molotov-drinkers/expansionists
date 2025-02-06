@@ -144,6 +144,10 @@ impl Troop {
           let enemy_position = enemy_troop.get_global_transform().origin;
           let new_comparable_distance = self_position.distance_to(enemy_position);
 
+          // That's to ensure an attacking troop would be able to fight back even if
+          // it's just a lil bit further than the cannon range
+          // We had situations when neighbor troops were combating while some others
+          // were just watching, which wasn't natural
           let cannon_range_plus_buffer = self.combat_stats.cannon.range + (self.combat_stats.cannon.range/8.);
 
           if close_to_the_cannon_range && new_comparable_distance > cannon_range_plus_buffer {
