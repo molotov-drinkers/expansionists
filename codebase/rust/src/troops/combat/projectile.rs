@@ -1,6 +1,6 @@
 use godot::{classes::{CharacterBody3D, ICharacterBody3D}, prelude::*};
 
-use crate::globe::coordinates_system::{coordinates_system::CoordinatesSystem, virtual_planet::VirtualPlanet};
+use crate::{globe::coordinates_system::{coordinates_system::CoordinatesSystem, virtual_planet::VirtualPlanet}, troops::troop::TroopId};
 
 pub enum TypesOfTarget {
   Troop,
@@ -21,7 +21,7 @@ pub struct Projectile {
   pub up_to_date_target_position: Vector3,
   _current_position: Vector3,
 
-  // _fired_by: TroopId,
+  pub fired_by: TroopId,
 }
 
 #[godot_api]
@@ -40,6 +40,8 @@ impl ICharacterBody3D for Projectile {
 
       up_to_date_target_position: Vector3::ZERO,
       _current_position: Vector3::ZERO,
+
+      fired_by: "".to_string(),
     }
   }
 
