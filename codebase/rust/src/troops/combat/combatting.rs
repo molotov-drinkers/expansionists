@@ -202,6 +202,15 @@ impl Troop {
         VirtualPlanet::get_planet_radius() as f32
       );
 
+      let world = self.base().get_world_3d().expect("World to exist");
+      let _within_the_jurisdiction_trajectory = CoordinatesSystem::get_in_the_frontiers_trajectory(
+        self.touching_surface_point.cartesian,
+        target_position,
+        VirtualPlanet::get_planet_radius() as f32,
+        world,
+        self.deployed_to_territory.clone(),
+      );
+
       self.moving_trajectory_points = geodesic_trajectory;
       self.moving_trajectory_is_set = true;
     }

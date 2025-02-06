@@ -309,8 +309,8 @@ impl Troop {
     if self.troop_activities.contains(&TroopState::Patrolling) &&
       (self.current_trajectory_point + buffer_checker) < self.moving_trajectory_points.len() -1 {
       let check_future_invasion = self.moving_trajectory_points[self.current_trajectory_point + buffer_checker];
-      let world = self.base().get_world_3d().expect("World to exist");
-      let surface_point = SurfacePoint::get_surface_point(check_future_invasion, world ,None)
+      let mut world = self.base().get_world_3d().expect("World to exist");
+      let surface_point = SurfacePoint::get_surface_point(check_future_invasion, &mut world ,None)
         .expect("Expected to get surface point to check future invasion");
       if surface_point.bind().get_surface_point_metadata().territory_id.clone()
         .is_some_and(|t| t != self.deployed_to_territory) {

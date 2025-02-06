@@ -67,14 +67,14 @@ impl SurfacePoint {
       .cast::<MeshInstance3D>()
       .get_global_position();
 
-    let world = troop
+    let mut world = troop
       .base()
       .get_world_3d()
       .expect("World to exist");
 
     Self::get_surface_point(
       troop_position,
-      world,
+      &mut world,
       None,
     )
   }
@@ -89,7 +89,7 @@ impl SurfacePoint {
   /// # Returns
   /// * `Option<Gd<SurfacePoint>>` - The SurfacePoint where the ray collides with the virtual planet,
   /// to avoid panicking it returns None if it doesn't find any
-  pub fn get_surface_point(target_position: Vector3, mut world: Gd<World3D>, scale_factor: Option<f32>) -> Option<Gd<SurfacePoint>> {
+  pub fn get_surface_point(target_position: Vector3, world: &mut Gd<World3D>, scale_factor: Option<f32>) -> Option<Gd<SurfacePoint>> {
     let world_origin = Vector3::new(0.0, 0.0, 0.0);
     let scale_factor = scale_factor.unwrap_or(1.);
 
