@@ -1,7 +1,7 @@
-use std::{borrow::BorrowMut, cell::RefCell, collections::HashMap, ops::DerefMut, rc::Rc, sync::{Arc, Mutex}};
+use std::{cell::RefCell, cmp::Ordering, collections::{HashMap, HashSet}, rc::Rc, sync::{Arc, Mutex}};
 use godot::{classes::World3D, prelude::*};
 
-use crate::globe::territories::territory::TerritoryId;
+use crate::globe::{coordinates_system::surface_point::SurfacePointMetadata, territories::territory::TerritoryId};
 use super::{surface_point::{Coordinates, SurfacePoint}, virtual_planet::VirtualPlanet};
 
 #[derive(Debug)]
@@ -51,109 +51,136 @@ impl CoordinatesSystem {
     trajectory
   }
 
-  /// STILL WIP
   /// 
-  /// TODO: Create a doc
+  /// 
+  /// 
   pub fn get_in_the_frontiers_trajectory(
     origin: Vector3,
     destination: Vector3,
     radius: f32,
-    world: &mut Gd<World3D>,
+    world: Gd<World3D>,
     within_the_territory_id: &TerritoryId,
     virtual_planet: &GdRef<'_, VirtualPlanet>,
   ) -> Vec<Vector3> {
-    // Needs to be a Arc because it's going to be passed to the recursive function
-    let base_arc_world = Arc::new(Mutex::new(world));
-    let geodesic_trajectory = Self::get_geodesic_trajectory(origin, destination, radius);
+    let base_rc_world = Rc::new(RefCell::new(world));
+    let base_geodesic_trajectory = Self::get_geodesic_trajectory(origin, destination, radius);
 
-    let mut in_the_frontiers_trajectory: Vec<Vector3> = Vec::new();
+    // Check if base geodesic trajectory could be used
+    let passes_by_other_territories = base_geodesic_trajectory.iter().find(|trajectory_point| {
+      let world = Rc::clone(&base_rc_world);
+      let mut world = world.borrow_mut();
 
-    for (index, trajectory_point) in geodesic_trajectory.iter().enumerate() {
-
-      let world = Arc::clone(&base_arc_world);
-      let Ok(mut world) = world.lock() else {
-        godot_error!("6548464 Error getting world");
-        continue;
-      };
-
-      let surface_point = SurfacePoint::get_surface_point(
-        *trajectory_point,
+      let Some(surface_point) = SurfacePoint::get_surface_point(
+      **trajectory_point,
         &mut world,
-        Some(1.3)
-      );
-      
-      let Some(surface_point) = surface_point else {
-        continue;
+        None
+      ) else {
+        godot_error!(" 486483 Error getting surface point");
+        return false;
       };
 
       let surface_point = surface_point.bind();
-      let Some(ref trajectory_territory_id) = surface_point.surface_point_metadata.territory_id else {
-        continue;
-      };
+      let passes_by_other_territories = surface_point.surface_point_metadata.territory_id.as_ref().is_some_and(|territory_id| {
+        territory_id != within_the_territory_id
+      });
 
-      if within_the_territory_id != trajectory_territory_id {
-
-        let (latitude, longitude) = surface_point.surface_point_metadata.lat_long;
-        const BUFFER: i16 = 2;
-
-        // TODO: Check if it's more natural move  Norteast, Northwest, Southeast, Southwest
-        let possible_waypoints = [
-          // Trajectory passing by North
-          (latitude + BUFFER, longitude),
-          // Trajectory passing by South
-          (latitude - BUFFER, longitude),
-          // Trajectory passing by East
-          (latitude, longitude + BUFFER),
-          // Trajectory passing by West
-          (latitude, longitude - BUFFER),
-        ];
-
-        for possible_waypoint in possible_waypoints.iter() {
-          // Waypoint doesn't exist in the coordinate_map
-          let Some(possible_waypoint_metadata) = virtual_planet.coordinate_map.get(possible_waypoint) else {
-            // coordinate does not exist
-            continue;
-          };
-
-          // Waypoint is not in the same territory
-          if possible_waypoint_metadata.territory_id.as_ref().is_some_and(
-            |possible_waypoint_territory_id| possible_waypoint_territory_id != within_the_territory_id
-          ) {
-            break;
-          }
-          
-          let world = Arc::clone(&base_arc_world);
-          let Ok(mut world) = world.lock() else {
-            godot_error!("8794618 Error getting world");
-            continue;
-          };
-
-          // Recursively checking if the geodesic waypoint->destination is in the frontiers
-          let remaining_points = Self::get_in_the_frontiers_trajectory(
-            possible_waypoint_metadata.cartesian,
-            destination,
-            radius,
-            &mut world,
-            within_the_territory_id,
-            virtual_planet,
-          );
-
-
-          for initial_points_in_the_frontiers in &geodesic_trajectory[0..index] {
-            in_the_frontiers_trajectory.push(*initial_points_in_the_frontiers);
-          }
-
-          in_the_frontiers_trajectory.extend(remaining_points);
-          return in_the_frontiers_trajectory;
-        }
-      }
+      passes_by_other_territories
+    });
+    if passes_by_other_territories.is_none() {
+      return base_geodesic_trajectory.to_vec();
     }
 
-    // TODO: If recursion doesnt find a path, should do basic geodesic trajectory to no crash the program
-    return geodesic_trajectory.to_vec();
+    // Creates near optimal path
+    let mut near_optimal_path: Vec<Vector3> = Vec::new();
+    near_optimal_path.push(origin);
 
-  }
+    loop {
+      let current = near_optimal_path.last().expect("Expected last to exist");
+      let world = Rc::clone(&base_rc_world);
+      let mut world = world.borrow_mut();
+
+      let Some(surface_point) = SurfacePoint::get_surface_point(
+        *current,
+        &mut world,
+        None
+      ) else {
+        godot_error!("======> Error getting surface point");
+        return base_geodesic_trajectory.to_vec();
+      };
+      let surface_point = surface_point.bind();
+      let surface_point_metadata = surface_point.get_surface_point_metadata();
+      let current_coordinate = surface_point_metadata.lat_long;
+
+      const BUFFER: i16 = 1;
+      let neighbors: [Coordinates; 8] = [
+        // Trajectory passing by North
+        (current_coordinate.0 + BUFFER, current_coordinate.1),
+        // Trajectory passing by South
+        (current_coordinate.0 - BUFFER, current_coordinate.1),
+        // Trajectory passing by East
+        (current_coordinate.0, current_coordinate.1 + BUFFER),
+        // Trajectory passing by West
+        (current_coordinate.0, current_coordinate.1 - BUFFER),
+
+        // Trajectory passing by Northeast
+        (current_coordinate.0 + BUFFER, current_coordinate.1 + BUFFER),
+        // Trajectory passing by Northwest
+        (current_coordinate.0 + BUFFER, current_coordinate.1 - BUFFER),
+        // Trajectory passing by Southeast
+        (current_coordinate.0 - BUFFER, current_coordinate.1 + BUFFER),
+        // Trajectory passing by Southwest
+        (current_coordinate.0 - BUFFER, current_coordinate.1 - BUFFER),
+      ];
+
+      let Some(closest_neighbor) = neighbors
+        .iter()
+        .filter(|neighbor| {
+          let Some(neighbor_metadata) = virtual_planet.coordinate_map.get(neighbor)
+            else { return false; };
+
+          let within_the_territory = neighbor_metadata
+            .territory_id
+            .as_ref()
+            .is_some_and(|neighbor_territory_id| {
+              neighbor_territory_id == within_the_territory_id
+            });
+
+          // assuming none is water
+          let on_the_water = neighbor_metadata.territory_id.is_none();
+
+          within_the_territory || on_the_water
+        })
+        .min_by(|neighbor_a, neighbor_b| {
+          let Some(neighbor_a_metadata) = virtual_planet.coordinate_map.get(neighbor_a) else { return Ordering::Equal; };
+          let Some(neighbor_b_metadata) = virtual_planet.coordinate_map.get(neighbor_b) else { return Ordering::Equal; };
   
+          let neighbor_a_distance = neighbor_a_metadata.cartesian.distance_to(destination);
+          let neighbor_b_distance = neighbor_b_metadata.cartesian.distance_to(destination);
+  
+          neighbor_a_distance.partial_cmp(&neighbor_b_distance).unwrap()
+        })
+        else {
+          godot_print!("======> ERROR getting closest_neighbor");
+          break;
+        };
+
+      let near_optimal_next_point = virtual_planet.coordinate_map.get(closest_neighbor);
+
+      if near_optimal_next_point.is_some() {
+        let near_optimal_next_point = near_optimal_next_point.unwrap();
+        near_optimal_path.push(near_optimal_next_point.cartesian);
+        if near_optimal_path.len() == Self::NUM_OF_WAYPOINTS {
+          break;
+        }
+      } else {
+        godot_print!("======> ERROR getting near_optimal_next_point");
+        break;
+      }
+    }
+    
+    near_optimal_path
+  }
+
   fn radius_scale(trajectory_point: Vector3, radius: f32) -> Vector3 {
     Vector3 {
       x: trajectory_point.x * radius,

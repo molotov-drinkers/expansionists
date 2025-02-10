@@ -36,7 +36,6 @@ impl Troop {
             self.troop_activities.insert(TroopState::Combating(CombatTypes::Defending));
             // Defenders should go after the attackers
             self.moving_trajectory_is_set = false;
-
           }
         });
       }

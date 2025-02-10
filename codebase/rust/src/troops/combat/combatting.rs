@@ -192,22 +192,12 @@ impl Troop {
   fn set_trajectory_to_get_closer_to_enemy(&mut self, target_position: Vector3, virtual_planet: &GdRef<'_, VirtualPlanet>) {
     if !self.moving_trajectory_is_set {
 
-      // TODO: Check if it has non-intended geodesic invasion, should go around and find another path
-      // TODO: Maybe this could be done by the pathfinding algorithm
-      // TODO: Could be something like CoordinatesSystem::get_path_in_the_frontiers
-
-      // let geodesic_trajectory = CoordinatesSystem::get_geodesic_trajectory(
-      //   self.touching_surface_point.cartesian,
-      //   target_position,
-      //   VirtualPlanet::get_planet_radius() as f32
-      // );
-
-      let mut world = self.base().get_world_3d().expect("World to exist");
+      let world = self.base().get_world_3d().expect("World to exist");
       let in_the_frontiers_trajectory = CoordinatesSystem::get_in_the_frontiers_trajectory(
         self.touching_surface_point.cartesian,
         target_position,
         VirtualPlanet::get_planet_radius() as f32,
-        &mut world,
+        world,
         &self.deployed_to_territory,
         virtual_planet,
       );

@@ -259,7 +259,16 @@ impl Troop {
         return;
       }
 
-      let current_target = self.moving_trajectory_points[self.current_trajectory_point];
+      let current_target = {
+        let Some(current_target) = self.moving_trajectory_points
+          .get(self.current_trajectory_point) else {
+            godot_print!("Resetting the trajectory because the current target is None");
+            self.reset_trajectory();
+            return;
+          };
+        *current_target
+      };
+
       let current_position = self.base().get_global_transform().origin;
       let direction = (current_target - current_position).try_normalized();
       let on_the_last_waypoint = self.current_trajectory_point == (self.moving_trajectory_points.len() -1);
