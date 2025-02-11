@@ -134,4 +134,21 @@ impl SurfacePoint {
     }
     // surface_point
   }
+
+
+  pub fn get_lat_long_from_vec3(vec3: Vector3, world: &mut Gd<World3D>,) -> Option<Coordinates> {
+    let Some(surface_point) = SurfacePoint::get_surface_point(
+      vec3,
+      world,
+      None
+    ) else {
+      return None;
+    };
+
+    let surface_point = surface_point.bind();
+    let surface_point_metadata = surface_point.get_surface_point_metadata();
+    let coordinate = surface_point_metadata.lat_long;
+
+    Some(coordinate)
+  }
 }

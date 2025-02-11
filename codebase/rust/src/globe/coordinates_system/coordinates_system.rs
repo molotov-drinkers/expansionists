@@ -1,7 +1,8 @@
-use std::{cell::RefCell, cmp::Ordering, collections::{HashMap, HashSet}, rc::Rc, sync::{Arc, Mutex}};
+use std::{cell::RefCell, collections::HashMap, rc::Rc, sync::{Arc, Mutex}};
 use godot::{classes::World3D, prelude::*};
+use std::collections::VecDeque;
 
-use crate::globe::{coordinates_system::surface_point::SurfacePointMetadata, territories::territory::TerritoryId};
+use crate::globe::territories::territory::TerritoryId;
 use super::{surface_point::{Coordinates, SurfacePoint}, virtual_planet::VirtualPlanet};
 
 #[derive(Debug)]
@@ -51,23 +52,13 @@ impl CoordinatesSystem {
     trajectory
   }
 
-  /// 
-  /// 
-  /// 
-  pub fn get_in_the_frontiers_trajectory(
-    origin: Vector3,
-    destination: Vector3,
-    radius: f32,
-    world: Gd<World3D>,
-    within_the_territory_id: &TerritoryId,
-    virtual_planet: &GdRef<'_, VirtualPlanet>,
-  ) -> Vec<Vector3> {
-    let base_rc_world = Rc::new(RefCell::new(world));
-    let base_geodesic_trajectory = Self::get_geodesic_trajectory(origin, destination, radius);
 
-    // Check if base geodesic trajectory could be used
-    let passes_by_other_territories = base_geodesic_trajectory.iter().find(|trajectory_point| {
-      let world = Rc::clone(&base_rc_world);
+  fn _passes_by_other_territories(
+    base_geodesic_trajectory: &[Vector3; Self::NUM_OF_WAYPOINTS],
+    world: Rc<RefCell<Gd<World3D>>>,
+    within_the_territory_id: &TerritoryId,
+  ) -> bool {
+    base_geodesic_trajectory.iter().find(|trajectory_point| {
       let mut world = world.borrow_mut();
 
       let Some(surface_point) = SurfacePoint::get_surface_point(
@@ -85,100 +76,162 @@ impl CoordinatesSystem {
       });
 
       passes_by_other_territories
-    });
-    if passes_by_other_territories.is_none() {
-      return base_geodesic_trajectory.to_vec();
+    }).is_some()
+  }
+
+  /// It implements Flow Field Pathfinding
+  /// https://www.youtube.com/watch?v=ZJZu3zLMYAc
+  /// 
+  pub fn get_in_the_frontiers_trajectory(
+    origin: Vector3,
+    destination: Vector3,
+    radius: f32,
+    world: Gd<World3D>,
+    within_the_territory_id: &TerritoryId,
+    virtual_planet: &GdRef<'_, VirtualPlanet>,
+  ) -> Vec<Vector3> {
+    let base_rc_world: Rc<RefCell<Gd<World3D>>> = Rc::new(RefCell::new(world));
+    let base_geodesic_trajectory = Self::get_geodesic_trajectory(origin, destination, radius);
+
+    // Check if base geodesic trajectory could be used
+    // let world = Rc::clone(&base_rc_world);
+    // let passes_by_other_territories = Self::passes_by_other_territories(&base_geodesic_trajectory, world, within_the_territory_id);
+    // if passes_by_other_territories {
+      // return base_geodesic_trajectory.to_vec();
+    // }
+
+    let mapper: Arc<Mutex<HashMap<Coordinates, i32>>> = Arc::new(Mutex::new(HashMap::new()));
+    let distance_level_from_origin = 0;
+
+    let world = Rc::clone(&base_rc_world);
+    let mut world = world.borrow_mut();
+
+    let origin_lat_long = SurfacePoint::get_lat_long_from_vec3(origin, &mut world)
+      .expect("Expected origin_lat_long to exist");
+    let dest_lat_long = SurfacePoint::get_lat_long_from_vec3(destination, &mut world)
+      .expect("Expected dest_lat_long to exist");
+
+    godot_print!("origin_lat_long: {:?}.... dest_lat_long: {:?}", origin_lat_long, dest_lat_long);
+
+    Self::populate_heat_map(
+      &Arc::clone(&mapper),
+      origin_lat_long,
+      dest_lat_long,
+      distance_level_from_origin,
+      within_the_territory_id,
+      virtual_planet
+    );
+    godot_print!("mapper: {:?}", mapper);
+
+    let mapper = Arc::clone(&mapper);
+    let mapper = mapper.lock().expect("Expected mapper to exist");
+    let mut in_the_frontiers_coordinates: VecDeque<Coordinates> = VecDeque::from(vec![]);
+    Self::trace_back_dest_to_origin(&mapper, origin_lat_long, dest_lat_long, &mut in_the_frontiers_coordinates);
+    godot_print!("in_the_frontiers_coordinates: {:?}", in_the_frontiers_coordinates);
+
+    // todo: implement the conversion from coordinates to Vector3
+    
+    return base_geodesic_trajectory.to_vec();
+  }
+
+  fn populate_heat_map(
+    mapper: &Arc<Mutex<HashMap<Coordinates, i32>>>,
+    origin_lat_long: Coordinates,
+    dest_lat_long: Coordinates,
+    distance_level_from_origin: i32,
+    within_the_territory_id: &TerritoryId,
+    virtual_planet: &GdRef<'_, VirtualPlanet>,
+  ) {
+    let neighbors = Self::get_neighbors(origin_lat_long);
+    
+    if mapper.lock().unwrap().contains_key(&dest_lat_long) {
+      return;
     }
 
-    // Creates near optimal path
-    let mut near_optimal_path: Vec<Vector3> = Vec::new();
-    near_optimal_path.push(origin);
+    for neighbor in neighbors.iter() {
+      let Some(neighbor_metadata) = virtual_planet.coordinate_map.get(neighbor)
+        else { continue; };
 
-    loop {
-      let current = near_optimal_path.last().expect("Expected last to exist");
-      let world = Rc::clone(&base_rc_world);
-      let mut world = world.borrow_mut();
+      let in_other_territory = neighbor_metadata
+        .territory_id
+        .as_ref()
+        .is_some_and(|neighbor_territory_id| {
+          neighbor_territory_id != within_the_territory_id
+        });
 
-      let Some(surface_point) = SurfacePoint::get_surface_point(
-        *current,
-        &mut world,
-        None
-      ) else {
-        godot_error!("======> Error getting surface point");
-        return base_geodesic_trajectory.to_vec();
+      // assuming none is water
+      let on_the_water = neighbor_metadata.territory_id.is_none();
+      let mut mapper_mut = mapper.lock().unwrap();
+
+      if mapper_mut.contains_key(neighbor) {
+        continue;
       };
-      let surface_point = surface_point.bind();
-      let surface_point_metadata = surface_point.get_surface_point_metadata();
-      let current_coordinate = surface_point_metadata.lat_long;
 
-      const BUFFER: i16 = 1;
-      let neighbors: [Coordinates; 8] = [
-        // Trajectory passing by North
-        (current_coordinate.0 + BUFFER, current_coordinate.1),
-        // Trajectory passing by South
-        (current_coordinate.0 - BUFFER, current_coordinate.1),
-        // Trajectory passing by East
-        (current_coordinate.0, current_coordinate.1 + BUFFER),
-        // Trajectory passing by West
-        (current_coordinate.0, current_coordinate.1 - BUFFER),
+      if in_other_territory || on_the_water {
+        mapper_mut.insert(*neighbor, i32::MAX);
+        continue;
+      }
 
-        // Trajectory passing by Northeast
-        (current_coordinate.0 + BUFFER, current_coordinate.1 + BUFFER),
-        // Trajectory passing by Northwest
-        (current_coordinate.0 + BUFFER, current_coordinate.1 - BUFFER),
-        // Trajectory passing by Southeast
-        (current_coordinate.0 - BUFFER, current_coordinate.1 + BUFFER),
-        // Trajectory passing by Southwest
-        (current_coordinate.0 - BUFFER, current_coordinate.1 - BUFFER),
-      ];
+      mapper_mut.insert(*neighbor, distance_level_from_origin);
 
-      let Some(closest_neighbor) = neighbors
-        .iter()
-        .filter(|neighbor| {
-          let Some(neighbor_metadata) = virtual_planet.coordinate_map.get(neighbor)
-            else { return false; };
+      Self::populate_heat_map(
+        &Arc::clone(&mapper),
+        *neighbor,
+        dest_lat_long,
+        distance_level_from_origin + 1,
+        within_the_territory_id,
+        virtual_planet
+      );
+    }
+  }
 
-          let within_the_territory = neighbor_metadata
-            .territory_id
-            .as_ref()
-            .is_some_and(|neighbor_territory_id| {
-              neighbor_territory_id == within_the_territory_id
-            });
+  fn get_neighbors(
+    current_coordinate: Coordinates,
+  ) -> [Coordinates; 8] {
+    const BUFFER: i16 = 1;
+    [
+      // Trajectory passing by North
+      (current_coordinate.0 + BUFFER, current_coordinate.1),
+      // Trajectory passing by South
+      (current_coordinate.0 - BUFFER, current_coordinate.1),
+      // Trajectory passing by East
+      (current_coordinate.0, current_coordinate.1 + BUFFER),
+      // Trajectory passing by West
+      (current_coordinate.0, current_coordinate.1 - BUFFER),
 
-          // assuming none is water
-          let on_the_water = neighbor_metadata.territory_id.is_none();
+      // Trajectory passing by Northeast
+      (current_coordinate.0 + BUFFER, current_coordinate.1 + BUFFER),
+      // Trajectory passing by Northwest
+      (current_coordinate.0 + BUFFER, current_coordinate.1 - BUFFER),
+      // Trajectory passing by Southeast
+      (current_coordinate.0 - BUFFER, current_coordinate.1 + BUFFER),
+      // Trajectory passing by Southwest
+      (current_coordinate.0 - BUFFER, current_coordinate.1 - BUFFER),
+    ]
+  }
 
-          within_the_territory || on_the_water
-        })
-        .min_by(|neighbor_a, neighbor_b| {
-          let Some(neighbor_a_metadata) = virtual_planet.coordinate_map.get(neighbor_a) else { return Ordering::Equal; };
-          let Some(neighbor_b_metadata) = virtual_planet.coordinate_map.get(neighbor_b) else { return Ordering::Equal; };
-  
-          let neighbor_a_distance = neighbor_a_metadata.cartesian.distance_to(destination);
-          let neighbor_b_distance = neighbor_b_metadata.cartesian.distance_to(destination);
-  
-          neighbor_a_distance.partial_cmp(&neighbor_b_distance).unwrap()
-        })
-        else {
-          godot_print!("======> ERROR getting closest_neighbor");
-          break;
-        };
 
-      let near_optimal_next_point = virtual_planet.coordinate_map.get(closest_neighbor);
+  fn trace_back_dest_to_origin(mapper: &HashMap<Coordinates, i32>, origin_lat_long: Coordinates, dest_lat_long: Coordinates, in_the_frontiers_coordinates: &mut VecDeque<Coordinates>) {
+    let dest_distance = mapper.get(&dest_lat_long)
+      .expect("Expected dest_lat_long to exist");
 
-      if near_optimal_next_point.is_some() {
-        let near_optimal_next_point = near_optimal_next_point.unwrap();
-        near_optimal_path.push(near_optimal_next_point.cartesian);
-        if near_optimal_path.len() == Self::NUM_OF_WAYPOINTS {
+    let dest_neighbors = Self::get_neighbors(dest_lat_long);
+
+    for neighbor in dest_neighbors.iter() {
+      let neighbor_distance = mapper.get(neighbor)
+        .expect("Expected neighbor_distance to exist");
+
+      if neighbor_distance < dest_distance {
+        // in_the_frontiers_coordinates.insert(0, *neighbor);
+        in_the_frontiers_coordinates.push_front(*neighbor);
+        
+        if neighbor == &origin_lat_long {
           break;
         }
-      } else {
-        godot_print!("======> ERROR getting near_optimal_next_point");
+        Self::trace_back_dest_to_origin(mapper, origin_lat_long, *neighbor, in_the_frontiers_coordinates);
         break;
       }
     }
-    
-    near_optimal_path
   }
 
   fn radius_scale(trajectory_point: Vector3, radius: f32) -> Vector3 {
