@@ -82,6 +82,8 @@ pub struct Troop {
   pub moving_trajectory_points: Vec<Vector3>,
   pub moving_trajectory_is_set: bool,
   pub current_trajectory_point: usize,
+  
+  pub moving_and_combating: bool,
 
   /// it turns true when the troop is spawned and the orientation is set
   initial_orientation_is_set: bool,
@@ -118,6 +120,8 @@ impl ICharacterBody3D for Troop {
       moving_trajectory_points: Vec::new(),
       moving_trajectory_is_set: false,
       current_trajectory_point: 0,
+
+      moving_and_combating: false,
 
       initial_orientation_is_set: false,
 
@@ -363,7 +367,7 @@ impl Troop {
   #[allow(dead_code)]
   /// Creates 3d Mesh Cubes all along the trajectory of the troop
   /// Used for debugging purposes
-  fn highlight_geodesic_trajectory(&mut self, geodesic_trajectory: &[Vector3; CoordinatesSystem::NUM_OF_WAYPOINTS]) {
+  pub fn highlight_geodesic_trajectory(&mut self, geodesic_trajectory: &Vec<Vector3>) {
     let node_3d_name = "geodesic_mesh";
 
     let mut highlighted_trajectories = self.base_mut()

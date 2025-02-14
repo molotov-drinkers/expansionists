@@ -1,11 +1,11 @@
-use std::{cell::RefCell, collections::{HashMap, HashSet}, rc::Rc, sync::{Arc, Mutex}};
+use std::{cell::RefCell, collections::HashMap, rc::Rc, sync::{Arc, Mutex, RwLock}};
 use godot::{classes::World3D, prelude::*};
 use std::collections::VecDeque;
 
 use crate::globe::territories::territory::TerritoryId;
 use super::{surface_point::{Coordinates, SurfacePoint}, virtual_planet::VirtualPlanet};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct CoordinateMetadata {
   pub territory_id: Option<TerritoryId>,
   pub cartesian: Vector3,
@@ -80,6 +80,9 @@ impl CoordinatesSystem {
   }
 
   /// It implements Flow Field Pathfinding
+  /// Applying tchebychev distance to calculate the distance between two points
+  /// Also, considering the planet as a grid, where each cell is a coordinate
+  /// And mainly, respecting the territory boundaries
   /// https://www.youtube.com/watch?v=ZJZu3zLMYAc
   /// 
   pub fn get_in_the_frontiers_trajectory(
@@ -93,15 +96,6 @@ impl CoordinatesSystem {
     let base_rc_world: Rc<RefCell<Gd<World3D>>> = Rc::new(RefCell::new(world));
     let base_geodesic_trajectory = Self::get_geodesic_trajectory(origin, destination, radius);
 
-    // Check if base geodesic trajectory could be used
-    // let world = Rc::clone(&base_rc_world);
-    // let passes_by_other_territories = Self::passes_by_other_territories(&base_geodesic_trajectory, world, within_the_territory_id);
-    // if passes_by_other_territories {
-      // return base_geodesic_trajectory.to_vec();
-    // }
-
-    let mapper: Arc<Mutex<HashMap<Coordinates, i32>>> = Arc::new(Mutex::new(HashMap::new()));
-
     let world = Rc::clone(&base_rc_world);
     let mut world = world.borrow_mut();
 
@@ -110,115 +104,147 @@ impl CoordinatesSystem {
     let dest_lat_long = SurfacePoint::get_lat_long_from_vec3(destination, &mut world)
       .expect("Expected dest_lat_long to exist");
 
-    godot_print!("origin_lat_long: {:?}.... dest_lat_long: {:?}", origin_lat_long, dest_lat_long);
-
     let distance_level_from_origin = 0;
-    mapper.lock().unwrap().insert(origin_lat_long, distance_level_from_origin);
+    
+    godot_print!("origin_lat_long: {:?}.... dest_lat_long: {:?}", origin_lat_long, dest_lat_long);
+    let heat_map: Arc<Mutex<HashMap<Coordinates, i32>>> = Arc::new(Mutex::new(HashMap::new()));
 
-    let mut visited_set: HashSet<Coordinates> = HashSet::new();
-    visited_set.insert(origin_lat_long);
-    let mut b: HashMap<Coordinates, i32> = HashMap::new();
-    b.insert(origin_lat_long, distance_level_from_origin);
+    {
+      let mut heat_map_lock = heat_map.lock().unwrap();
+      heat_map_lock.insert(origin_lat_long, distance_level_from_origin);
+    }
 
-    let g = Self::populate_heat_map(
-      // &Arc::clone(&mapper),
+    // Concurrent read access to the coordinate_map made us create a Arc RwLock
+    let coordinate_map_arc = Arc::new(RwLock::new(virtual_planet.coordinate_map.clone()));
+
+    let Some(populated_heat_map) = Self::populate_heat_map(
+        origin_lat_long,
+        dest_lat_long,
+        within_the_territory_id,
+        &coordinate_map_arc,
+        &heat_map,
+      ) else {
+      return base_geodesic_trajectory.to_vec();
+    };  
+    godot_print!("heat_map: {:?}", populated_heat_map);
+
+    let mut in_the_frontiers_coordinates: VecDeque<Coordinates> = VecDeque::from(vec![]);
+    Self::back_trace_dest_to_origin(
+      &populated_heat_map,
       origin_lat_long,
       dest_lat_long,
-      // distance_level_from_origin,
-      within_the_territory_id,
-      virtual_planet,
-      &mut visited_set,
-      &mut b,
+      &mut in_the_frontiers_coordinates,
     );
-    godot_print!("mapper: {:?}", b);
-
-    // let mapper = Arc::clone(&mapper);
-    // let mapper = mapper.lock().expect("Expected mapper to exist");
-    // let mut in_the_frontiers_coordinates: VecDeque<Coordinates> = VecDeque::from(vec![]);
-    // Self::trace_back_dest_to_origin(&mapper, origin_lat_long, dest_lat_long, &mut in_the_frontiers_coordinates);
     // godot_print!("in_the_frontiers_coordinates: {:?}", in_the_frontiers_coordinates);
 
-    // todo: implement the conversion from coordinates to Vector3
+    let in_the_frontiers_trajectory = in_the_frontiers_coordinates.iter().map(|coordinate| {
+      let cartesian: Vector3 = virtual_planet.get_cartesian_from_coordinates(coordinate);
+      cartesian
+    }).collect::<Vec<Vector3>>();
+
+    // godot_print!("in_the_frontiers_trajectory: {:?}", in_the_frontiers_trajectory);
     
-    return base_geodesic_trajectory.to_vec();
+    if in_the_frontiers_coordinates.is_empty() {
+      // godot_print!("in_the_frontiers_coordinates.is_empty()");
+      return base_geodesic_trajectory.to_vec();
+    }
+
+    return in_the_frontiers_trajectory;
   }
 
   fn populate_heat_map(
-    // mapper: &Arc<Mutex<HashMap<Coordinates, i32>>>,
     origin_lat_long: Coordinates,
     dest_lat_long: Coordinates,
-    // mut distance_level_from_origin: i32,
     within_the_territory_id: &TerritoryId,
-    virtual_planet: &GdRef<'_, VirtualPlanet>,
-    visited_set: &mut HashSet<Coordinates>,
-    b: &mut HashMap<Coordinates, i32>,
-  ) -> HashMap<Coordinates, i32> {
+    arc_coordinate_map: &Arc<RwLock<HashMap<Coordinates, CoordinateMetadata>>>,
+    arc_heat_map: &Arc<Mutex<HashMap<Coordinates, i32>>>,
+  ) -> Option<HashMap<Coordinates, i32>> {
+    let heat_map_contains_dest = {
+      let heat_map_lock = arc_heat_map.lock().unwrap();
+      heat_map_lock.contains_key(&dest_lat_long)
+    };
+
+    if heat_map_contains_dest {
+      let heat_map_lock = arc_heat_map.lock().unwrap();
+      let cloned_map = heat_map_lock.clone();
+      return Some(cloned_map);
+    }
 
     let neighbors = Self::get_neighbors(origin_lat_long);
 
     for neighbor in neighbors.iter() {
-      if b.contains_key(neighbor) {
+      godot_print!("Accessing coordinate_map for neighbor: {:?}", neighbor);
+
+      let neighbor_already_in_map = {
+        let heat_map_lock = arc_heat_map.lock().unwrap();
+        heat_map_lock.contains_key(neighbor)
+      };
+
+      if neighbor_already_in_map {
         continue;
       }
 
-      if b.contains_key(&dest_lat_long) {
-        godot_print!("stop condition! b.contains_key(&dest_lat_long)");
-        break;
-      }
+      let coordinate_map_lock = arc_coordinate_map.read().unwrap(); 
+      let Some(neighbor_metadata) = coordinate_map_lock.get(neighbor) else {
+        continue;
+      };
 
-      let Some(neighbor_metadata) = virtual_planet.coordinate_map.get(neighbor)
-        else { continue; };
+      godot_print!("Successfully accessed coordinate_map for neighbor: {:?}", neighbor);
 
       let in_other_territory = neighbor_metadata
         .territory_id
         .as_ref()
-        .is_some_and(|neighbor_territory_id| { neighbor_territory_id != within_the_territory_id });
+        .is_some_and(|neighbor_territory_id| neighbor_territory_id != within_the_territory_id);
 
-      let on_the_water = neighbor_metadata.territory_id.is_none();
-
-      if in_other_territory || on_the_water {
-        b.insert(*neighbor, i32::MAX);
-        continue;
+      if in_other_territory {
+        let mut heat_map_lock = arc_heat_map.lock().unwrap();
+        heat_map_lock.insert(*neighbor, i32::MAX);
+        continue; // No need to drop here; the lock is released at the end of the block.
       }
 
-      let distance_level_from_origin =  Self::get_lowest_distance_from_neighbors(&neighbors, &b);
-      godot_print!("{origin_lat_long:?} :: distance_level_from_origin: {distance_level_from_origin:?}");
+      let distance_level_from_origin = {
+        Self::get_lowest_distance_from_neighbors(
+          &Self::get_neighbors(*neighbor).to_vec(),
+          &arc_heat_map,
+        )
+      };
 
-      let neighbor_distance  = distance_level_from_origin + 1;
-      b.insert(*neighbor, neighbor_distance);
-      godot_print!("b.insert({neighbor:?}, {neighbor_distance});");
+      let neighbor_distance = distance_level_from_origin + 1;
 
-      let a = Self::populate_heat_map(
-        // &Arc::clone(&mapper),
+      {
+        let mut heat_map_lock = arc_heat_map.lock().unwrap();
+        heat_map_lock.insert(*neighbor, neighbor_distance);
+      }
+  
+      if let Some(result_map) = Self::populate_heat_map(
         *neighbor,
         dest_lat_long,
-        // distance_level_from_origin + 1,
         within_the_territory_id,
-        virtual_planet,
-        visited_set,
-        b,
-      );
-      b.extend(a);
-    }
-
-    b.clone()
-  }
-
-
-  fn get_lowest_distance_from_neighbors(neighbors: &[Coordinates; 8], b: &HashMap<Coordinates, i32>,) -> i32 {
-    let a = neighbors.iter().fold(i32::MAX, |acc, neighbor| {
-      let neighbor_distance = b.get(neighbor);
-
-      if neighbor_distance.is_some_and(|&neighbor_distance| neighbor_distance < acc)  {
-        *neighbor_distance.unwrap()
-      } else {
-        acc
+        &arc_coordinate_map,
+        &arc_heat_map,
+      ) {
+        return Some(result_map);
       }
-    });
-
-    if a == i32::MAX { 1 } else { a }
+    }
+    
+    None
   }
 
+  fn get_lowest_distance_from_neighbors(
+    neighbors: &Vec<Coordinates>,
+    arc_heat_map: &Arc<Mutex<HashMap<Coordinates, i32>>>,
+  ) -> i32 {
+    let mut min_distance = i32::MAX;
+
+    for neighbor in neighbors {
+      let heat_map_lock = arc_heat_map.lock().unwrap();
+      if let Some(&distance) = heat_map_lock.get(neighbor) { // Access via the lock
+        min_distance = min_distance.min(distance);
+      }
+    }
+    min_distance
+  }
+  
   fn get_neighbors(
     current_coordinate: Coordinates,
   ) -> [Coordinates; 8] {
@@ -240,7 +266,6 @@ impl CoordinatesSystem {
     }
 
     if longitude == VirtualPlanet::get_num_of_longitudes() {
-      godot_print!("!!! longitude == VirtualPlanet::get_num_of_longitudes()");
       longitude_east = 0;
     }
 
@@ -269,33 +294,34 @@ impl CoordinatesSystem {
     ]
   }
 
-
-  fn trace_back_dest_to_origin(
-    mapper: &HashMap<Coordinates, i32>,
+  fn back_trace_dest_to_origin(
+    heat_map: &HashMap<Coordinates, i32>,
     origin_lat_long: Coordinates,
     dest_lat_long: Coordinates,
     in_the_frontiers_coordinates: &mut VecDeque<Coordinates>,
   ) {
-    let dest_distance = mapper.get(&dest_lat_long)
-      .expect("Expected dest_lat_long to exist");
+    if let Some(dest_distance) = heat_map.get(&dest_lat_long){
+      let dest_neighbors = Self::get_neighbors(dest_lat_long);
 
-    let dest_neighbors = Self::get_neighbors(dest_lat_long);
-
-    for neighbor in dest_neighbors.iter() {
-      let neighbor_distance = mapper.get(neighbor)
-        .expect("Expected neighbor_distance to exist");
-
-      if neighbor_distance < dest_distance {
-        // in_the_frontiers_coordinates.insert(0, *neighbor);
-        in_the_frontiers_coordinates.push_front(*neighbor);
-        
-        if neighbor == &origin_lat_long {
-          break;
+      for neighbor in dest_neighbors.iter() {
+        if let Some(neighbor_distance) = heat_map.get(neighbor) {
+          if neighbor_distance < dest_distance {
+          // if (neighbor_distance -1) == *dest_distance {
+            // in_the_frontiers_coordinates.insert(0, *neighbor);
+            in_the_frontiers_coordinates.push_front(*neighbor);
+            
+            if neighbor == &origin_lat_long {
+              break;
+            }
+            Self::back_trace_dest_to_origin(heat_map, origin_lat_long, *neighbor, in_the_frontiers_coordinates);
+            break;
+          }
         }
-        Self::trace_back_dest_to_origin(mapper, origin_lat_long, *neighbor, in_the_frontiers_coordinates);
-        break;
       }
-    }
+      return;
+    };
+
+    godot_print!("dest_lat_long {dest_lat_long:?} not found in heat_map");
   }
 
   fn radius_scale(trajectory_point: Vector3, radius: f32) -> Vector3 {

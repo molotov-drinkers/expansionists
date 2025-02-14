@@ -34,8 +34,11 @@ impl Troop {
             self.troop_activities.insert(TroopState::Combating(CombatTypes::Attacking));
           } else {
             self.troop_activities.insert(TroopState::Combating(CombatTypes::Defending));
-            // Defenders should go after the attackers
-            self.moving_trajectory_is_set = false;
+            
+            if !self.moving_and_combating {
+              // Defenders should go after the attackers
+              self.moving_trajectory_is_set = false;
+            }
           }
         });
       }
@@ -46,6 +49,7 @@ impl Troop {
       self.combat_stats.in_after_combat = true;
       self.combat_stats.reset_cannon_cool_down();
       self.combat_stats.opening_fire_on_troop = None;
+      self.moving_and_combating = false;
     }
   }
 

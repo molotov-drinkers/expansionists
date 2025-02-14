@@ -98,6 +98,7 @@ impl Troop {
     } else {
       self.reset_trajectory();
       self.set_orientation(target_position.normalized());
+      self.moving_and_combating = false;
 
       if self.has_cool_down_finished(delta) {
         self.open_fire_on_the_enemy(enemy_troop, virtual_planet)
@@ -202,7 +203,10 @@ impl Troop {
         virtual_planet,
       );
 
+      self.highlight_geodesic_trajectory(&in_the_frontiers_trajectory);
       self.moving_trajectory_points = in_the_frontiers_trajectory;
+      self.current_trajectory_point = 0;
+      self.moving_and_combating = true;
       self.moving_trajectory_is_set = true;
     }
 
