@@ -1,8 +1,8 @@
-use std::{cell::RefCell, collections::HashMap, rc::Rc, sync::{Arc, Mutex, RwLock}};
-use godot::{classes::World3D, prelude::*};
+use std::{cell::RefCell, collections::HashMap, hash::Hash, rc::Rc, sync::{Arc, Mutex, RwLock}};
+use godot::{classes::World3D, obj::BaseRef, prelude::*};
 use std::collections::VecDeque;
 
-use crate::globe::territories::territory::TerritoryId;
+use crate::{globe::territories::territory::TerritoryId, troops::troop::Troop};
 use super::{surface_point::{Coordinates, SurfacePoint}, virtual_planet::VirtualPlanet};
 
 #[derive(Debug, Clone)]
@@ -92,6 +92,7 @@ impl CoordinatesSystem {
     world: Gd<World3D>,
     within_the_territory_id: &TerritoryId,
     virtual_planet: &GdRef<'_, VirtualPlanet>,
+    troop: BaseRef<'_, Troop>,
   ) -> Vec<Vector3> {
     let base_rc_world: Rc<RefCell<Gd<World3D>>> = Rc::new(RefCell::new(world));
     let base_geodesic_trajectory = Self::get_geodesic_trajectory(origin, destination, radius);
@@ -104,37 +105,42 @@ impl CoordinatesSystem {
     let dest_lat_long = SurfacePoint::get_lat_long_from_vec3(destination, &mut world)
       .expect("Expected dest_lat_long to exist");
 
-    let distance_level_from_origin = 0;
-    
     godot_print!("origin_lat_long: {:?}.... dest_lat_long: {:?}", origin_lat_long, dest_lat_long);
-    let heat_map: Arc<Mutex<HashMap<Coordinates, i32>>> = Arc::new(Mutex::new(HashMap::new()));
-
-    {
-      let mut heat_map_lock = heat_map.lock().unwrap();
-      heat_map_lock.insert(origin_lat_long, distance_level_from_origin);
-    }
-
     // Concurrent read access to the coordinate_map made us create a Arc RwLock
     let coordinate_map_arc = Arc::new(RwLock::new(virtual_planet.coordinate_map.clone()));
+    // let heat_map: Arc<Mutex<HashMap<Coordinates, i32>>> = Arc::new(Mutex::new(HashMap::new()));
+
+    // {
+    //   let mut heat_map_lock = heat_map.lock().unwrap();
+    //   heat_map_lock.insert(origin_lat_long, 0);
+    // }
+
+    let dic_heat_map = troop.get_meta("heat_map_for_within_territory_trajectory");
+    let mut dic_heat_map = dic_heat_map.to::<Dictionary>();
+    dic_heat_map.clear();
+    let _ = dic_heat_map.insert(format!("{:?}", origin_lat_long), 0);
 
     let Some(populated_heat_map) = Self::populate_heat_map(
         origin_lat_long,
         dest_lat_long,
         within_the_territory_id,
-        &coordinate_map_arc,
-        &heat_map,
+        // &coordinate_map_arc,
+        &virtual_planet.coordinate_map,
+        // &heat_map,
+        &troop
       ) else {
       return base_geodesic_trajectory.to_vec();
     };  
     godot_print!("heat_map: {:?}", populated_heat_map);
 
+
     let mut in_the_frontiers_coordinates: VecDeque<Coordinates> = VecDeque::from(vec![]);
-    Self::back_trace_dest_to_origin(
-      &populated_heat_map,
-      origin_lat_long,
-      dest_lat_long,
-      &mut in_the_frontiers_coordinates,
-    );
+    // Self::back_trace_dest_to_origin(
+    //   &populated_heat_map,
+    //   origin_lat_long,
+    //   dest_lat_long,
+    //   &mut in_the_frontiers_coordinates,
+    // );
     // godot_print!("in_the_frontiers_coordinates: {:?}", in_the_frontiers_coordinates);
 
     let in_the_frontiers_trajectory = in_the_frontiers_coordinates.iter().map(|coordinate| {
@@ -156,67 +162,107 @@ impl CoordinatesSystem {
     origin_lat_long: Coordinates,
     dest_lat_long: Coordinates,
     within_the_territory_id: &TerritoryId,
-    arc_coordinate_map: &Arc<RwLock<HashMap<Coordinates, CoordinateMetadata>>>,
-    arc_heat_map: &Arc<Mutex<HashMap<Coordinates, i32>>>,
-  ) -> Option<HashMap<Coordinates, i32>> {
-    // Check destination first with a single lock acquisition
-    {
-      let heat_map_lock = arc_heat_map.lock().unwrap();
-      if heat_map_lock.contains_key(&dest_lat_long) {
-        return Some(heat_map_lock.clone());
-      }
+    // arc_coordinate_map: &Arc<RwLock<HashMap<Coordinates, CoordinateMetadata>>>,
+    coordinate_map: &CoordinateMap,
+    // arc_heat_map: &Arc<Mutex<HashMap<Coordinates, i32>>>,
+
+    troop: &BaseRef<'_, Troop>,
+
+  ) -> Option<Dictionary> {
+    let dic_heat_map = troop.get_meta("heat_map_for_within_territory_trajectory");
+    let dic_heat_map = dic_heat_map.to::<Dictionary>();
+
+    if dic_heat_map.contains_key(format!("{:?}", dest_lat_long)) {
+      return Some(dic_heat_map);
     }
+
+
+    // Check destination first with a single lock acquisition
+    // {
+    //   let heat_map_lock = arc_heat_map.lock().unwrap();
+    //   if heat_map_lock.contains_key(&dest_lat_long) {
+    //     return Some(heat_map_lock.clone());
+    //   }
+    // }
 
     let neighbors = Self::get_neighbors(origin_lat_long);
     
     for neighbor in neighbors.iter() {
-      // Check heat map with minimal lock duration
-      {
-        let heat_map_lock = arc_heat_map.lock().unwrap();
-        if heat_map_lock.contains_key(neighbor) {
-          continue;
-        }
+
+      let dic_heat_map = troop.get_meta("heat_map_for_within_territory_trajectory");
+      let dic_heat_map = dic_heat_map.to::<Dictionary>();
+      if dic_heat_map.contains_key(format!("{:?}", neighbor)) {
+        continue;
       }
 
-      // Scope the coordinate map lock to this iteration
-      let neighbor_metadata = {
-        let coordinate_map_lock = arc_coordinate_map.read().unwrap();
-        match coordinate_map_lock.get(neighbor) {
-          Some(metadata) => metadata.clone(),
-          None => continue,
-        }
-      };
+      // Check heat map with minimal lock duration
+      // {
+      //   let heat_map_lock = arc_heat_map.lock().unwrap();
+      //   if heat_map_lock.contains_key(neighbor) {
+      //     continue;
+      //   }
+      // }
 
-      let in_other_territory = neighbor_metadata
+      // Scope the coordinate map lock to this iteration
+      // let neighbor_metadata = {
+      //   let coordinate_map_lock = arc_coordinate_map.read().unwrap();
+      //   match coordinate_map_lock.get(neighbor) {
+      //     Some(metadata) => metadata.clone(),
+      //     None => continue,
+      //   }
+      // };
+
+      let neighbor_metadata = coordinate_map.get(neighbor);
+
+      if neighbor_metadata.is_none() {
+        godot_print!("neighbor_metadata for ({neighbor:?}) is None");
+        continue;
+      }
+
+
+      let in_other_territory = neighbor_metadata.unwrap()
         .territory_id
         .as_ref()
         .is_some_and(|neighbor_territory_id| neighbor_territory_id != within_the_territory_id);
 
       if in_other_territory {
-        let mut heat_map_lock = arc_heat_map.lock().unwrap();
-        heat_map_lock.insert(*neighbor, i32::MAX);
+        // let mut heat_map_lock = arc_heat_map.lock().unwrap();
+        // heat_map_lock.insert(*neighbor, i32::MAX);
+        let dic_heat_map = troop.get_meta("heat_map_for_within_territory_trajectory");
+        let mut dic_heat_map = dic_heat_map.to::<Dictionary>();
+        let _ = dic_heat_map.set(format!("{:?}", neighbor), i32::MAX);
+
         continue;
       }
 
       let distance_level_from_origin = Self::get_lowest_distance_from_neighbors(
         &Self::get_neighbors(*neighbor).to_vec(),
-        arc_heat_map,
+        // arc_heat_map,
+        &troop
       );
 
       let neighbor_distance = distance_level_from_origin + 1;
 
+      let dic_heat_map = troop.get_meta("heat_map_for_within_territory_trajectory");
+      let mut dic_heat_map = dic_heat_map.to::<Dictionary>();
+      
+      // could be a key:
+      // let coord = Vector2i::new(0, 1);
+      let _ = dic_heat_map.set(format!("{:?}", neighbor), neighbor_distance);
+
       // Minimize lock duration for insert
-      {
-        let mut heat_map_lock = arc_heat_map.lock().unwrap();
-        heat_map_lock.insert(*neighbor, neighbor_distance);
-      }
+      // {
+      //   let mut heat_map_lock = arc_heat_map.lock().unwrap();
+      //   heat_map_lock.insert(*neighbor, neighbor_distance);
+      // }
 
       if let Some(result_map) = Self::populate_heat_map(
         *neighbor,
         dest_lat_long,
         within_the_territory_id,
-        arc_coordinate_map,
-        arc_heat_map,
+        coordinate_map,
+        // arc_heat_map,
+        troop,
       ) {
         return Some(result_map);
       }
@@ -224,18 +270,32 @@ impl CoordinatesSystem {
     
     None
   }
+
   // Helper function with improved lock handling
   fn get_lowest_distance_from_neighbors(
     neighbors: &Vec<Coordinates>,
-    arc_heat_map: &Arc<Mutex<HashMap<Coordinates, i32>>>,
+    // arc_heat_map: &Arc<Mutex<HashMap<Coordinates, i32>>>,
+    // dic_heat_map: &Dictionary,
+    troop: &BaseRef<'_, Troop>,
   ) -> i32 {
-    let heat_map_lock = arc_heat_map.lock().unwrap();
+    // let heat_map_lock = arc_heat_map.lock().unwrap();
+
+    let dic_heat_map = troop.get_meta("heat_map_for_within_territory_trajectory");
+    let dic_heat_map = dic_heat_map.to::<Dictionary>();
+
     let min_distance = neighbors.iter()
-      .filter_map(|neighbor| heat_map_lock.get(neighbor))
-      .fold(i32::MAX, |acc, &distance| acc.min(distance));
+      .filter_map(|neighbor| dic_heat_map.get(format!("{:?}", neighbor)))
+      .fold(i32::MAX, |acc, distance| {
+        let distance = distance.to::<i32>();
+        acc.min(distance)
+      });
     min_distance
   }
   
+  // TODO: PROBLEM MIGHT BE HERE AFTER ALL 🤡
+  // Seems like it's not checking the boundaries correctly
+  // Also, have reasons to believe latitude and longitude are inverted
+  // May check populate_surface_points_and_coordinate_map()
   fn get_neighbors(
     current_coordinate: Coordinates,
   ) -> [Coordinates; 8] {
@@ -248,23 +308,23 @@ impl CoordinatesSystem {
     let mut longitude_east = longitude + BUFFER;
     let mut longitude_west = longitude - BUFFER;
 
-    if latitude == VirtualPlanet::get_num_of_latitudes() {
+    if latitude == VirtualPlanet::get_num_of_latitudes() -1 {
       latitude_north = 0;
     }
 
     if latitude == 0 {
-      latitude_south = VirtualPlanet::get_num_of_latitudes();
+      latitude_south = VirtualPlanet::get_num_of_latitudes() -1;
     }
 
-    if longitude == VirtualPlanet::get_num_of_longitudes() {
+    if longitude == VirtualPlanet::get_num_of_longitudes() -1 {
       longitude_east = 0;
     }
 
     if longitude == 0 {
-      longitude_west = VirtualPlanet::get_num_of_longitudes();
+      longitude_west = VirtualPlanet::get_num_of_longitudes() -1;
     }
 
-    [
+    let gg = [
       // Trajectory passing by North
       (latitude_north, longitude),
       // Trajectory passing by South
@@ -282,7 +342,11 @@ impl CoordinatesSystem {
       (latitude_south, longitude_east),
       // Trajectory passing by Southwest
       (latitude_south, longitude_west),
-    ]
+    ];
+
+    godot_print!("get_neighbors: {:?}", gg);
+
+    gg
   }
 
   fn back_trace_dest_to_origin(

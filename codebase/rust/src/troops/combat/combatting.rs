@@ -193,6 +193,23 @@ impl Troop {
   fn set_trajectory_to_get_closer_to_enemy(&mut self, target_position: Vector3, virtual_planet: &GdRef<'_, VirtualPlanet>) {
     if !self.moving_trajectory_is_set {
 
+
+      // let heat_map = self.base().get_meta("heat_map_for_within_territory_trajectory");
+      // godot_print!("heat_map: {heat_map}");
+      // godot_print!("heat_map.get_type(): {:?}", heat_map.get_type());
+
+      // let mut gg = heat_map.to::<Dictionary>();
+      // let _ = gg.insert("-->", 41341);
+      // gg.clear();
+
+      // let heat_map = self.base().get_meta("heat_map_for_within_territory_trajectory");
+      // godot_print!("After pushing - heat_map: {heat_map}");
+      // godot_print!("After pushing - heat_map.get_type(): {:?}", heat_map.get_type());
+
+      let dic_heat_map = self.base().get_meta("heat_map_for_within_territory_trajectory");
+      let mut dic_heat_map = dic_heat_map.to::<Dictionary>();
+      dic_heat_map.clear();
+
       let world = self.base().get_world_3d().expect("World to exist");
       let in_the_frontiers_trajectory = CoordinatesSystem::get_in_the_frontiers_trajectory(
         self.touching_surface_point.cartesian,
@@ -201,6 +218,8 @@ impl Troop {
         world,
         &self.deployed_to_territory,
         virtual_planet,
+
+        self.base(),
       );
 
       self.highlight_geodesic_trajectory(&in_the_frontiers_trajectory);

@@ -287,7 +287,7 @@ impl VirtualPlanet {
   /// Receives a latitude and longitude and returns the cartesian coordinates
   pub fn get_cartesian_from_coordinates(&self, given_coordinates: &Coordinates) -> Vector3 {
     let coordinate_metadata = self.coordinate_map.get(&given_coordinates).expect("Expected coordinates to exist");
-    coordinate_metadata.cartesian
+    coordinate_metadata.cartesian.clone()
   }
 
   pub fn set_new_territory_ruler(territory: &mut Territory, player: &mut Gd<Player>) {
