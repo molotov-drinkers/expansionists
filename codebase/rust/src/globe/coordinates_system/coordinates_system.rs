@@ -159,37 +159,33 @@ impl CoordinatesSystem {
     arc_coordinate_map: &Arc<RwLock<HashMap<Coordinates, CoordinateMetadata>>>,
     arc_heat_map: &Arc<Mutex<HashMap<Coordinates, i32>>>,
   ) -> Option<HashMap<Coordinates, i32>> {
-    let heat_map_contains_dest = {
+    // Check destination first with a single lock acquisition
+    {
       let heat_map_lock = arc_heat_map.lock().unwrap();
-      heat_map_lock.contains_key(&dest_lat_long)
-    };
-
-    if heat_map_contains_dest {
-      let heat_map_lock = arc_heat_map.lock().unwrap();
-      let cloned_map = heat_map_lock.clone();
-      return Some(cloned_map);
+      if heat_map_lock.contains_key(&dest_lat_long) {
+        return Some(heat_map_lock.clone());
+      }
     }
 
     let neighbors = Self::get_neighbors(origin_lat_long);
-
+    
     for neighbor in neighbors.iter() {
-      godot_print!("Accessing coordinate_map for neighbor: {:?}", neighbor);
-
-      let neighbor_already_in_map = {
+      // Check heat map with minimal lock duration
+      {
         let heat_map_lock = arc_heat_map.lock().unwrap();
-        heat_map_lock.contains_key(neighbor)
-      };
-
-      if neighbor_already_in_map {
-        continue;
+        if heat_map_lock.contains_key(neighbor) {
+          continue;
+        }
       }
 
-      let coordinate_map_lock = arc_coordinate_map.read().unwrap(); 
-      let Some(neighbor_metadata) = coordinate_map_lock.get(neighbor) else {
-        continue;
+      // Scope the coordinate map lock to this iteration
+      let neighbor_metadata = {
+        let coordinate_map_lock = arc_coordinate_map.read().unwrap();
+        match coordinate_map_lock.get(neighbor) {
+          Some(metadata) => metadata.clone(),
+          None => continue,
+        }
       };
-
-      godot_print!("Successfully accessed coordinate_map for neighbor: {:?}", neighbor);
 
       let in_other_territory = neighbor_metadata
         .territory_id
@@ -199,29 +195,28 @@ impl CoordinatesSystem {
       if in_other_territory {
         let mut heat_map_lock = arc_heat_map.lock().unwrap();
         heat_map_lock.insert(*neighbor, i32::MAX);
-        continue; // No need to drop here; the lock is released at the end of the block.
+        continue;
       }
 
-      let distance_level_from_origin = {
-        Self::get_lowest_distance_from_neighbors(
-          &Self::get_neighbors(*neighbor).to_vec(),
-          &arc_heat_map,
-        )
-      };
+      let distance_level_from_origin = Self::get_lowest_distance_from_neighbors(
+        &Self::get_neighbors(*neighbor).to_vec(),
+        arc_heat_map,
+      );
 
       let neighbor_distance = distance_level_from_origin + 1;
 
+      // Minimize lock duration for insert
       {
         let mut heat_map_lock = arc_heat_map.lock().unwrap();
         heat_map_lock.insert(*neighbor, neighbor_distance);
       }
-  
+
       if let Some(result_map) = Self::populate_heat_map(
         *neighbor,
         dest_lat_long,
         within_the_territory_id,
-        &arc_coordinate_map,
-        &arc_heat_map,
+        arc_coordinate_map,
+        arc_heat_map,
       ) {
         return Some(result_map);
       }
@@ -229,19 +224,15 @@ impl CoordinatesSystem {
     
     None
   }
-
+  // Helper function with improved lock handling
   fn get_lowest_distance_from_neighbors(
     neighbors: &Vec<Coordinates>,
     arc_heat_map: &Arc<Mutex<HashMap<Coordinates, i32>>>,
   ) -> i32 {
-    let mut min_distance = i32::MAX;
-
-    for neighbor in neighbors {
-      let heat_map_lock = arc_heat_map.lock().unwrap();
-      if let Some(&distance) = heat_map_lock.get(neighbor) { // Access via the lock
-        min_distance = min_distance.min(distance);
-      }
-    }
+    let heat_map_lock = arc_heat_map.lock().unwrap();
+    let min_distance = neighbors.iter()
+      .filter_map(|neighbor| heat_map_lock.get(neighbor))
+      .fold(i32::MAX, |acc, &distance| acc.min(distance));
     min_distance
   }
   
