@@ -2,8 +2,8 @@
 use godot::{classes::{Area3D, IArea3D, MeshInstance3D, PhysicsRayQueryParameters3D, World3D}, prelude::*};
 use crate::{globe::territories::territory::TerritoryId, troops::troop::Troop};
 
-type Latitude = i16;
-type Longitude = i16;
+type Latitude = i32;
+type Longitude = i32;
 pub type Coordinates = (Latitude, Longitude);
 
 #[derive(Debug, Clone)]

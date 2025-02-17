@@ -110,6 +110,14 @@ impl CoordinatesSystem {
     let coordinate_map_arc = Arc::new(RwLock::new(virtual_planet.coordinate_map.clone()));
     // let heat_map: Arc<Mutex<HashMap<Coordinates, i32>>> = Arc::new(Mutex::new(HashMap::new()));
 
+    let dic_coordinates_map = virtual_planet.base().get_meta("coordinates_map");
+    let dic_coordinates_map = dic_coordinates_map.to::<Dictionary>();
+    if let Some(origin) = dic_coordinates_map.get(format!("{:?}", origin_lat_long)) {
+      godot_print!("origin found in coordinates_map: {:?}", origin);
+    }
+
+
+
     // {
     //   let mut heat_map_lock = heat_map.lock().unwrap();
     //   heat_map_lock.insert(origin_lat_long, 0);
@@ -125,7 +133,7 @@ impl CoordinatesSystem {
         dest_lat_long,
         within_the_territory_id,
         // &coordinate_map_arc,
-        &virtual_planet.coordinate_map,
+        &virtual_planet,
         // &heat_map,
         &troop
       ) else {
@@ -135,12 +143,12 @@ impl CoordinatesSystem {
 
 
     let mut in_the_frontiers_coordinates: VecDeque<Coordinates> = VecDeque::from(vec![]);
-    // Self::back_trace_dest_to_origin(
-    //   &populated_heat_map,
-    //   origin_lat_long,
-    //   dest_lat_long,
-    //   &mut in_the_frontiers_coordinates,
-    // );
+    Self::back_trace_dest_to_origin(
+      &populated_heat_map,
+      origin_lat_long,
+      dest_lat_long,
+      &mut in_the_frontiers_coordinates,
+    );
     // godot_print!("in_the_frontiers_coordinates: {:?}", in_the_frontiers_coordinates);
 
     let in_the_frontiers_trajectory = in_the_frontiers_coordinates.iter().map(|coordinate| {
@@ -148,12 +156,14 @@ impl CoordinatesSystem {
       cartesian
     }).collect::<Vec<Vector3>>();
 
-    // godot_print!("in_the_frontiers_trajectory: {:?}", in_the_frontiers_trajectory);
     
     if in_the_frontiers_coordinates.is_empty() {
       // godot_print!("in_the_frontiers_coordinates.is_empty()");
       return base_geodesic_trajectory.to_vec();
     }
+
+    godot_print!("==> in_the_frontiers_trajectory!");
+    // godot_print!("in_the_frontiers_trajectory: {:?}", in_the_frontiers_trajectory);
 
     return in_the_frontiers_trajectory;
   }
@@ -162,8 +172,15 @@ impl CoordinatesSystem {
     origin_lat_long: Coordinates,
     dest_lat_long: Coordinates,
     within_the_territory_id: &TerritoryId,
+
+
+    // TODO: ALSO COULD BE HERE AT HE COORD MAP
     // arc_coordinate_map: &Arc<RwLock<HashMap<Coordinates, CoordinateMetadata>>>,
-    coordinate_map: &CoordinateMap,
+    // coordinate_map: CoordinateMap,
+    virtual_planet: &GdRef<'_, VirtualPlanet>,
+
+
+
     // arc_heat_map: &Arc<Mutex<HashMap<Coordinates, i32>>>,
 
     troop: &BaseRef<'_, Troop>,
@@ -186,6 +203,7 @@ impl CoordinatesSystem {
     // }
 
     let neighbors = Self::get_neighbors(origin_lat_long);
+    // let gg = coordinate_map.clone();
     
     for neighbor in neighbors.iter() {
 
@@ -212,18 +230,24 @@ impl CoordinatesSystem {
       //   }
       // };
 
-      let neighbor_metadata = coordinate_map.get(neighbor);
+      // let neighbor_metadata = gg.get(neighbor);
+
+      let dic_coordinates_map = virtual_planet.base().get_meta("coordinates_map");
+      let dic_coordinates_map = dic_coordinates_map.to::<Dictionary>();
+      let neighbor_metadata = dic_coordinates_map.get(format!("{:?}", neighbor));
+
 
       if neighbor_metadata.is_none() {
         godot_print!("neighbor_metadata for ({neighbor:?}) is None");
         continue;
       }
 
-
       let in_other_territory = neighbor_metadata.unwrap()
-        .territory_id
-        .as_ref()
-        .is_some_and(|neighbor_territory_id| neighbor_territory_id != within_the_territory_id);
+        .to::<Dictionary>()
+        .get("territory_id")
+        // .territory_id
+        // .as_ref()
+        .is_some_and(|neighbor_territory_id| neighbor_territory_id.to::<String>() != *within_the_territory_id);
 
       if in_other_territory {
         // let mut heat_map_lock = arc_heat_map.lock().unwrap();
@@ -260,7 +284,8 @@ impl CoordinatesSystem {
         *neighbor,
         dest_lat_long,
         within_the_territory_id,
-        coordinate_map,
+        // gg.clone(),
+        virtual_planet,
         // arc_heat_map,
         troop,
       ) {
@@ -299,49 +324,49 @@ impl CoordinatesSystem {
   fn get_neighbors(
     current_coordinate: Coordinates,
   ) -> [Coordinates; 8] {
-    const BUFFER: i16 = 1;
+    const BUFFER: i32 = 1;
 
     let (latitude, longitude) = current_coordinate;
 
-    let mut latitude_north = latitude + BUFFER;
-    let mut latitude_south = latitude - BUFFER;
-    let mut longitude_east = longitude + BUFFER;
-    let mut longitude_west = longitude - BUFFER;
+    let mut latitude_east = latitude + BUFFER;
+    let mut latitude_west = latitude - BUFFER;
+    let mut longitude_north = longitude + BUFFER;
+    let mut longitude_south = longitude - BUFFER;
 
     if latitude == VirtualPlanet::get_num_of_latitudes() -1 {
-      latitude_north = 0;
+      latitude_east = 0;
     }
 
     if latitude == 0 {
-      latitude_south = VirtualPlanet::get_num_of_latitudes() -1;
+      latitude_west = VirtualPlanet::get_num_of_latitudes() -1;
     }
 
     if longitude == VirtualPlanet::get_num_of_longitudes() -1 {
-      longitude_east = 0;
+      longitude_north = 0;
     }
 
     if longitude == 0 {
-      longitude_west = VirtualPlanet::get_num_of_longitudes() -1;
+      longitude_south = VirtualPlanet::get_num_of_longitudes() -1;
     }
 
     let gg = [
       // Trajectory passing by North
-      (latitude_north, longitude),
+      (latitude_east, longitude),
       // Trajectory passing by South
-      (latitude_south, longitude),
+      (latitude_west, longitude),
       // Trajectory passing by East
-      (latitude, longitude_east),
+      (latitude, longitude_north),
       // Trajectory passing by West
-      (latitude, longitude_west),
+      (latitude, longitude_south),
 
       // Trajectory passing by Northeast
-      (latitude_north, longitude_east),
+      (latitude_east, longitude_north),
       // Trajectory passing by Northwest
-      (latitude_north, longitude_west),
+      (latitude_east, longitude_south),
       // Trajectory passing by Southeast
-      (latitude_south, longitude_east),
+      (latitude_west, longitude_north),
       // Trajectory passing by Southwest
-      (latitude_south, longitude_west),
+      (latitude_west, longitude_south),
     ];
 
     godot_print!("get_neighbors: {:?}", gg);
@@ -350,16 +375,22 @@ impl CoordinatesSystem {
   }
 
   fn back_trace_dest_to_origin(
-    heat_map: &HashMap<Coordinates, i32>,
+    // heat_map: &HashMap<Coordinates, i32>,
+    heat_map: &Dictionary,
     origin_lat_long: Coordinates,
     dest_lat_long: Coordinates,
     in_the_frontiers_coordinates: &mut VecDeque<Coordinates>,
   ) {
-    if let Some(dest_distance) = heat_map.get(&dest_lat_long){
+    
+    if let Some(dest_distance) = heat_map.get(format!("{:?}", dest_lat_long)){
       let dest_neighbors = Self::get_neighbors(dest_lat_long);
 
       for neighbor in dest_neighbors.iter() {
-        if let Some(neighbor_distance) = heat_map.get(neighbor) {
+        if let Some(neighbor_distance) = heat_map.get(format!("{:?}", neighbor)) {
+
+          let dest_distance = dest_distance.to::<i32>();
+          let neighbor_distance = neighbor_distance.to::<i32>();
+
           if neighbor_distance < dest_distance {
           // if (neighbor_distance -1) == *dest_distance {
             // in_the_frontiers_coordinates.insert(0, *neighbor);

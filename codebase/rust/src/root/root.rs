@@ -50,7 +50,7 @@ impl RootScene {
       1,
       "Menino Baum".to_owned(),
       PlayerColor::Red,
-      "unclaimed_area".to_owned(),
+      "amazon".to_owned(),
       PlayerType::MainPlayer,
       TroopMeshes {
         land: MeshId::Tank1,
@@ -64,7 +64,7 @@ impl RootScene {
       2,
       "Hawk".to_owned(),
       PlayerColor::Blue,
-      "everybodys_south".to_owned(),
+      "latinos".to_owned(),
       PlayerType::Bot,
       TroopMeshes {
         land: MeshId::Tonk,

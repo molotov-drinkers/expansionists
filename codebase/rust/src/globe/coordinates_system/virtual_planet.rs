@@ -77,8 +77,8 @@ impl VirtualPlanet {
   /// Following inline functions have pseudo-arbitrary numbers defined after checking the globe mesh size
   /// that's the reason they all seem to be magic numbers
   #[inline] pub fn get_planet_radius() -> f64 { 1.0795 * 3.0 }
-  #[inline] pub fn get_num_of_latitudes() -> i16 { (90. * 2.5) as i16 }
-  #[inline] pub fn get_num_of_longitudes() -> i16 { (180. * 2.5) as i16 }
+  #[inline] pub fn get_num_of_latitudes() -> i32 { (90. * 2.5) as i32 }
+  #[inline] pub fn get_num_of_longitudes() -> i32 { (180. * 2.5) as i32 }
   #[inline] pub fn get_surface_mesh_and_collider_size() -> Vector3 { Vector3::new(0.07, 0.07, 0.08) }
   
   pub fn populate_surface_points_and_coordinate_map(&mut self) {
@@ -219,6 +219,23 @@ impl VirtualPlanet {
                     cartesian: surface_point_metadata.cartesian,
                   }
                 );
+
+                // should add a dictonary metadata to the virtual planet and use it at coordinates_system ?
+
+                let dic_coordinates_map = self.base().get_meta("coordinates_map");
+                let mut dic_coordinates_map = dic_coordinates_map.to::<Dictionary>();
+
+                let mut coord_meta = Dictionary::new();
+                let _ = coord_meta.insert("territory_id", territory_id.clone());
+                let _ = coord_meta.insert("cartesian", surface_point_metadata.cartesian);
+                let _ = dic_coordinates_map.insert(
+                  format!("{:?}", surface_point_metadata.lat_long),
+                  coord_meta
+                );
+
+                // let aap = self.base().get_meta("coordinates_map");
+                // godot_print!("{:?}", aap);
+
 
                 surface_point_metadata.territory_id = Some(territory_id);
               }
