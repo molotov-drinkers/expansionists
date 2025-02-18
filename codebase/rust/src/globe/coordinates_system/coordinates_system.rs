@@ -52,21 +52,18 @@ impl CoordinatesSystem {
     trajectory
   }
 
-
   fn passes_by_other_territories(
     base_geodesic_trajectory: &[Vector3; Self::NUM_OF_WAYPOINTS],
     world: Rc<RefCell<Gd<World3D>>>,
     within_the_territory_id: &TerritoryId,
   ) -> bool {
     base_geodesic_trajectory.iter().find(|trajectory_point| {
-      let mut world = world.borrow_mut();
-
       let Some(surface_point) = SurfacePoint::get_surface_point(
       **trajectory_point,
-        &mut world,
+        &mut world.borrow_mut(),
         None
       ) else {
-        godot_error!(" 486483 Error getting surface point");
+        godot_error!("passes_by_other_territories() -> Error getting surface point");
         return false;
       };
 
