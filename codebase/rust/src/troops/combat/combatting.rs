@@ -1,6 +1,7 @@
 use crate::{
   globe::coordinates_system::{coordinates_system::CoordinatesSystem, virtual_planet::VirtualPlanet},
-  troops::{combat::combat_stats::CombatStats, surface::surface::Surface, troop::{Troop, TroopId, TroopState}}
+  troops::{combat::combat_stats::CombatStats, surface::surface::Surface, troop::{Troop, TroopId, TroopState}},
+  visual_debug
 };
 use godot::prelude::*;
 
@@ -93,11 +94,12 @@ impl Troop {
     let troops_distance = self_position.distance_to(target_position);
 
     if troops_distance > self.combat_stats.cannon.range {
-      self.set_trajectory_to_get_closer_to_enemy(target_position);
+      self.set_trajectory_to_get_closer_to_enemy(target_position, virtual_planet);
 
     } else {
       self.reset_trajectory();
       self.set_orientation(target_position.normalized());
+      self.moving_and_combating = false;
 
       if self.has_cool_down_finished(delta) {
         self.open_fire_on_the_enemy(enemy_troop, virtual_planet)
@@ -189,20 +191,32 @@ impl Troop {
     projectile_spawner.get_global_transform()
   }
 
-  fn set_trajectory_to_get_closer_to_enemy(&mut self, target_position: Vector3) {
+  fn set_trajectory_to_get_closer_to_enemy(&mut self, target_position: Vector3, virtual_planet: &GdRef<'_, VirtualPlanet>) {
     if !self.moving_trajectory_is_set {
 
-      // TODO: Check if it has non-intended geodesic invasion, should go around and find another path
-      // TODO: Maybe this could be done by the pathfinding algorithm
-      // TODO:Could be something like CoordinatesSystem::get_path_in_the_frontiers
+      let mut heat_map_dictionary = self
+        .base()
+        .get_meta("heat_map_trajectory_helper")
+        .to::<Dictionary>();
+      heat_map_dictionary.clear();
 
-      let geodesic_trajectory = CoordinatesSystem::get_geodesic_trajectory(
+      let in_the_frontiers_trajectory = CoordinatesSystem::get_in_the_frontiers_trajectory(
         self.touching_surface_point.cartesian,
         target_position,
-        VirtualPlanet::get_planet_radius() as f32
+        VirtualPlanet::get_planet_radius() as f32,
+        self.base().get_world_3d().expect("World to exist"),
+        &self.deployed_to_territory,
+        virtual_planet,
+        self.base(),
       );
 
-      self.moving_trajectory_points = geodesic_trajectory;
+      visual_debug!({
+        self.highlight_trajectory(&in_the_frontiers_trajectory);
+      });
+
+      self.moving_trajectory_points = in_the_frontiers_trajectory;
+      self.current_trajectory_point = 0;
+      self.moving_and_combating = true;
       self.moving_trajectory_is_set = true;
     }
 

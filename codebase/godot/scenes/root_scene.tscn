@@ -67,6 +67,7 @@ transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0)
 
 [node name="virtual_planet" type="VirtualPlanet" parent="."]
 visible = false
+metadata/coordinates_map = {}
 
 [node name="playable" type="Node3D" parent="."]
 

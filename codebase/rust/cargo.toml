@@ -4,8 +4,12 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-godot = "0.2.1"
+godot = "0.2.3"
 fastrand = "2.3"
 
 [lib]
 crate-type = ["cdylib"]
+
+# cargo build --features visual_debug
+[features]
+visual_debug = []

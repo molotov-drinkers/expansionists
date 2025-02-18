@@ -1,6 +1,7 @@
 
 use godot::prelude::*;
 
+pub mod macros;
 pub mod root;
 pub mod i18n;
 pub mod globe;

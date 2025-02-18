@@ -1,10 +1,11 @@
-use std::collections::HashMap;
-use godot::prelude::*;
+use std::{cell::RefCell, collections::HashMap, rc::Rc};
+use godot::{classes::World3D, obj::BaseRef, prelude::*};
+use std::collections::VecDeque;
 
-use crate::globe::territories::territory::TerritoryId;
-use super::surface_point::Coordinates;
+use crate::{globe::territories::territory::TerritoryId, troops::troop::Troop};
+use super::{surface_point::{Coordinates, SurfacePoint}, virtual_planet::VirtualPlanet};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct CoordinateMetadata {
   pub territory_id: Option<TerritoryId>,
   pub cartesian: Vector3,
@@ -50,7 +51,271 @@ impl CoordinatesSystem {
 
     trajectory
   }
+
+  fn passes_by_other_territories(
+    base_geodesic_trajectory: &[Vector3; Self::NUM_OF_WAYPOINTS],
+    world: Rc<RefCell<Gd<World3D>>>,
+    within_the_territory_id: &TerritoryId,
+  ) -> bool {
+    base_geodesic_trajectory.iter().find(|trajectory_point| {
+      let Some(surface_point) = SurfacePoint::get_surface_point(
+        **trajectory_point,
+        &mut world.borrow_mut(),
+        None
+      ) else {
+        godot_error!("passes_by_other_territories() -> Error getting surface point");
+        return false;
+      };
+
+      let surface_point = surface_point.bind();
+      let passes_by_other_territories = surface_point.surface_point_metadata.territory_id.as_ref().is_some_and(|territory_id| {
+        territory_id != within_the_territory_id
+      });
+
+      passes_by_other_territories
+    }).is_some()
+  }
+
+  /// Implements Pathfinding Algorithm
+  /// Applying a pseudo-tchebychev-distance to calculate the distance between two points
+  /// Also, considering the planet as a grid, where each SurfacePoint has a Latitud, Longitude coordinate
+  /// After that, it backs trace the path from the destination to the origin
+  /// With all that, the trajectory is calculated with the points in the frontiers of the territory
+  /// 
+  /// If it fails to calculate the in_the_frontiers_trajectory, it returns the geodesic trajectory
+  pub fn get_in_the_frontiers_trajectory(
+    origin: Vector3,
+    destination: Vector3,
+    radius: f32,
+    world: Gd<World3D>,
+    within_the_territory_id: &TerritoryId,
+    virtual_planet: &GdRef<'_, VirtualPlanet>,
+    troop: BaseRef<'_, Troop>,
+  ) -> Vec<Vector3> {
+    let base_rc_world: Rc<RefCell<Gd<World3D>>> = Rc::new(RefCell::new(world));
+    let base_geodesic_trajectory = Self::get_geodesic_trajectory(origin, destination, radius);
+
+    if !Self::passes_by_other_territories(
+      &base_geodesic_trajectory,
+      Rc::clone(&base_rc_world),
+      within_the_territory_id
+    ) {
+      return base_geodesic_trajectory.to_vec();
+    }
+
+    let world = Rc::clone(&base_rc_world);
+    let mut world = world.borrow_mut();
+
+    let origin_lat_long = SurfacePoint::get_lat_long_from_vec3(
+      origin,
+      &mut world
+      ).expect("Expected origin_lat_long to exist");
+    let dest_lat_long = SurfacePoint::get_lat_long_from_vec3(
+      destination,
+      &mut world
+      ).expect("Expected dest_lat_long to exist");
+
+    let heat_map_dictionary = troop.get_meta("heat_map_trajectory_helper");
+    let mut heat_map_dictionary = heat_map_dictionary.to::<Dictionary>();
+    heat_map_dictionary.clear();
+    let _ = heat_map_dictionary.insert(format!("{:?}", origin_lat_long), 0);
+
+    let Some(populated_heat_map) = Self::populate_heat_map(
+        origin_lat_long,
+        dest_lat_long,
+        within_the_territory_id,
+        &virtual_planet,
+        &troop
+      ) else {
+      return base_geodesic_trajectory.to_vec();
+    };  
+
+    let mut in_the_frontiers_coordinates: VecDeque<Coordinates> = VecDeque::from(vec![]);
+    Self::back_trace_dest_to_origin(
+      &populated_heat_map,
+      origin_lat_long,
+      dest_lat_long,
+      &mut in_the_frontiers_coordinates,
+    );
+
+    let in_the_frontiers_trajectory = in_the_frontiers_coordinates.iter().map(|coordinate| {
+      let cartesian: Vector3 = virtual_planet.get_cartesian_from_coordinates(coordinate);
+      cartesian
+    }).collect::<Vec<Vector3>>();
+
+    if in_the_frontiers_coordinates.is_empty() {
+      return base_geodesic_trajectory.to_vec();
+    }
+
+    return in_the_frontiers_trajectory;
+  }
+
+  fn populate_heat_map(
+    origin_lat_long: Coordinates,
+    dest_lat_long: Coordinates,
+    within_the_territory_id: &TerritoryId,
+    virtual_planet: &GdRef<'_, VirtualPlanet>,
+    troop: &BaseRef<'_, Troop>,
+  ) -> Option<Dictionary> {
+    let heat_map_dictionary = troop
+      .get_meta("heat_map_trajectory_helper")
+      .to::<Dictionary>();
+
+    if heat_map_dictionary.contains_key(format!("{:?}", dest_lat_long)) {
+      return Some(heat_map_dictionary);
+    }
+
+    let neighbors = Self::get_neighbors(origin_lat_long);
+    for neighbor in neighbors.iter() {
+      let heat_map_dictionary_key = format!("{:?}", neighbor);
+      let heat_map_dictionary_key = heat_map_dictionary_key.as_str();
+
+      let heat_map_dictionary = troop
+        .get_meta("heat_map_trajectory_helper")
+        .to::<Dictionary>();
+      if heat_map_dictionary.contains_key(heat_map_dictionary_key) {
+        continue;
+      }
+
+      let dic_coordinates_map = virtual_planet.base().get_meta("coordinates_map");
+      let dic_coordinates_map = dic_coordinates_map.to::<Dictionary>();
+      let neighbor_metadata = dic_coordinates_map.get(heat_map_dictionary_key);
+
+      if neighbor_metadata.is_none() {
+        continue;
+      }
+
+      let in_other_territory = neighbor_metadata.unwrap()
+        .to::<Dictionary>()
+        .get("territory_id")
+        .is_some_and(
+          |neighbor_territory_id| neighbor_territory_id.to::<String>() != *within_the_territory_id
+        );
+
+      if in_other_territory {
+        let mut heat_map_dictionary = troop
+          .get_meta("heat_map_trajectory_helper")
+          .to::<Dictionary>();
+        let _ = heat_map_dictionary.set(heat_map_dictionary_key, i32::MAX);
+        continue;
+      }
+
+      let distance_level_from_origin = Self::get_lowest_distance_from_neighbors(
+        &Self::get_neighbors(*neighbor).to_vec(),
+        &troop
+      );
+
+      let neighbor_distance = distance_level_from_origin + 1;
+      let mut heat_map_dictionary = troop
+        .get_meta("heat_map_trajectory_helper")
+        .to::<Dictionary>();
+      let _ = heat_map_dictionary.set(heat_map_dictionary_key, neighbor_distance);
+
+      if let Some(result_map) = Self::populate_heat_map(
+        *neighbor,
+        dest_lat_long,
+        within_the_territory_id,
+        virtual_planet,
+        troop,
+      ) {
+        return Some(result_map);
+      }
+    }
+    
+    None
+  }
+
+  fn get_lowest_distance_from_neighbors(
+    neighbors: &Vec<Coordinates>,
+    troop: &BaseRef<'_, Troop>,
+  ) -> i32 {
+    let heat_map_dictionary = troop
+      .get_meta("heat_map_trajectory_helper")
+      .to::<Dictionary>();
+
+    let min_distance = neighbors.iter()
+      .filter_map(|neighbor| heat_map_dictionary.get(format!("{:?}", neighbor)))
+      .fold(i32::MAX, |acc, distance| {
+        let distance = distance.to::<i32>();
+        acc.min(distance)
+      });
+    min_distance
+  }
   
+  fn get_neighbors(
+    current_coordinate: Coordinates,
+  ) -> [Coordinates; 8] {
+    const BUFFER: i16 = 1;
+
+    let (latitude, longitude) = current_coordinate;
+
+    let mut latitude_east = latitude + BUFFER;
+    let mut latitude_west = latitude - BUFFER;
+    let mut longitude_north = longitude + BUFFER;
+    let mut longitude_south = longitude - BUFFER;
+
+    if latitude == VirtualPlanet::get_num_of_latitudes() -1 {
+      latitude_east = 0;
+    }
+
+    if latitude == 0 {
+      latitude_west = VirtualPlanet::get_num_of_latitudes() -1;
+    }
+
+    if longitude == VirtualPlanet::get_num_of_longitudes() -1 {
+      longitude_north = 0;
+    }
+
+    if longitude == 0 {
+      longitude_south = VirtualPlanet::get_num_of_longitudes() -1;
+    }
+
+    let neighbors = [
+      (latitude, longitude_north), // ↑ Northern Neighbor  
+      (latitude, longitude_south), // ↓ Southern Neighbor 
+      (latitude_east, longitude), // → Eastern Neighbor 
+      (latitude_west, longitude), // ← Western Neighbor 
+
+      (latitude_east, longitude_north), // ↑← Northeastern Neighbor 
+      (latitude_west, longitude_north), // ↑← Northwestern Neighbor 
+      (latitude_east, longitude_south), // ↓→ Southeastern Neighbor 
+      (latitude_west, longitude_south), // ↓→ Southwestern Neighbor 
+    ];
+
+    neighbors
+  }
+
+  fn back_trace_dest_to_origin(
+    heat_map: &Dictionary,
+    origin_lat_long: Coordinates,
+    dest_lat_long: Coordinates,
+    in_the_frontiers_coordinates: &mut VecDeque<Coordinates>,
+  ) {
+    
+    if let Some(dest_distance) = heat_map.get(format!("{:?}", dest_lat_long)) {
+      let dest_neighbors = Self::get_neighbors(dest_lat_long);
+
+      for neighbor in dest_neighbors.iter() {
+        if let Some(neighbor_distance) = heat_map.get(format!("{:?}", neighbor)) {
+
+          let dest_distance = dest_distance.to::<i32>();
+          let neighbor_distance = neighbor_distance.to::<i32>();
+
+          if neighbor_distance < dest_distance {
+            in_the_frontiers_coordinates.push_front(*neighbor);
+            
+            if neighbor == &origin_lat_long {
+              break;
+            }
+            Self::back_trace_dest_to_origin(heat_map, origin_lat_long, *neighbor, in_the_frontiers_coordinates);
+            break;
+          }
+        }
+      }
+      return;
+    };
+  }
+
   fn radius_scale(trajectory_point: Vector3, radius: f32) -> Vector3 {
     Vector3 {
       x: trajectory_point.x * radius,

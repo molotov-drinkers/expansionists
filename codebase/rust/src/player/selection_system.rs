@@ -99,7 +99,7 @@ impl UiDragBox {
 
       let troop_2d_position = player_camera.bind_mut()
         .get_vector_2_from_vector_3(troop_position);
-      let in_the_rect = ui_drag_box_rect.has_point(troop_2d_position);
+      let in_the_rect = ui_drag_box_rect.contains_point(troop_2d_position);
 
       if in_the_rect {
         let mut troop = troop.clone();

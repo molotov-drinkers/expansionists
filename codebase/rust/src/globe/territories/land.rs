@@ -112,7 +112,7 @@ impl Land {
           (MouseButton::RIGHT, false) => {
             let surface_point = SurfacePoint::get_surface_point(
               event_position,
-              self.base().get_world_3d().expect("World to exist"),
+              &mut self.base().get_world_3d().expect("World to exist"),
               Some(1.3)
             );
 

@@ -220,6 +220,20 @@ impl VirtualPlanet {
                   }
                 );
 
+                // Apart from coordinate_map, we also create the same dictionary as metadata in the
+                // VirtualPlanet Godot Entity. The reason behind it is better explained
+                // at `src/globe/coordinates_system/rust_populate_heat_map/readme.md`
+                let dic_coordinates_map = self.base().get_meta("coordinates_map");
+                let mut dic_coordinates_map = dic_coordinates_map.to::<Dictionary>();
+
+                let mut coord_meta = Dictionary::new();
+                let _ = coord_meta.insert("territory_id", territory_id.clone());
+                let _ = coord_meta.insert("cartesian", surface_point_metadata.cartesian);
+                let _ = dic_coordinates_map.insert(
+                  format!("{:?}", surface_point_metadata.lat_long),
+                  coord_meta
+                );
+
                 surface_point_metadata.territory_id = Some(territory_id);
               }
             }
@@ -287,7 +301,7 @@ impl VirtualPlanet {
   /// Receives a latitude and longitude and returns the cartesian coordinates
   pub fn get_cartesian_from_coordinates(&self, given_coordinates: &Coordinates) -> Vector3 {
     let coordinate_metadata = self.coordinate_map.get(&given_coordinates).expect("Expected coordinates to exist");
-    coordinate_metadata.cartesian
+    coordinate_metadata.cartesian.clone()
   }
 
   pub fn set_new_territory_ruler(territory: &mut Territory, player: &mut Gd<Player>) {

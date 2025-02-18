@@ -12,8 +12,8 @@ use crate::{
     },
     territories::territory::TerritoryId
   },
-  player::player::{Player, PlayerStaticInfo},
-  root::root::RootScene
+  player::{color::PlayerColor, player::{Player, PlayerStaticInfo}},
+  root::root::RootScene, visual_debug
 };
 
 use super::{
@@ -79,9 +79,11 @@ pub struct Troop {
   /// indicates the time the troop will wait before moving again while patrolling
   idle_timer: f32,
 
-  pub moving_trajectory_points: [Vector3; CoordinatesSystem::NUM_OF_WAYPOINTS],
+  pub moving_trajectory_points: Vec<Vector3>,
   pub moving_trajectory_is_set: bool,
   pub current_trajectory_point: usize,
+  
+  pub moving_and_combating: bool,
 
   /// it turns true when the troop is spawned and the orientation is set
   initial_orientation_is_set: bool,
@@ -115,9 +117,11 @@ impl ICharacterBody3D for Troop {
 
       idle_timer: Self::DEFAULT_IDLE_TIMER,
 
-      moving_trajectory_points: [Vector3::ZERO; CoordinatesSystem::NUM_OF_WAYPOINTS],
+      moving_trajectory_points: Vec::new(),
       moving_trajectory_is_set: false,
       current_trajectory_point: 0,
+
+      moving_and_combating: false,
 
       initial_orientation_is_set: false,
 
@@ -243,8 +247,11 @@ impl Troop {
         VirtualPlanet::get_planet_radius() as f32
       );
 
-      // self.highlight_geodesic_trajectory(&geodesic_trajectory);
-      self.moving_trajectory_points = geodesic_trajectory;
+      visual_debug!({
+        self.highlight_trajectory(&geodesic_trajectory.to_vec());
+      });
+
+      self.moving_trajectory_points = geodesic_trajectory.to_vec();
       self.moving_trajectory_is_set = true;
       self.troop_activities.insert(TroopState::Moving);
     }
@@ -259,7 +266,16 @@ impl Troop {
         return;
       }
 
-      let current_target = self.moving_trajectory_points[self.current_trajectory_point];
+      let current_target = {
+        let Some(current_target) = self.moving_trajectory_points
+          .get(self.current_trajectory_point) else {
+            godot_print!("Resetting the trajectory because the current target is None");
+            self.reset_trajectory();
+            return;
+          };
+        *current_target
+      };
+
       let current_position = self.base().get_global_transform().origin;
       let direction = (current_target - current_position).try_normalized();
       let on_the_last_waypoint = self.current_trajectory_point == (self.moving_trajectory_points.len() -1);
@@ -309,8 +325,8 @@ impl Troop {
     if self.troop_activities.contains(&TroopState::Patrolling) &&
       (self.current_trajectory_point + buffer_checker) < self.moving_trajectory_points.len() -1 {
       let check_future_invasion = self.moving_trajectory_points[self.current_trajectory_point + buffer_checker];
-      let world = self.base().get_world_3d().expect("World to exist");
-      let surface_point = SurfacePoint::get_surface_point(check_future_invasion, world ,None)
+      let mut world = self.base().get_world_3d().expect("World to exist");
+      let surface_point = SurfacePoint::get_surface_point(check_future_invasion, &mut world ,None)
         .expect("Expected to get surface point to check future invasion");
       if surface_point.bind().get_surface_point_metadata().territory_id.clone()
         .is_some_and(|t| t != self.deployed_to_territory) {
@@ -336,7 +352,7 @@ impl Troop {
 
   pub fn reset_trajectory(&mut self) {
     self.current_trajectory_point = 0;
-    self.moving_trajectory_points = [Vector3::ZERO; CoordinatesSystem::NUM_OF_WAYPOINTS];
+    self.moving_trajectory_points = Vec::new();
     self.moving_trajectory_is_set = false;
   }
 
@@ -351,11 +367,12 @@ impl Troop {
     } 
   }
 
-  #[allow(dead_code)]
   /// Creates 3d Mesh Cubes all along the trajectory of the troop
   /// Used for debugging purposes
-  fn highlight_geodesic_trajectory(&mut self, geodesic_trajectory: &[Vector3; CoordinatesSystem::NUM_OF_WAYPOINTS]) {
-    let node_3d_name = "geodesic_mesh";
+  pub fn highlight_trajectory(&mut self, trajectory: &Vec<Vector3>) {
+    let troop_name = &self.base().get_name().to_string();
+    let node_3d_name_string = format!("trajectory_mesh_{troop_name}");
+    let node_3d_name = node_3d_name_string.as_str();
 
     let mut highlighted_trajectories = self.base_mut()
       .get_parent()
@@ -363,27 +380,30 @@ impl Troop {
       .find_child("highlighted_trajectories")
       .expect("Expected to find highlighted_trajectories");
 
-    // Delete existing geodesic mesh
+    // Delete existing trajectory mesh
     for node in highlighted_trajectories.get_children().iter_shared() {
       highlighted_trajectories.remove_child(&node);
     }
 
-    let mut geodesic_mesh = Node3D::new_alloc();
-    highlighted_trajectories.add_child(&geodesic_mesh);
-    geodesic_mesh.set_name(node_3d_name);
-    geodesic_mesh.set_global_position(Vector3::new(0.0, 0.0, 0.0));
+    let mut trajectory_mesh = Node3D::new_alloc();
+    highlighted_trajectories.add_child(&trajectory_mesh);
+    trajectory_mesh.set_name(node_3d_name);
+    trajectory_mesh.set_global_position(Vector3::new(0.0, 0.0, 0.0));
 
-    for point in geodesic_trajectory {
+    for point in trajectory {
       let mut material = StandardMaterial3D::new_gd();
       let mut box_mesh = BoxMesh::new_gd();
-      let mut geodesic_mesh_cube = MeshInstance3D::new_alloc();
+      let mut trajectory_mesh_cube = MeshInstance3D::new_alloc();
 
-      material.set_albedo(Color::LIGHT_PINK);
+      let player_color = &self.owner.color;
+      let banner_color = PlayerColor::get_banner_player_color(player_color);
+
+      material.set_albedo(banner_color);
       box_mesh.set_size(Vector3::new(0.02, 0.02, 0.02));
       box_mesh.set_material(&material);
-      geodesic_mesh_cube.set_mesh(&box_mesh);
-      geodesic_mesh_cube.set_position(*point);
-      geodesic_mesh.add_child(&geodesic_mesh_cube);
+      trajectory_mesh_cube.set_mesh(&box_mesh);
+      trajectory_mesh_cube.set_position(*point);
+      trajectory_mesh.add_child(&trajectory_mesh_cube);
     }
   }
 
