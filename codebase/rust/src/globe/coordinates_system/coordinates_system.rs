@@ -225,7 +225,6 @@ impl CoordinatesSystem {
     None
   }
 
-  // Helper function with improved lock handling
   fn get_lowest_distance_from_neighbors(
     neighbors: &Vec<Coordinates>,
     troop: &BaseRef<'_, Troop>,
@@ -272,23 +271,15 @@ impl CoordinatesSystem {
     }
 
     let neighbors = [
-      // Trajectory passing by North
-      (latitude, longitude_north),
-      // Trajectory passing by South
-      (latitude, longitude_south),
-      // Trajectory passing by East
-      (latitude_east, longitude),
-      // Trajectory passing by West
-      (latitude_west, longitude),
+      (latitude, longitude_north), // ↑ Northern Neighbor  
+      (latitude, longitude_south), // ↓ Southern Neighbor 
+      (latitude_east, longitude), // → Eastern Neighbor 
+      (latitude_west, longitude), // ← Western Neighbor 
 
-      // Trajectory passing by Northeast
-      (latitude_east, longitude_north),
-      // Trajectory passing by Northwest
-      (latitude_west, longitude_north),
-      // Trajectory passing by Southeast
-      (latitude_east, longitude_south),
-      // Trajectory passing by Southwest
-      (latitude_west, longitude_south),
+      (latitude_east, longitude_north), // ↑← Northeastern Neighbor 
+      (latitude_west, longitude_north), // ↑← Northwestern Neighbor 
+      (latitude_east, longitude_south), // ↓→ Southeastern Neighbor 
+      (latitude_west, longitude_south), // ↓→ Southwestern Neighbor 
     ];
 
     neighbors
