@@ -77,8 +77,8 @@ impl VirtualPlanet {
   /// Following inline functions have pseudo-arbitrary numbers defined after checking the globe mesh size
   /// that's the reason they all seem to be magic numbers
   #[inline] pub fn get_planet_radius() -> f64 { 1.0795 * 3.0 }
-  #[inline] pub fn get_num_of_latitudes() -> i32 { (90. * 2.5) as i32 }
-  #[inline] pub fn get_num_of_longitudes() -> i32 { (180. * 2.5) as i32 }
+  #[inline] pub fn get_num_of_latitudes() -> i16 { (90. * 2.5) as i16 }
+  #[inline] pub fn get_num_of_longitudes() -> i16 { (180. * 2.5) as i16 }
   #[inline] pub fn get_surface_mesh_and_collider_size() -> Vector3 { Vector3::new(0.07, 0.07, 0.08) }
   
   pub fn populate_surface_points_and_coordinate_map(&mut self) {

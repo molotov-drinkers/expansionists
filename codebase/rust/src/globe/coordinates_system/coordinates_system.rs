@@ -1,4 +1,4 @@
-use std::{cell::RefCell, collections::HashMap, hash::Hash, rc::Rc, sync::{Arc, Mutex, RwLock}};
+use std::{cell::RefCell, collections::HashMap, rc::Rc};
 use godot::{classes::World3D, obj::BaseRef, prelude::*};
 use std::collections::VecDeque;
 
@@ -116,11 +116,6 @@ impl CoordinatesSystem {
       destination,
       &mut world
       ).expect("Expected dest_lat_long to exist");
-
-    godot_print!("origin_lat_long: {:?}.... dest_lat_long: {:?}", origin_lat_long, dest_lat_long);
-
-    // TODO: try this one: could be a key:
-    // let coord = Vector2i::new(origin_lat_long.0, origin_lat_long.1);
 
     let heat_map_dictionary = troop.get_meta("heat_map_for_within_territory_trajectory");
     let mut heat_map_dictionary = heat_map_dictionary.to::<Dictionary>();
@@ -251,14 +246,10 @@ impl CoordinatesSystem {
     min_distance
   }
   
-  // TODO: PROBLEM MIGHT BE HERE AFTER ALL 🤡
-  // Seems like it's not checking the boundaries correctly
-  // Also, have reasons to believe latitude and longitude are inverted
-  // May check populate_surface_points_and_coordinate_map()
   fn get_neighbors(
     current_coordinate: Coordinates,
   ) -> [Coordinates; 8] {
-    const BUFFER: i32 = 1;
+    const BUFFER: i16 = 1;
 
     let (latitude, longitude) = current_coordinate;
 
@@ -283,29 +274,27 @@ impl CoordinatesSystem {
       longitude_south = VirtualPlanet::get_num_of_longitudes() -1;
     }
 
-    let gg = [
+    let neighbors = [
       // Trajectory passing by North
-      (latitude_east, longitude),
-      // Trajectory passing by South
-      (latitude_west, longitude),
-      // Trajectory passing by East
       (latitude, longitude_north),
-      // Trajectory passing by West
+      // Trajectory passing by South
       (latitude, longitude_south),
+      // Trajectory passing by East
+      (latitude_east, longitude),
+      // Trajectory passing by West
+      (latitude_west, longitude),
 
       // Trajectory passing by Northeast
       (latitude_east, longitude_north),
       // Trajectory passing by Northwest
-      (latitude_east, longitude_south),
-      // Trajectory passing by Southeast
       (latitude_west, longitude_north),
+      // Trajectory passing by Southeast
+      (latitude_east, longitude_south),
       // Trajectory passing by Southwest
       (latitude_west, longitude_south),
     ];
 
-    godot_print!("get_neighbors: {:?}", gg);
-
-    gg
+    neighbors
   }
 
   fn back_trace_dest_to_origin(
