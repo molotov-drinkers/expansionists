@@ -59,7 +59,7 @@ impl CoordinatesSystem {
   ) -> bool {
     base_geodesic_trajectory.iter().find(|trajectory_point| {
       let Some(surface_point) = SurfacePoint::get_surface_point(
-      **trajectory_point,
+        **trajectory_point,
         &mut world.borrow_mut(),
         None
       ) else {
