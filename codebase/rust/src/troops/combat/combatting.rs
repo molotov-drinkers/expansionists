@@ -1,6 +1,7 @@
 use crate::{
   globe::coordinates_system::{coordinates_system::CoordinatesSystem, virtual_planet::VirtualPlanet},
-  troops::{combat::combat_stats::CombatStats, surface::surface::Surface, troop::{Troop, TroopId, TroopState}}
+  troops::{combat::combat_stats::CombatStats, surface::surface::Surface, troop::{Troop, TroopId, TroopState}},
+  visual_debug
 };
 use godot::prelude::*;
 
@@ -222,7 +223,10 @@ impl Troop {
         self.base(),
       );
 
-      // self.highlight_geodesic_trajectory(&in_the_frontiers_trajectory);
+      visual_debug!({
+        self.highlight_trajectory(&in_the_frontiers_trajectory);
+      });
+
       self.moving_trajectory_points = in_the_frontiers_trajectory;
       self.current_trajectory_point = 0;
       self.moving_and_combating = true;

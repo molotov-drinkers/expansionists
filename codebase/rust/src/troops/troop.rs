@@ -13,7 +13,7 @@ use crate::{
     territories::territory::TerritoryId
   },
   player::player::{Player, PlayerStaticInfo},
-  root::root::RootScene
+  root::root::RootScene, visual_debug
 };
 
 use super::{
@@ -247,7 +247,10 @@ impl Troop {
         VirtualPlanet::get_planet_radius() as f32
       );
 
-      // self.highlight_geodesic_trajectory(&geodesic_trajectory);
+      visual_debug!({
+        self.highlight_trajectory(&geodesic_trajectory.to_vec());
+      });
+
       self.moving_trajectory_points = geodesic_trajectory.to_vec();
       self.moving_trajectory_is_set = true;
       self.troop_activities.insert(TroopState::Moving);
@@ -364,11 +367,12 @@ impl Troop {
     } 
   }
 
-  #[allow(dead_code)]
   /// Creates 3d Mesh Cubes all along the trajectory of the troop
   /// Used for debugging purposes
-  pub fn highlight_geodesic_trajectory(&mut self, geodesic_trajectory: &Vec<Vector3>) {
-    let node_3d_name = "geodesic_mesh";
+  pub fn highlight_trajectory(&mut self, trajectory: &Vec<Vector3>) {
+    let troop_name = &self.base().get_name().to_string();
+    let node_3d_name_string = format!("trajectory_mesh_{troop_name}");
+    let node_3d_name = node_3d_name_string.as_str();
 
     let mut highlighted_trajectories = self.base_mut()
       .get_parent()
@@ -376,27 +380,27 @@ impl Troop {
       .find_child("highlighted_trajectories")
       .expect("Expected to find highlighted_trajectories");
 
-    // Delete existing geodesic mesh
+    // Delete existing trajectory mesh
     for node in highlighted_trajectories.get_children().iter_shared() {
       highlighted_trajectories.remove_child(&node);
     }
 
-    let mut geodesic_mesh = Node3D::new_alloc();
-    highlighted_trajectories.add_child(&geodesic_mesh);
-    geodesic_mesh.set_name(node_3d_name);
-    geodesic_mesh.set_global_position(Vector3::new(0.0, 0.0, 0.0));
+    let mut trajectory_mesh = Node3D::new_alloc();
+    highlighted_trajectories.add_child(&trajectory_mesh);
+    trajectory_mesh.set_name(node_3d_name);
+    trajectory_mesh.set_global_position(Vector3::new(0.0, 0.0, 0.0));
 
-    for point in geodesic_trajectory {
+    for point in trajectory {
       let mut material = StandardMaterial3D::new_gd();
       let mut box_mesh = BoxMesh::new_gd();
-      let mut geodesic_mesh_cube = MeshInstance3D::new_alloc();
+      let mut trajectory_mesh_cube = MeshInstance3D::new_alloc();
 
       material.set_albedo(Color::LIGHT_PINK);
       box_mesh.set_size(Vector3::new(0.02, 0.02, 0.02));
       box_mesh.set_material(&material);
-      geodesic_mesh_cube.set_mesh(&box_mesh);
-      geodesic_mesh_cube.set_position(*point);
-      geodesic_mesh.add_child(&geodesic_mesh_cube);
+      trajectory_mesh_cube.set_mesh(&box_mesh);
+      trajectory_mesh_cube.set_position(*point);
+      trajectory_mesh.add_child(&trajectory_mesh_cube);
     }
   }
 

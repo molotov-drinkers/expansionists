@@ -9,3 +9,7 @@ fastrand = "2.3"
 
 [lib]
 crate-type = ["cdylib"]
+
+# cargo build --features visual_debug
+[features]
+visual_debug = []

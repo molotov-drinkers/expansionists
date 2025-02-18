@@ -184,7 +184,6 @@ impl CoordinatesSystem {
       let neighbor_metadata = dic_coordinates_map.get(heat_map_dictionary_key);
 
       if neighbor_metadata.is_none() {
-        godot_print!("neighbor_metadata for ({neighbor:?}) is None");
         continue;
       }
 
