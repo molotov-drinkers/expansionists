@@ -1,11 +1,12 @@
 
-# Question: Heat Map Population in Rust Implementation
+# Question: Virtual Planet Coordinate Map and Troop Heat Map as Rust Implementation
 
-Why populate_heat_map has not been implemented on the Rust side?
+- Why hasn't the heat_map been implemented on the Rust side?
+- Why do we need two implementations of Virtual Planet coordinate_map
 
 ## Rust Background
 
-- Currently unable to implement heat map population in Godot Engine
+- Currently unable to implement heat map as hashMap on rust and use it on Godot Engine
 - Existing implementation in `./vanila_path_finding.rs` successfully uses Rust-only solution
 - The `get_in_the_frontiers_trajectory()` function returns `Vec<Vector3>` as expected
 
@@ -22,6 +23,7 @@ When implementing the Rust-generated library in the Expansionists game, we've en
 ### Technical Details
 
 The inconsistent behavior during function calls suggests potential race conditions or thread safety issues in the gdext library implementation.
+Seems like the Arc locks might be not working.
 
 ### Observations
 
@@ -29,8 +31,9 @@ The inconsistent behavior during function calls suggests potential race conditio
 - Occasional successful execution indicates non-deterministic behavior
 - Integration between Rust-generated library and Godot Engine appears unstable
 
-## Using signals in between GdScript and Rust
+## Using Godot Engine Dictionaries Metadata instead of Rust HashMap with ARCs
 
-To establish a working implementation, a communication system has been designed using signal emissions between GDScript and Rust.
+To establish a working implementation, a communication system has been designed using metadata creation for both VirtualPlanet (On Coordinate Map) and Troop (For HeatMap Trajectory Helper).
 
-The chosen solution leverages signal emissions as the primary communication method between GDScript and Rust components.
+Thus, every interaction with these dictionaries, we call get_meta() function. To insert new data or to read it.
+

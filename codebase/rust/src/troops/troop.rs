@@ -12,7 +12,7 @@ use crate::{
     },
     territories::territory::TerritoryId
   },
-  player::player::{Player, PlayerStaticInfo},
+  player::{color::PlayerColor, player::{Player, PlayerStaticInfo}},
   root::root::RootScene, visual_debug
 };
 
@@ -395,7 +395,10 @@ impl Troop {
       let mut box_mesh = BoxMesh::new_gd();
       let mut trajectory_mesh_cube = MeshInstance3D::new_alloc();
 
-      material.set_albedo(Color::LIGHT_PINK);
+      let player_color = &self.owner.color;
+      let banner_color = PlayerColor::get_banner_player_color(player_color);
+
+      material.set_albedo(banner_color);
       box_mesh.set_size(Vector3::new(0.02, 0.02, 0.02));
       box_mesh.set_material(&material);
       trajectory_mesh_cube.set_mesh(&box_mesh);

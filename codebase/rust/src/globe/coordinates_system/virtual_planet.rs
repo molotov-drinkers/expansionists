@@ -220,8 +220,9 @@ impl VirtualPlanet {
                   }
                 );
 
-                // should add a dictonary metadata to the virtual planet and use it at coordinates_system ?
-
+                // Apart from coordinate_map, we also create the same dictionary as metadata in the
+                // VirtualPlanet Godot Entity. The reason behind it is better explained
+                // at `src/globe/coordinates_system/rust_populate_heat_map/readme.md`
                 let dic_coordinates_map = self.base().get_meta("coordinates_map");
                 let mut dic_coordinates_map = dic_coordinates_map.to::<Dictionary>();
 
@@ -232,10 +233,6 @@ impl VirtualPlanet {
                   format!("{:?}", surface_point_metadata.lat_long),
                   coord_meta
                 );
-
-                // let aap = self.base().get_meta("coordinates_map");
-                // godot_print!("{:?}", aap);
-
 
                 surface_point_metadata.territory_id = Some(territory_id);
               }
