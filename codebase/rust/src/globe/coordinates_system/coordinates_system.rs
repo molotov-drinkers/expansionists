@@ -114,7 +114,7 @@ impl CoordinatesSystem {
       &mut world
       ).expect("Expected dest_lat_long to exist");
 
-    let heat_map_dictionary = troop.get_meta("heat_map_for_within_territory_trajectory");
+    let heat_map_dictionary = troop.get_meta("heat_map_trajectory_helper");
     let mut heat_map_dictionary = heat_map_dictionary.to::<Dictionary>();
     heat_map_dictionary.clear();
     let _ = heat_map_dictionary.insert(format!("{:?}", origin_lat_long), 0);
@@ -157,7 +157,7 @@ impl CoordinatesSystem {
     troop: &BaseRef<'_, Troop>,
   ) -> Option<Dictionary> {
     let heat_map_dictionary = troop
-      .get_meta("heat_map_for_within_territory_trajectory")
+      .get_meta("heat_map_trajectory_helper")
       .to::<Dictionary>();
 
     if heat_map_dictionary.contains_key(format!("{:?}", dest_lat_long)) {
@@ -170,7 +170,7 @@ impl CoordinatesSystem {
       let heat_map_dictionary_key = heat_map_dictionary_key.as_str();
 
       let heat_map_dictionary = troop
-        .get_meta("heat_map_for_within_territory_trajectory")
+        .get_meta("heat_map_trajectory_helper")
         .to::<Dictionary>();
       if heat_map_dictionary.contains_key(heat_map_dictionary_key) {
         continue;
@@ -193,7 +193,7 @@ impl CoordinatesSystem {
 
       if in_other_territory {
         let mut heat_map_dictionary = troop
-          .get_meta("heat_map_for_within_territory_trajectory")
+          .get_meta("heat_map_trajectory_helper")
           .to::<Dictionary>();
         let _ = heat_map_dictionary.set(heat_map_dictionary_key, i32::MAX);
         continue;
@@ -206,7 +206,7 @@ impl CoordinatesSystem {
 
       let neighbor_distance = distance_level_from_origin + 1;
       let mut heat_map_dictionary = troop
-        .get_meta("heat_map_for_within_territory_trajectory")
+        .get_meta("heat_map_trajectory_helper")
         .to::<Dictionary>();
       let _ = heat_map_dictionary.set(heat_map_dictionary_key, neighbor_distance);
 
@@ -230,7 +230,7 @@ impl CoordinatesSystem {
     troop: &BaseRef<'_, Troop>,
   ) -> i32 {
     let heat_map_dictionary = troop
-      .get_meta("heat_map_for_within_territory_trajectory")
+      .get_meta("heat_map_trajectory_helper")
       .to::<Dictionary>();
 
     let min_distance = neighbors.iter()
@@ -294,14 +294,13 @@ impl CoordinatesSystem {
   }
 
   fn back_trace_dest_to_origin(
-    // heat_map: &HashMap<Coordinates, i32>,
     heat_map: &Dictionary,
     origin_lat_long: Coordinates,
     dest_lat_long: Coordinates,
     in_the_frontiers_coordinates: &mut VecDeque<Coordinates>,
   ) {
     
-    if let Some(dest_distance) = heat_map.get(format!("{:?}", dest_lat_long)){
+    if let Some(dest_distance) = heat_map.get(format!("{:?}", dest_lat_long)) {
       let dest_neighbors = Self::get_neighbors(dest_lat_long);
 
       for neighbor in dest_neighbors.iter() {
@@ -311,8 +310,6 @@ impl CoordinatesSystem {
           let neighbor_distance = neighbor_distance.to::<i32>();
 
           if neighbor_distance < dest_distance {
-          // if (neighbor_distance -1) == *dest_distance {
-            // in_the_frontiers_coordinates.insert(0, *neighbor);
             in_the_frontiers_coordinates.push_front(*neighbor);
             
             if neighbor == &origin_lat_long {
@@ -325,8 +322,6 @@ impl CoordinatesSystem {
       }
       return;
     };
-
-    godot_print!("dest_lat_long {dest_lat_long:?} not found in heat_map");
   }
 
   fn radius_scale(trajectory_point: Vector3, radius: f32) -> Vector3 {

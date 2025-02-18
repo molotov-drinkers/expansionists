@@ -232,7 +232,7 @@ metallic = 0.75
 floor_stop_on_slope = false
 floor_constant_speed = true
 floor_block_on_wall = false
-metadata/heat_map_for_within_territory_trajectory = {}
+metadata/heat_map_trajectory_helper = {}
 
 [node name="default_mesh" type="MeshInstance3D" parent="."]
 transform = Transform3D(0.02, 0, 0, 0, 0.02, 0, 0, 0, 0.02, 0, 0.113809, 0)

@@ -196,7 +196,7 @@ impl Troop {
 
       let mut heat_map_dictionary = self
         .base()
-        .get_meta("heat_map_for_within_territory_trajectory")
+        .get_meta("heat_map_trajectory_helper")
         .to::<Dictionary>();
       heat_map_dictionary.clear();
 
