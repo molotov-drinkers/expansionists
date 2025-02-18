@@ -124,8 +124,6 @@ impl Land {
                 .clone()
                 .unwrap_or_else(|| "".to_string());
 
-              godot_print!("Clicked at {:?} and found surface point {:?}", event_position, surface_point_metadata);
-
               self.base_mut().emit_signal(
                 Self::LAND_RIGHT_CLICKED,
                 &[

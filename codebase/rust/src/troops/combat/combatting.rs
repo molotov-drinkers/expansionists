@@ -222,7 +222,7 @@ impl Troop {
         self.base(),
       );
 
-      self.highlight_geodesic_trajectory(&in_the_frontiers_trajectory);
+      // self.highlight_geodesic_trajectory(&in_the_frontiers_trajectory);
       self.moving_trajectory_points = in_the_frontiers_trajectory;
       self.current_trajectory_point = 0;
       self.moving_and_combating = true;
