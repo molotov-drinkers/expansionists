@@ -1,0 +1,11 @@
+[package]
+name = "rust_populate_heat_map"
+version = "0.1.0"
+edition = "2021"
+default-run = "vanila_path_finding"
+
+[dependencies]
+
+[[bin]]
+name = "vanila_path_finding"
+path = "src/vanila_path_finding.rs"
