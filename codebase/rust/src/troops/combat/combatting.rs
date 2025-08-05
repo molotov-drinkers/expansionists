@@ -258,9 +258,34 @@ impl Troop {
     let position_to_spawn_projectile = self.get_projectile_spawner_position();
     projectile.bind_mut().up_to_date_target_position = target_position; 
     projectile.bind_mut().fired_by = self.base().get_name().to_string();
+    projectile.bind_mut().target = Some(enemy_troop);
     projectile.set_global_transform(position_to_spawn_projectile);
 
     projectiles_node.add_child(&projectile);
+  }
+
+  pub fn take_a_hit(&mut self, damage: i32) {
+    self.combat_stats.hp -= damage;
+    if self.combat_stats.hp <= 0 && !self.base_mut().is_queued_for_deletion() {
+      self.die();
+    }
+  }
+
+  fn die(&mut self) {
+    self.combat_stats.alive = false;
+    self.combat_stats.hp = 0;
+    self.combat_stats.in_after_combat = true;
+    self.base_mut().queue_free();
+
+    self.get_virtual_planet_from_troop_scope()
+      .bind_mut()
+      .get_mut_territory_from_virtual_planet(&self.deployed_to_territory)
+      .inform_territory_departure(
+        &self.base().get_name().to_string(),
+        self.owner.player_id.clone()
+      );
+
+    // todo remove troop from territory hashmap counters? like inform departure, but this would be inform death
   }
 
 }

@@ -1,6 +1,6 @@
 use godot::{classes::{CharacterBody3D, ICharacterBody3D}, prelude::*};
 
-use crate::{globe::coordinates_system::{coordinates_system::CoordinatesSystem, virtual_planet::VirtualPlanet}, troops::troop::TroopId};
+use crate::{globe::coordinates_system::{coordinates_system::CoordinatesSystem, virtual_planet::VirtualPlanet}, troops::troop::{Troop, TroopId}};
 
 pub enum TypesOfTarget {
   Troop,
@@ -16,7 +16,8 @@ pub struct Projectile {
   pub trajectory_is_set: bool,
   current_trajectory_point: usize,
 
-  pub target: Option<TypesOfTarget>,
+  pub target: Option<Gd<Troop>>,
+  pub damage: i32,
 
   pub up_to_date_target_position: Vector3,
   _current_position: Vector3,
@@ -37,6 +38,7 @@ impl ICharacterBody3D for Projectile {
       current_trajectory_point: 0,
 
       target: None,
+      damage: 11,
 
       up_to_date_target_position: Vector3::ZERO,
       _current_position: Vector3::ZERO,
@@ -109,6 +111,12 @@ impl Projectile {
     if too_close_to_the_waypoint && on_the_last_waypoint {
       self.base_mut().queue_free();
       // todo: should deal damage to the enemy troop
+      let Some(ref mut target) = self.target else {
+        godot_error!("Expected Projectile target to be a Troop");
+        return
+      };
+
+      target.bind_mut().take_a_hit(self.damage);
     }
 
   }

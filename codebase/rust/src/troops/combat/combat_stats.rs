@@ -16,7 +16,6 @@ pub enum FighthingBehavior {
 }
 
 pub struct Cannon {
-  _damage: i32,
   pub range: f32,
   // pub firing: bool,
   pub cooling_down_counter: f64,
@@ -27,8 +26,8 @@ pub struct CombatStats {
   pub cannon: Cannon,
   pub moving_while_fighting: bool,
 
-  _hp: i32,
-  _alive: bool,
+  pub hp: i32,
+  pub alive: bool,
 
   _fighting_behavior: FighthingBehavior,
   pub opening_fire_on_troop: Option<TroopId>,
@@ -41,11 +40,10 @@ impl CombatStats {
   pub fn new() -> CombatStats {
     CombatStats {
       in_after_combat: false,
-      _hp: 100,
-      _alive: false,
+      hp: 100,
+      alive: true,
       _fighting_behavior: FighthingBehavior::Beligerent,
       cannon: Cannon {
-        _damage: 11,
         // firing: false,
         range: Self::CANNON_RANGE,
         cooling_down_counter: Self::COOL_DOWN_TIMER_IN_SECS,

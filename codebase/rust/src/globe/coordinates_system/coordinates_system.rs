@@ -82,7 +82,11 @@ impl CoordinatesSystem {
   /// After that, it backs trace the path from the destination to the origin
   /// With all that, the trajectory is calculated with the points in the frontiers of the territory
   /// 
-  /// If it fails to calculate the in_the_frontiers_trajectory, it returns the geodesic trajectory
+  /// If it fails to calculate the in_the_frontiers_trajectory,
+  /// it returns the geodesic trajectory.
+  /// 
+  /// If it doesnt pass by other territories,
+  /// it returns the geodesic trajectory.
   pub fn get_in_the_frontiers_trajectory(
     origin: Vector3,
     destination: Vector3,

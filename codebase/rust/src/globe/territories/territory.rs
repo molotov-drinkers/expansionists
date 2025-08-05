@@ -228,7 +228,7 @@ impl Territory {
       Some(SubContinent::SoutheastAsia) => /* Color::LIME_GREEN */ Color::ROSY_BROWN.lightened(0.7),
       Some(SubContinent::EastAsia) => /* Color::GREEN_YELLOW */ Color::ROSY_BROWN.lightened(0.7),
       Some(SubContinent::EuropeRelatedAsia) => /* Color::LIGHT_GREEN */ Color::ROSY_BROWN.lightened(0.7),
-      None => Self::continent_to_color(&continent)
+      _ => Self::continent_to_color(&continent)
     }
   }
 
