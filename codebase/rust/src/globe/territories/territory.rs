@@ -1,5 +1,5 @@
 use std::collections::{HashMap, HashSet};
-use std::fmt;
+use std::fmt::{Display, Formatter, Result};
 
 use godot::{builtin::Color, classes::{MeshInstance3D, StandardMaterial3D}, prelude::*};
 
@@ -19,9 +19,9 @@ pub enum Continent {
   Special,
 }
 
-impl fmt::Display for Continent {
+impl Display for Continent {
   /// allows to use `&Continent::Africa.to_string()`
-  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+  fn fmt(&self, f: &mut Formatter<'_>) -> Result {
     match self {
       Continent::Africa => write!(f, "africa"),
       Continent::Asia => write!(f, "asia"),
@@ -45,9 +45,9 @@ pub enum SubContinent {
   EuropeRelatedAsia,
 }
 
-impl fmt::Display for SubContinent {
+impl Display for SubContinent {
   /// allows to use `&SubContinent::MiddleEast.to_string()`
-  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+  fn fmt(&self, f: &mut Formatter<'_>) -> Result {
     match self {
       SubContinent::MiddleEast => write!(f, "middle_east"),
       SubContinent::InteriorAsia => write!(f, "interior_asia"),
@@ -75,9 +75,9 @@ pub enum Size {
   None,
 }
 
-impl fmt::Display for Size {
+impl Display for Size {
   /// allows to use `&Size::Tiny.to_string()`
-  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+  fn fmt(&self, f: &mut Formatter<'_>) -> Result {
     match self {
       Size::Tiny => write!(f, "tiny"),
       Size::Small => write!(f, "small"),

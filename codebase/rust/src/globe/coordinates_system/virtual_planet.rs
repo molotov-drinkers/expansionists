@@ -1,6 +1,6 @@
 
 use std::{collections::HashMap, f64::consts::PI};
-use godot::{classes::{BoxMesh, BoxShape3D, CollisionShape3D, MeshInstance3D, StandardMaterial3D}, obj::NewAlloc, prelude::*};
+use godot::{classes::{BoxMesh, BoxShape3D, CollisionShape3D, MeshInstance3D, StandardMaterial3D}, prelude::*};
 use fastrand;
 
 use crate::{

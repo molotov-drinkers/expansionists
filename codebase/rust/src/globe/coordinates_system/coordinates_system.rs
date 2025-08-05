@@ -302,7 +302,7 @@ impl CoordinatesSystem {
           let neighbor_distance = neighbor_distance.to::<i32>();
 
           if neighbor_distance < dest_distance {
-            in_the_frontiers_coordinates.push_front(*neighbor);
+            in_the_frontiers_coordinates.push_back(*neighbor);
             
             if neighbor == &origin_lat_long {
               break;

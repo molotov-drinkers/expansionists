@@ -51,7 +51,7 @@ impl IControl for TerritoryHUD {
       let virtual_planet = virtual_planet.bind();
 
       let territory_id = self.current_territory.as_ref().unwrap();
-      let territory = virtual_planet.get_territory_from_virtual_planet(&territory_id);
+      let territory = virtual_planet.get_territory_from_virtual_planet(territory_id);
 
       self.activate_ruler_part(territory);
     }
