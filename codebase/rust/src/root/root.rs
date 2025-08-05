@@ -12,7 +12,7 @@ use crate::troops::spawner_engine;
 #[class(base=Node3D)]
 pub struct RootScene {
   base: Base<Node3D>,
-  hack_bool: bool,
+  initial_spawn_started: bool,
 }
 
 #[godot_api]
@@ -21,7 +21,7 @@ impl INode3D for RootScene {
 
     RootScene {
       base: base,
-      hack_bool: false,
+      initial_spawn_started: false,
     }
   }
 
@@ -48,13 +48,13 @@ impl RootScene {
     let mut player_1 = Player::new_alloc();
     player_1.bind_mut().set_player(
       1,
-      "Menino Baum".to_owned(),
-      PlayerColor::Red,
-      "amazon".to_owned(),
+      "Torque".to_owned(),
+      PlayerColor::Blue,
+      "baffin_bay".to_owned(),
       PlayerType::MainPlayer,
       TroopMeshes {
         land: MeshId::Tank1,
-        sea: MeshId::Galleon,
+        sea: MeshId::Boat6,
       },
       AvailableLanguage::InternationalEnglish,
     );
@@ -62,13 +62,13 @@ impl RootScene {
     let mut cpu_2 = Player::new_alloc();
     cpu_2.bind_mut().set_player(
       2,
-      "Hawk".to_owned(),
-      PlayerColor::Blue,
-      "latinos".to_owned(),
+      "Eastest".to_owned(),
+      PlayerColor::Red,
+      "west_siberia".to_owned(),
       PlayerType::Bot,
       TroopMeshes {
         land: MeshId::Tonk,
-        sea: MeshId::Boat6,
+        sea: MeshId::Galleon,
       },      
       AvailableLanguage::InternationalEnglish,
     );
@@ -116,9 +116,8 @@ impl RootScene {
   }
 
   pub fn startup_troops_spawn(&mut self) {
-    // TODO: this hack bool should go away
-    if self.hack_bool == false {
-      self.hack_bool = true;
+    if self.initial_spawn_started == false {
+      self.initial_spawn_started = true;
       
       let hardcoded_players = self.hardcoded_players();
 

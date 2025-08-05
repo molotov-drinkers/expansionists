@@ -10,6 +10,7 @@ pub enum PlayerColor {
   Orange,
   Black,
   White,
+  LightBlue,
 }
 
 impl PlayerColor {
@@ -23,6 +24,7 @@ impl PlayerColor {
       PlayerColor::Orange => Color::ORANGE,
       PlayerColor::Black => Color::BLACK,
       PlayerColor::White => Color::WHITE,
+      PlayerColor::LightBlue => Color::LIGHT_BLUE,
     }
   }
 
