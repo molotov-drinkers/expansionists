@@ -34,6 +34,55 @@ Inspired by classic world domination board games, Expansionists brings the battl
 *   [Rust](https://www.rust-lang.org/)
 *   [godot-rust (gdext)](https://github.com/godot-rust/gdext)
 
+## 🗺️ Development Roadmap
+
+Here's a look at the current development status based on the project's Kanban board.
+
+### 🚧 In Progress (Doing)
+* **Combat System:** Core implementation of combat mechanics. (#12)
+* **AI Pathfinding:** Creating AI for troop movement trajectories. (#99)
+
+### 📝 To Do / Backlog
+A categorized list of planned features and tasks.
+
+#### Core Gameplay & AI
+* Create a CPU opponent to play against. (#14)
+* Implement a saving system for user profiles and troop data. (#21)
+* Create troop fatality effects/animations. (#95)
+* Add post-combat logic, like delaying troop spawns in a territory. (#96)
+* Create a visual indicator (blinking light) for lands in conflict. (#98)
+
+#### Multiplayer & Networking
+* Build the core multiplayer system. (#15)
+* Integrate GodotSteam for Steam social login. (#25)
+* Research and set up a dedicated server solution (e.g., Nakama). (#27)
+* Set up a Google Cloud Platform account for the game server. (#74)
+
+#### UI / HUD
+* Create the main menu with animated troop visuals. (#29)
+* Add a Mercator projection thumbnail to the HUD. (#59)
+* Create a timeline HUD. (#60)
+* Design and implement a HUD for player and enemy statuses. (#61)
+* Create a tutorial HUD. (#71)
+* Develop a second version of the Troop HUD showing troop states. (#78)
+* Create a splash screen. (#84)
+
+#### Art & Sound
+* Record base narrator voice lines. (#9)
+* Implement the narrator's voice in-game. (#10)
+* Add menu and in-game soundtracks. (#28)
+* Enhance the planet's appearance with vegetation (trees, cacti, etc.). (#83)
+
+#### Technical & Infrastructure
+* Address commercial licensing requirements. (#62)
+* Create profiling tools to debug performance. (#68)
+* Localize game text for English, Portuguese, and Spanish (i18n). (#97)
+* **Tech Debt/Bugs:**
+    * Fix issues with dynamic camera speed. (#44)
+    * Properly get spawner coordinates. (#50)
+    * Fix idle occupation logic. (#89)
+    * Refactor conquest logic to allow multiple players to attack a territory simultaneously. (#93)
+
 ## 🚀 Getting Started
 
 To get a local copy up and running, follow these steps.
