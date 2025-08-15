@@ -5,7 +5,7 @@
 // use godot::{classes::{IStaticBody3D, InputEvent, InputEventMouseButton, MeshInstance3D, StaticBody3D}, global::MouseButton, prelude::*};
 // use crate::globe::coordinates_system::surface_point::SurfacePoint;
 
-// /// Every territory should be a MeshInstance3D with the 
+// /// Every territory should be a MeshInstance3D with the
 // /// following "Ocean StaticBody3D" as a child
 // /// |-territory
 // /// |||- ocean

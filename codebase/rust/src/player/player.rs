@@ -2,8 +2,15 @@ use std::collections::{HashMap, HashSet};
 
 use godot::{classes::INode3D, prelude::*};
 
-use crate::{globe::{coordinates_system::virtual_planet::VirtualPlanet, territories::territory::TerritoryId}, i18n::base::AvailableLanguage, root::root::RootScene, troops::mesh_map::MeshId};
 use super::color::PlayerColor;
+use crate::{
+    globe::{
+        coordinates_system::virtual_planet::VirtualPlanet, territories::territory::TerritoryId,
+    },
+    i18n::base::AvailableLanguage,
+    root::root::RootScene,
+    troops::mesh_map::MeshId,
+};
 
 /// Defines
 /// troop colors,
@@ -11,7 +18,7 @@ use super::color::PlayerColor;
 /// spawn engine,
 /// troops counter,
 /// territory counter
-/// 
+///
 /// Should also have players actions, such as
 /// move troops
 /// atck
@@ -19,18 +26,18 @@ use super::color::PlayerColor;
 
 #[allow(dead_code)] //TODO: remove dead_code
 struct EnemyStats {
-  /// The number of troops that were injured
-  casualties_caused_by_player: f32,
-  /// The number of troops that were killed
-  fatalities_caused_by_player: u32,
-  /// The number of territories that were taken
-  territories_taken_by_player: u32,
+    /// The number of troops that were injured
+    casualties_caused_by_player: f32,
+    /// The number of troops that were killed
+    fatalities_caused_by_player: u32,
+    /// The number of territories that were taken
+    territories_taken_by_player: u32,
 }
 
 #[derive(Debug, Clone)]
 pub struct TroopMeshes {
-  pub land: MeshId,
-  pub sea: MeshId,
+    pub land: MeshId,
+    pub sea: MeshId,
 }
 
 pub type PlayerId = u32;
@@ -38,164 +45,161 @@ pub type PlayerId = u32;
 #[derive(GodotClass)]
 #[class(base=Node3D)]
 pub struct Player {
-  base: Base<Node3D>,
-  pub static_info: PlayerStaticInfo,
-  pub troops_counter: u32,
-  territory_counter: u32,
+    base: Base<Node3D>,
+    pub static_info: PlayerStaticInfo,
+    pub troops_counter: u32,
+    territory_counter: u32,
 
-  /// it's the sum of every territory's organic_max_troops being ruled by the player
-  pub max_troop_allowed: u32,
+    /// it's the sum of every territory's organic_max_troops being ruled by the player
+    pub max_troop_allowed: u32,
 
-  #[allow(dead_code)] //TODO: remove dead_code
-  alive: bool,
-  
-  #[allow(dead_code)] //TODO: remove dead_code
-  in_combat_with: HashSet<Player>,
-  
-  #[allow(dead_code)] //TODO: remove dead_code
-  allied_with: HashSet<Player>,
-  
-  #[allow(dead_code)] //TODO: remove dead_code
-  enemies_stats: HashMap<PlayerId, EnemyStats>,
+    #[allow(dead_code)] //TODO: remove dead_code
+    alive: bool,
+
+    #[allow(dead_code)] //TODO: remove dead_code
+    in_combat_with: HashSet<Player>,
+
+    #[allow(dead_code)] //TODO: remove dead_code
+    allied_with: HashSet<Player>,
+
+    #[allow(dead_code)] //TODO: remove dead_code
+    enemies_stats: HashMap<PlayerId, EnemyStats>,
 }
 
 #[derive(PartialEq, Debug, Clone, GodotConvert)]
 #[godot(via = i64)]
 pub enum PlayerType {
-  MainPlayer,
-  OtherPlayers,
-  Bot,
+    MainPlayer,
+    OtherPlayers,
+    Bot,
 }
 
 #[derive(Debug, Clone)]
 pub struct PlayerStaticInfo {
-  pub player_id: PlayerId,
-  pub user_name: String,
-  pub color: PlayerColor,
-  pub initial_territory: TerritoryId,
-  pub player_type: PlayerType,
-  pub troop_meshes: TroopMeshes,
-  pub chosen_language: AvailableLanguage,
+    pub player_id: PlayerId,
+    pub user_name: String,
+    pub color: PlayerColor,
+    pub initial_territory: TerritoryId,
+    pub player_type: PlayerType,
+    pub troop_meshes: TroopMeshes,
+    pub chosen_language: AvailableLanguage,
 }
 
 #[godot_api]
 impl INode3D for Player {
-  fn init(base: Base<Node3D>) -> Player {
-
-    Player {
-      base: base,
-      static_info: Self::get_blank_static_info(),
-      troops_counter: 0,
-      territory_counter: 0,
-      max_troop_allowed: 0,
-      alive: true, 
-      in_combat_with: HashSet::new(),
-      allied_with: HashSet::new(),
-      enemies_stats: HashMap::new(),
+    fn init(base: Base<Node3D>) -> Player {
+        Player {
+            base,
+            static_info: Self::get_blank_static_info(),
+            troops_counter: 0,
+            territory_counter: 0,
+            max_troop_allowed: 0,
+            alive: true,
+            in_combat_with: HashSet::new(),
+            allied_with: HashSet::new(),
+            enemies_stats: HashMap::new(),
+        }
     }
-  }
-
 }
 
 #[godot_api]
 impl Player {
-  pub fn set_player(
-    &mut self,
-    player_id: PlayerId,
-    user_name: String,
-    color: PlayerColor,
-    initial_territory: TerritoryId,
-    player_type: PlayerType,
-    troop_meshes: TroopMeshes,
-    chosen_language: AvailableLanguage,
-  ) {
-    self.static_info = PlayerStaticInfo {
-      player_id,
-      user_name,
-      color,
-      initial_territory,
-      player_type,
-      troop_meshes,
-      chosen_language,
-    };
+    pub fn set_player(
+        &mut self,
+        player_id: PlayerId,
+        user_name: String,
+        color: PlayerColor,
+        initial_territory: TerritoryId,
+        player_type: PlayerType,
+        troop_meshes: TroopMeshes,
+        chosen_language: AvailableLanguage,
+    ) {
+        self.static_info = PlayerStaticInfo {
+            player_id,
+            user_name,
+            color,
+            initial_territory,
+            player_type,
+            troop_meshes,
+            chosen_language,
+        };
 
-    let player_group_id = &Self::get_player_godot_identifier(player_id);
-    self.base_mut().add_to_group(player_group_id);
-    self.base_mut().set_name(player_group_id);
-  }
-
-  /// Returns the player id used in Godot set on the nodes' name and as group
-  /// it couldn't use the PlayerId because it's just a u32 and
-  /// it could clash with other nodes and group names
-  fn get_player_godot_identifier(player_id: PlayerId) -> String {
-    format!("player_{player_id}")
-  }
-
-  pub fn get_blank_static_info() -> PlayerStaticInfo {
-    PlayerStaticInfo {
-      player_id: 0,
-      user_name: "to_be_set".to_owned(),
-      color: PlayerColor::Black,
-      initial_territory: "to_be_set".to_owned(),
-      player_type: PlayerType::Bot,
-      troop_meshes: TroopMeshes {
-        land: MeshId::Tank1,
-        sea: MeshId::Boat1,
-      },
-      chosen_language: AvailableLanguage::InternationalEnglish,
+        let player_group_id = &Self::get_player_godot_identifier(player_id);
+        self.base_mut().add_to_group(player_group_id);
+        self.base_mut().set_name(player_group_id);
     }
-  }
 
-  pub fn register_troop_spawning(&mut self) {
-    self.troops_counter += 1;
-  }
-
-  pub fn register_territory_occupation(&mut self, _territory_id: TerritoryId) {
-    self.territory_counter += 1;
-  }
-
-  #[allow(dead_code)] //TODO: remove dead_code
-  fn register_territory_loss(&mut self) {
-    self.territory_counter -= 1;
-
-    if self.territory_counter <= 0 {
-      self.territory_counter = 0;
+    /// Returns the player id used in Godot set on the nodes' name and as group
+    /// it couldn't use the PlayerId because it's just a u32 and
+    /// it could clash with other nodes and group names
+    fn get_player_godot_identifier(player_id: PlayerId) -> String {
+        format!("player_{player_id}")
     }
-  }
 
-  /// expects the following hierarchy:
-  /// ```
-  /// root_scene
-  /// |-players
-  /// ||-player
-  /// ```
-  pub fn get_root_from_player(&mut self) -> Gd<Node> {
-    self
-      .base()
-      .get_parent().expect("Expected player to have players as parent")
-      .get_parent().expect("Expected players to have root as parent")
-  }
+    pub fn get_blank_static_info() -> PlayerStaticInfo {
+        PlayerStaticInfo {
+            player_id: 0,
+            user_name: "to_be_set".to_owned(),
+            color: PlayerColor::Black,
+            initial_territory: "to_be_set".to_owned(),
+            player_type: PlayerType::Bot,
+            troop_meshes: TroopMeshes {
+                land: MeshId::Tank1,
+                sea: MeshId::Boat1,
+            },
+            chosen_language: AvailableLanguage::InternationalEnglish,
+        }
+    }
 
-  #[allow(dead_code)] //TODO: remove dead_code
-  fn get_virtual_planet_from_player(&mut self) -> Gd<VirtualPlanet> {
-    let virtual_planet = self
-      .get_root_from_player()
-      .try_get_node_as::<VirtualPlanet>("virtual_planet")
-      .expect("Expected to find VirtualPlanet from RootScene");
+    pub fn register_troop_spawning(&mut self) {
+        self.troops_counter += 1;
+    }
 
-    virtual_planet
-  }
+    pub fn register_territory_occupation(&mut self, _territory_id: TerritoryId) {
+        self.territory_counter += 1;
+    }
 
-  /// Assumes Player node has PlayerId as name
-  pub fn get_player_by_id(root_scene: Gd<RootScene>, player_id: PlayerId) -> Gd<Player> {
-    let player = root_scene.get_node_as::<Player>(&format!("players/{player_id}"));
-    player
-  }
+    #[allow(dead_code)] //TODO: remove dead_code
+    fn register_territory_loss(&mut self) {
+        self.territory_counter -= 1;
 
-  pub fn get_player_language(root_scene: Gd<RootScene>, player_id: PlayerId) -> AvailableLanguage {
-    let player = Self::get_player_by_id(root_scene, player_id);
-    let chosen_language = player.bind().static_info.chosen_language.clone();
-    chosen_language
-  }
+        if self.territory_counter <= 0 {
+            self.territory_counter = 0;
+        }
+    }
 
+    /// expects the following hierarchy:
+    /// ```
+    /// root_scene
+    /// |-players
+    /// ||-player
+    /// ```
+    pub fn get_root_from_player(&mut self) -> Gd<Node> {
+        self.base()
+            .get_parent()
+            .expect("Expected player to have players as parent")
+            .get_parent()
+            .expect("Expected players to have root as parent")
+    }
+
+    #[allow(dead_code)] //TODO: remove dead_code
+    fn get_virtual_planet_from_player(&mut self) -> Gd<VirtualPlanet> {
+        self.get_root_from_player()
+            .try_get_node_as::<VirtualPlanet>("virtual_planet")
+            .expect("Expected to find VirtualPlanet from RootScene")
+    }
+
+    /// Assumes Player node has PlayerId as name
+    pub fn get_player_by_id(root_scene: Gd<RootScene>, player_id: PlayerId) -> Gd<Player> {
+        root_scene.get_node_as::<Player>(&format!("players/{player_id}"))
+    }
+
+    pub fn get_player_language(
+        root_scene: Gd<RootScene>,
+        player_id: PlayerId,
+    ) -> AvailableLanguage {
+        let player = Self::get_player_by_id(root_scene, player_id);
+        let chosen_language = player.bind().static_info.chosen_language.clone();
+        chosen_language
+    }
 }

@@ -2,67 +2,61 @@ use godot::builtin::Color;
 
 #[derive(Debug, Clone)]
 pub enum PlayerColor {
-  Red,
-  Blue,
-  Green,
-  Yellow,
-  Purple,
-  Orange,
-  Black,
-  White,
-  LightBlue,
+    Red,
+    Blue,
+    Green,
+    Yellow,
+    Purple,
+    Orange,
+    Black,
+    White,
+    LightBlue,
 }
 
 impl PlayerColor {
-  pub fn get_player_color(color: &PlayerColor) -> Color {
-    match color {
-      PlayerColor::Red => Color::RED,
-      PlayerColor::Blue => Color::BLUE,
-      PlayerColor::Green => Color::DARK_GREEN,
-      PlayerColor::Yellow => Color::YELLOW,
-      PlayerColor::Purple => Color::PURPLE,
-      PlayerColor::Orange => Color::ORANGE,
-      PlayerColor::Black => Color::BLACK,
-      PlayerColor::White => Color::WHITE,
-      PlayerColor::LightBlue => Color::LIGHT_BLUE,
+    pub fn get_player_color(color: &PlayerColor) -> Color {
+        match color {
+            PlayerColor::Red => Color::RED,
+            PlayerColor::Blue => Color::BLUE,
+            PlayerColor::Green => Color::DARK_GREEN,
+            PlayerColor::Yellow => Color::YELLOW,
+            PlayerColor::Purple => Color::PURPLE,
+            PlayerColor::Orange => Color::ORANGE,
+            PlayerColor::Black => Color::BLACK,
+            PlayerColor::White => Color::WHITE,
+            PlayerColor::LightBlue => Color::LIGHT_BLUE,
+        }
     }
-  }
 
-  pub fn get_troop_player_color(color: &PlayerColor) -> Color {
-    let color = Self::get_player_color(color);
-    let color = color.darkened(0.2);
+    pub fn get_troop_player_color(color: &PlayerColor) -> Color {
+        let color = Self::get_player_color(color);
 
-    color
-  }
+        color.darkened(0.2)
+    }
 
-  pub fn get_banner_player_color(color: &PlayerColor) -> Color {
-    let color = Self::get_player_color(color);
-    let color = color.lightened(0.2);
+    pub fn get_banner_player_color(color: &PlayerColor) -> Color {
+        let color = Self::get_player_color(color);
 
-    color
-  }
+        color.lightened(0.2)
+    }
 
-  pub fn get_land_color(color: &PlayerColor) -> Color {
-    let color = Self::get_player_color(color);
-    let color = color.lightened(0.5);
+    pub fn get_land_color(color: &PlayerColor) -> Color {
+        let color = Self::get_player_color(color);
 
-    color
-  }
+        color.lightened(0.5)
+    }
 
-  pub fn get_occupying_land_color(color: &PlayerColor) -> Color {
-    let color = Self::get_player_color(color);
-    let color = color.lightened(0.75);
+    pub fn get_occupying_land_color(color: &PlayerColor) -> Color {
+        let color = Self::get_player_color(color);
 
-    color
-  }
+        color.lightened(0.75)
+    }
 
-  pub fn get_troop_selected_color(color: &PlayerColor) -> Color {
-    let color = Self::get_player_color(color);
-    let mut color = color.lightened(0.5);
-    color.set_a8(55);
+    pub fn get_troop_selected_color(color: &PlayerColor) -> Color {
+        let color = Self::get_player_color(color);
+        let mut color = color.lightened(0.5);
+        color.set_a8(55);
 
-    color
-  }
-
+        color
+    }
 }
-

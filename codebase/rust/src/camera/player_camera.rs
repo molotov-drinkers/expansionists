@@ -1,149 +1,149 @@
-use godot::classes::{Camera3D, ICamera3D, InputEvent, InputEventMagnifyGesture, InputEventMouseButton, PhysicsRayQueryParameters3D};
+use godot::classes::{
+    Camera3D, ICamera3D, InputEvent, InputEventMagnifyGesture, InputEventMouseButton,
+    PhysicsRayQueryParameters3D,
+};
 use godot::global::MouseButton;
 use godot::prelude::*;
 
 #[derive(GodotClass)]
 #[class(base=Camera3D)]
 pub struct PlayerCamera {
-  base: Base<Camera3D>,
-  pub camera_speed: f64,
-  pub zoom_speed: f64,
-  pub theta: f32,
-  pub phi: f32,
+    base: Base<Camera3D>,
+    pub camera_speed: f64,
+    pub zoom_speed: f64,
+    pub theta: f32,
+    pub phi: f32,
 }
 
 #[godot_api]
 impl ICamera3D for PlayerCamera {
-  fn init(base: Base<Camera3D>) -> PlayerCamera {
-    PlayerCamera {
-      base,
-      // TICKET: #44
-      camera_speed: 4.,
-      zoom_speed: 0.1,
-      theta: 0.0,
-      phi: 0.0,
-    }
-  }
-
-  fn process(&mut self, delta: f64) {
-    let input = Input::singleton();
-
-    let (radius, vector_to_origin) = self.get_data_to_move_camera();
-
-    if input.is_action_pressed("camera_up") {
-      self.phi = (self.phi + self.camera_speed as f32 * delta as f32).clamp(
-        Self::MIN_HEIGHT_ANGLE.to_radians(), 
-        Self::MAX_HEIGHT_ANGLE.to_radians()
-      );
-    }
-    if input.is_action_pressed("camera_down") {
-      self.phi = (self.phi - self.camera_speed as f32 * delta as f32).clamp(
-        Self::MIN_HEIGHT_ANGLE.to_radians(), 
-        Self::MAX_HEIGHT_ANGLE.to_radians()
-      );
-    }
-    if input.is_action_pressed("camera_left") {
-      self.theta += (self.camera_speed * delta) as f32;
-    }
-    if input.is_action_pressed("camera_right") {
-      self.theta -= (self.camera_speed * delta) as f32;
+    fn init(base: Base<Camera3D>) -> PlayerCamera {
+        PlayerCamera {
+            base,
+            // TICKET: #44
+            camera_speed: 4.,
+            zoom_speed: 0.1,
+            theta: 0.0,
+            phi: 0.0,
+        }
     }
 
-    self.set_new_position(radius, vector_to_origin);
-  }
+    fn process(&mut self, delta: f64) {
+        let input = Input::singleton();
 
-  fn input(&mut self, event: Gd<InputEvent>) {
-    if let Ok(mouse_click) = event.clone().try_cast::<InputEventMouseButton>() {
-      let (mut radius, vector_to_origin) = self.get_data_to_move_camera();
-      let mouse_button = mouse_click.get_button_index();
+        let (radius, vector_to_origin) = self.get_data_to_move_camera();
 
-      match mouse_button {
-        MouseButton::WHEEL_DOWN => radius += self.zoom_speed as f32,
-        MouseButton::WHEEL_UP => radius -= self.zoom_speed as f32,
-        _ => {}
-      }
+        if input.is_action_pressed("camera_up") {
+            self.phi = (self.phi + self.camera_speed as f32 * delta as f32).clamp(
+                Self::MIN_HEIGHT_ANGLE.to_radians(),
+                Self::MAX_HEIGHT_ANGLE.to_radians(),
+            );
+        }
+        if input.is_action_pressed("camera_down") {
+            self.phi = (self.phi - self.camera_speed as f32 * delta as f32).clamp(
+                Self::MIN_HEIGHT_ANGLE.to_radians(),
+                Self::MAX_HEIGHT_ANGLE.to_radians(),
+            );
+        }
+        if input.is_action_pressed("camera_left") {
+            self.theta += (self.camera_speed * delta) as f32;
+        }
+        if input.is_action_pressed("camera_right") {
+            self.theta -= (self.camera_speed * delta) as f32;
+        }
 
-      self.set_new_position(radius, vector_to_origin);
+        self.set_new_position(radius, vector_to_origin);
     }
 
-    // handling mouse Pad Pinch events
-    if let Ok(magnify_gesture) = event.try_cast::<InputEventMagnifyGesture>() {
-      let (mut radius, vector_to_origin) = self.get_data_to_move_camera();
+    fn input(&mut self, event: Gd<InputEvent>) {
+        if let Ok(mouse_click) = event.clone().try_cast::<InputEventMouseButton>() {
+            let (mut radius, vector_to_origin) = self.get_data_to_move_camera();
+            let mouse_button = mouse_click.get_button_index();
 
-      // pad_factor is need because sensibility is greater on pad than on mouse, so we nerf the zoom speed
-      let pad_factor = 0.2;
+            match mouse_button {
+                MouseButton::WHEEL_DOWN => radius += self.zoom_speed as f32,
+                MouseButton::WHEEL_UP => radius -= self.zoom_speed as f32,
+                _ => {}
+            }
 
-      if magnify_gesture.get_factor() > 1.0 {
-        radius -= (self.zoom_speed * pad_factor) as f32
-      }
-      else {
-        radius += (self.zoom_speed * pad_factor) as f32
-      }
+            self.set_new_position(radius, vector_to_origin);
+        }
 
-      self.set_new_position(radius, vector_to_origin);
+        // handling mouse Pad Pinch events
+        if let Ok(magnify_gesture) = event.try_cast::<InputEventMagnifyGesture>() {
+            let (mut radius, vector_to_origin) = self.get_data_to_move_camera();
+
+            // pad_factor is need because sensibility is greater on pad than on mouse, so we nerf the zoom speed
+            let pad_factor = 0.2;
+
+            if magnify_gesture.get_factor() > 1.0 {
+                radius -= (self.zoom_speed * pad_factor) as f32
+            } else {
+                radius += (self.zoom_speed * pad_factor) as f32
+            }
+
+            self.set_new_position(radius, vector_to_origin);
+        }
     }
-  }
 }
 
 impl PlayerCamera {
-  const MAX_HEIGHT_ANGLE: f32 = 89.9;
-  const MIN_HEIGHT_ANGLE: f32 = -89.9;
-  
-  const MIN_DISTANCE_TO_ORIGIN: f32 = 3.5;
-  
-  /// That's the distance from the origin to the farthest point in the globe
-  /// If greater, we will have problems to catch the mouse_enter on land.rs
-  const MAX_DISTANCE_TO_ORIGIN: f32 = 5.95;
+    const MAX_HEIGHT_ANGLE: f32 = 89.9;
+    const MIN_HEIGHT_ANGLE: f32 = -89.9;
 
-  fn get_data_to_move_camera(&mut self) -> (f32, Vector3) {
-    let cam_location = self.base().get_global_position();
-    let world_origin = Vector3::new(0.0, 0.0, 0.0);
-    let vector_to_origin = (world_origin - cam_location).normalized();
-    let radius = cam_location.distance_to(world_origin);
+    const MIN_DISTANCE_TO_ORIGIN: f32 = 3.5;
 
-    (radius, vector_to_origin)
-  }
+    /// That's the distance from the origin to the farthest point in the globe
+    /// If greater, we will have problems to catch the mouse_enter on land.rs
+    const MAX_DISTANCE_TO_ORIGIN: f32 = 5.95;
 
-  fn set_new_position(&mut self, mut radius: f32, vector_to_origin: Vector3) {
-    let mut transform = self.base().get_global_transform();
+    fn get_data_to_move_camera(&mut self) -> (f32, Vector3) {
+        let cam_location = self.base().get_global_position();
+        let world_origin = Vector3::new(0.0, 0.0, 0.0);
+        let vector_to_origin = (world_origin - cam_location).normalized();
+        let radius = cam_location.distance_to(world_origin);
 
-    radius = radius.clamp(Self::MIN_DISTANCE_TO_ORIGIN, Self::MAX_DISTANCE_TO_ORIGIN);
-    transform.origin = Vector3::new(
-      radius * self.phi.cos() * self.theta.cos(),
-      radius * self.phi.sin(),
-      radius * self.phi.cos() * self.theta.sin(),
-    );
-
-    self.base_mut().set_global_transform(transform);
-    self.base_mut().look_at(vector_to_origin);
-  }
-
-  pub fn get_vector_2_from_vector_3(&mut self, unproject_from_vector_3: Vector3) -> Vector2 {
-    self.base().unproject_position(unproject_from_vector_3)
-  }
-
-  pub fn is_body_visible_on_camera(&mut self, position_to_be_checked: Vector3) -> bool {
-    let cam_position = self.base().get_global_position();
-
-    let mut world = self.base().get_world_3d().expect("World to exist");
-    let mut space_state = world
-      .get_direct_space_state()
-      .expect("Expected to get direct space state");
-
-    let mut query = PhysicsRayQueryParameters3D::create(
-      cam_position,
-      position_to_be_checked,
-    ).expect("Expected to create ray query");
-
-    query.set_collide_with_areas(false);
-    query.set_collide_with_bodies(true);
-
-    let collision_dict = space_state.intersect_ray(&query);
-
-    if !collision_dict.is_empty() {
-      return false;
+        (radius, vector_to_origin)
     }
 
-    true
-  }
+    fn set_new_position(&mut self, mut radius: f32, vector_to_origin: Vector3) {
+        let mut transform = self.base().get_global_transform();
+
+        radius = radius.clamp(Self::MIN_DISTANCE_TO_ORIGIN, Self::MAX_DISTANCE_TO_ORIGIN);
+        transform.origin = Vector3::new(
+            radius * self.phi.cos() * self.theta.cos(),
+            radius * self.phi.sin(),
+            radius * self.phi.cos() * self.theta.sin(),
+        );
+
+        self.base_mut().set_global_transform(transform);
+        self.base_mut().look_at(vector_to_origin);
+    }
+
+    pub fn get_vector_2_from_vector_3(&mut self, unproject_from_vector_3: Vector3) -> Vector2 {
+        self.base().unproject_position(unproject_from_vector_3)
+    }
+
+    pub fn is_body_visible_on_camera(&mut self, position_to_be_checked: Vector3) -> bool {
+        let cam_position = self.base().get_global_position();
+
+        let mut world = self.base().get_world_3d().expect("World to exist");
+        let mut space_state = world
+            .get_direct_space_state()
+            .expect("Expected to get direct space state");
+
+        let mut query = PhysicsRayQueryParameters3D::create(cam_position, position_to_be_checked)
+            .expect("Expected to create ray query");
+
+        query.set_collide_with_areas(false);
+        query.set_collide_with_bodies(true);
+
+        let collision_dict = space_state.intersect_ray(&query);
+
+        if !collision_dict.is_empty() {
+            return false;
+        }
+
+        true
+    }
 }
