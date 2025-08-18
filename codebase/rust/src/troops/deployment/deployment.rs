@@ -21,9 +21,10 @@ impl Troop {
                 self.waiting_for_deployment_following_action = false;
 
                 let mut virtual_planet = virtual_planet.bind_mut();
-                let territory = virtual_planet.territories
-          .get_mut(touching_territory_id)
-          .unwrap_or_else(|| panic!("Expected to find territory {touching_territory_id}, at get_deployment_next_action"));
+                let territory = virtual_planet
+                    .territories
+                    .get_mut(touching_territory_id)
+                    .unwrap_or_else(|| panic!("Expected to find territory {touching_territory_id}, at get_deployment_next_action"));
 
                 territory.inform_troop_arrived(
                     &self.base().get_name().to_string(),

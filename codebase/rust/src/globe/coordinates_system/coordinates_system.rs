@@ -281,10 +281,10 @@ impl CoordinatesSystem {
         }
 
         [
-            (latitude, longitude_north), // ↑ Northern Neighbor
-            (latitude, longitude_south), // ↓ Southern Neighbor
-            (latitude_east, longitude),  // → Eastern Neighbor
-            (latitude_west, longitude),  // ← Western Neighbor
+            (latitude, longitude_north),      // ↑ Northern Neighbor
+            (latitude, longitude_south),      // ↓ Southern Neighbor
+            (latitude_east, longitude),       // → Eastern Neighbor
+            (latitude_west, longitude),       // ← Western Neighbor
             (latitude_east, longitude_north), // ↑← Northeastern Neighbor
             (latitude_west, longitude_north), // ↑← Northwestern Neighbor
             (latitude_east, longitude_south), // ↓→ Southeastern Neighbor
