@@ -175,10 +175,10 @@ impl Troop {
     pub const EVENT_TROOP_DOWN: &'static str = "troop_down";
 
     #[signal]
-    fn troop_spawned(&self) {}
+    fn troop_spawned();
 
     #[signal]
-    fn troop_down(&self) {}
+    fn troop_down();
 
     pub fn set_ownership(&mut self, player: &PlayerStaticInfo) {
         self.owner = player.clone();
@@ -207,7 +207,7 @@ impl Troop {
     /// if the troop is moving, it will set the orientation to the direction it's moving
     pub fn set_orientation(&mut self, trajectory_vector: Vector3) {
         // This is the "up" direction on the surface
-        let normal = self.base().get_global_position().normalized();
+        let normal = self.base().get_position().normalized();
 
         // Calculate the right vector using the cross product (normal x forward)
         let right = normal
@@ -222,7 +222,7 @@ impl Troop {
             .expect("right vector expected to exist");
 
         // Create a new rotation basis
-        let basis = Basis::new_looking_at(new_forward, normal, true);
+        let basis = Basis::looking_at(new_forward, normal, true);
 
         let origin = self.base().get_global_position();
         self.base_mut()

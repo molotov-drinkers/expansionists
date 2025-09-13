@@ -124,9 +124,9 @@ impl Player {
             chosen_language,
         };
 
-        let player_group_id = &Self::get_player_godot_identifier(player_id);
-        self.base_mut().add_to_group(player_group_id);
-        self.base_mut().set_name(player_group_id);
+        let player_group_id = Self::get_player_godot_identifier(player_id);
+        self.base_mut().add_to_group(player_group_id.as_str());
+        self.base_mut().set_name(player_group_id.as_str());
     }
 
     /// Returns the player id used in Godot set on the nodes' name and as group

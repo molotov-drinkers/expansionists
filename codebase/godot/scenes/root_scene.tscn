@@ -7,7 +7,7 @@
 [ext_resource type="Texture2D" uid="uid://bgbe1m0mn2bhq" path="res://assets/heads_up_display/territory/land.png" id="4_ep7lk"]
 [ext_resource type="Texture2D" uid="uid://c1ovfei8xwsk4" path="res://assets/heads_up_display/territory/key.png" id="5_jcixk"]
 [ext_resource type="Texture2D" uid="uid://cwc4kcjc7f01a" path="res://assets/heads_up_display/territory/tank.png" id="6_xmkgp"]
-[ext_resource type="Shader" path="res://shaders/space.gdshader" id="7_lj0qq"]
+[ext_resource type="Shader" uid="uid://b6p1e0o7r36x" path="res://shaders/space.gdshader" id="7_lj0qq"]
 [ext_resource type="Texture2D" uid="uid://cw6fwmbh0nvmi" path="res://assets/space.jpg" id="8_r34p6"]
 [ext_resource type="Texture2D" uid="uid://bcb14h7d86x3p" path="res://assets/heads_up_display/territory/ship.png" id="10_4exlj"]
 
@@ -74,6 +74,7 @@ metadata/coordinates_map = {}
 [node name="selection_system" type="Node3D" parent="playable"]
 
 [node name="ui_dragbox" type="UiDragBox" parent="playable/selection_system"]
+physics_interpolation_mode = 0
 visible = false
 offset_top = 241.0
 offset_right = 312.0
@@ -98,6 +99,7 @@ environment = SubResource("Environment_75xfn")
 [node name="ui" type="CanvasLayer" parent="."]
 
 [node name="debugger_hud" type="DebuggerHUD" parent="ui"]
+physics_interpolation_mode = 0
 offset_left = 12.0
 offset_right = 412.0
 offset_bottom = 93.0
@@ -106,6 +108,7 @@ theme_override_font_sizes/font_size = 24
 vertical_alignment = 1
 
 [node name="territory_hud" type="TerritoryHUD" parent="ui"]
+physics_interpolation_mode = 0
 anchors_preset = 3
 anchor_left = 1.0
 anchor_top = 1.0
@@ -120,7 +123,7 @@ grow_vertical = 0
 size_flags_vertical = 3
 
 [node name="territory_margin_container" type="MarginContainer" parent="ui/territory_hud"]
-layout_mode = 2
+layout_mode = 0
 anchor_left = 0.998
 anchor_top = 1.0
 anchor_right = 0.998
@@ -151,6 +154,7 @@ theme_override_constants/margin_bottom = 5
 layout_mode = 2
 
 [node name="TextLabels" type="TextLabels" parent="ui/territory_hud/territory_margin_container/PanelContainer/MarginContainer/VBoxContainer"]
+physics_interpolation_mode = 0
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_fonts/font = ExtResource("2_8w76i")
@@ -174,6 +178,7 @@ layout_mode = 2
 theme_override_constants/margin_left = 16
 
 [node name="TextLabels" type="TextLabels" parent="ui/territory_hud/territory_margin_container/PanelContainer/MarginContainer/VBoxContainer/size_info"]
+physics_interpolation_mode = 0
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_fonts/font = ExtResource("2_8w76i")
@@ -194,13 +199,14 @@ layout_mode = 2
 theme_override_constants/margin_left = 16
 
 [node name="TextLabels" type="TextLabels" parent="ui/territory_hud/territory_margin_container/PanelContainer/MarginContainer/VBoxContainer/continent"]
+physics_interpolation_mode = 0
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_fonts/font = ExtResource("2_8w76i")
 text = "{{continent}}  "
 
 [node name="ruler_margin_container" type="MarginContainer" parent="ui/territory_hud"]
-layout_mode = 2
+layout_mode = 0
 anchor_left = 0.998
 anchor_top = 1.0
 anchor_right = 0.998
@@ -241,6 +247,7 @@ texture = ExtResource("5_jcixk")
 expand_mode = 2
 
 [node name="TextLabels" type="TextLabels" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/HBoxContainer"]
+physics_interpolation_mode = 0
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_fonts/font = ExtResource("2_8w76i")
@@ -255,6 +262,7 @@ layout_mode = 2
 alignment = 1
 
 [node name="land_description" type="TextLabels" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/unoccupied"]
+physics_interpolation_mode = 0
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_fonts/font = ExtResource("2_8w76i")
@@ -283,6 +291,7 @@ size_flags_vertical = 3
 theme_override_constants/separation = -5
 
 [node name="TextLabels" type="TextLabels" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/occupation_in_progress/VBoxContainer/troops"]
+physics_interpolation_mode = 0
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_fonts/font = ExtResource("2_8w76i")
@@ -306,6 +315,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 
 [node name="TextLabels" type="TextLabels" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/occupation_in_progress/HBoxContainer"]
+physics_interpolation_mode = 0
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_colors/font_color = Color(0, 0, 0, 1)
@@ -357,6 +367,7 @@ size_flags_vertical = 3
 theme_override_constants/separation = -5
 
 [node name="TextLabels" type="TextLabels" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/under_conflict/HBoxContainer/troops_left"]
+physics_interpolation_mode = 0
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_fonts/font = ExtResource("2_8w76i")
@@ -376,6 +387,7 @@ layout_mode = 2
 theme_override_constants/margin_left = 16
 
 [node name="TextLabels" type="TextLabels" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/under_conflict/HBoxContainer"]
+physics_interpolation_mode = 0
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_fonts/font = ExtResource("2_8w76i")
@@ -402,6 +414,7 @@ layout_mode = 2
 theme_override_constants/margin_left = 16
 
 [node name="TextLabels" type="TextLabels" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/under_conflict/HBoxContainer/troops_right"]
+physics_interpolation_mode = 0
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_fonts/font = ExtResource("2_8w76i")
@@ -440,6 +453,7 @@ size_flags_vertical = 3
 theme_override_constants/separation = -5
 
 [node name="TextLabels" type="TextLabels" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/occupied/VBoxContainer/troops"]
+physics_interpolation_mode = 0
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_fonts/font = ExtResource("2_8w76i")
@@ -463,6 +477,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 
 [node name="TextLabels" type="TextLabels" parent="ui/territory_hud/ruler_margin_container/PanelContainer/MarginContainer/VBoxContainer/occupied/HBoxContainer"]
+physics_interpolation_mode = 0
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_colors/font_color = Color(0, 0, 0, 1)
@@ -476,6 +491,7 @@ size_flags_vertical = 3
 show_percentage = false
 
 [node name="selection_hud" type="SelectionHUD" parent="ui"]
+physics_interpolation_mode = 0
 visible = false
 anchors_preset = 7
 anchor_left = 0.5
@@ -489,8 +505,7 @@ grow_horizontal = 2
 grow_vertical = 0
 
 [node name="MarginContainer" type="MarginContainer" parent="ui/selection_hud"]
-layout_mode = 1
-anchors_preset = 7
+layout_mode = 0
 anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
@@ -527,6 +542,7 @@ texture = ExtResource("6_xmkgp")
 expand_mode = 2
 
 [node name="TextLabels" type="TextLabels" parent="ui/selection_hud/MarginContainer/PanelContainer/MarginContainer/HBoxContainer"]
+physics_interpolation_mode = 0
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 text = " 2x Troops Selected"

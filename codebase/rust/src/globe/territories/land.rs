@@ -6,7 +6,9 @@ use crate::{
     heads_up_display::territory_hud::TerritoryHUD,
 };
 use godot::{
-    classes::{IStaticBody3D, InputEvent, InputEventMouseButton, MeshInstance3D, StaticBody3D},
+    classes::{
+        Camera3D, IStaticBody3D, InputEvent, InputEventMouseButton, MeshInstance3D, StaticBody3D,
+    },
     global::MouseButton,
     prelude::*,
 };
@@ -95,7 +97,7 @@ impl Land {
     pub const LAND_RIGHT_CLICKED: &'static str = "land_right_clicked";
 
     #[signal]
-    fn land_right_clicked(&self) {}
+    fn land_right_clicked();
 
     fn catch_clicks(&mut self, event: Option<Gd<InputEvent>>, event_position: Vector3) {
         if let Some(event) = event {

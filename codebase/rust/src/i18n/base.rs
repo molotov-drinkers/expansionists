@@ -12,21 +12,11 @@ pub type I18nSubContinent<'a> = HashMap<&'a SubContinent, &'a str>;
 pub type I18nSize<'a> = HashMap<&'a Size, &'a str>;
 
 pub trait ILanguage {
-    fn get_general_dictionary(&self) -> I18nDefaultDictionary<'static> {
-        unimplemented!()
-    }
-    fn get_territory_dictionary(&self) -> I18nDefaultDictionary<'static> {
-        unimplemented!()
-    }
-    fn get_continents(&self) -> I18nContinent<'static> {
-        unimplemented!()
-    }
-    fn get_sub_continents(&self) -> I18nSubContinent<'static> {
-        unimplemented!()
-    }
-    fn get_sizes(&self) -> I18nSize<'static> {
-        unimplemented!()
-    }
+    fn get_general_dictionary(&self) -> I18nDefaultDictionary<'static>;
+    fn get_territory_dictionary(&self) -> I18nDefaultDictionary<'static>;
+    fn get_continents(&self) -> I18nContinent<'static>;
+    fn get_sub_continents(&self) -> I18nSubContinent<'static>;
+    fn get_sizes(&self) -> I18nSize<'static>;
 }
 
 #[derive(Debug, Clone)]

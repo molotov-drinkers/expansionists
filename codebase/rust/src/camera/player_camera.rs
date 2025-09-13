@@ -1,5 +1,5 @@
 use godot::classes::{
-    Camera3D, ICamera3D, InputEvent, InputEventMagnifyGesture, InputEventMouseButton,
+    Camera3D, ICamera3D, Input, InputEvent, InputEventMagnifyGesture, InputEventMouseButton,
     PhysicsRayQueryParameters3D,
 };
 use godot::global::MouseButton;
